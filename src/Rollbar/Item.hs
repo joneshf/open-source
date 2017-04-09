@@ -96,6 +96,28 @@ instance ToJSON body => ToJSON (Data body) where
     toJSON = genericToJSON defaultOptions { omitNothingFields = True }
     toEncoding = genericToEncoding defaultOptions { omitNothingFields = True }
 
+error :: message -> Data message
+error message =
+    Data
+        { body = Message "" message
+        , codeVersion = Nothing
+        , context = Nothing
+        , custom = Nothing
+        , environment = ""
+        , fingerprint = Nothing
+        , framework = Nothing
+        , language = Hardcoded
+        , level = Just Error
+        , notifier = Nothing
+        , person = Nothing
+        , platform = Nothing
+        , request = Nothing
+        , server = Nothing
+        , timestamp = Nothing
+        , title = Nothing
+        , uuid = Nothing
+        }
+
 newtype Environment
     = Environment T.Text
     deriving (Eq, IsString, Show, ToJSON)
