@@ -21,11 +21,9 @@ import Data.Aeson
     , (.=)
     )
 import Data.Aeson.Types     (constructorTagModifier, omitNothingFields)
-import Data.Bifunctor       (bimap)
 import Data.CaseInsensitive (original)
 import Data.Char            (toLower)
 import Data.Maybe           (fromMaybe, mapMaybe)
-import Data.Semigroup       ((<>))
 import Data.String          (IsString)
 import Data.Time            (UTCTime)
 import Data.UUID            (UUID, toText)
@@ -36,12 +34,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 
 import Network.HostName   (HostName)
 import Network.HTTP.Types (Header, Query, RequestHeaders)
-import Network.Socket
-    ( SockAddr(SockAddrCan, SockAddrInet, SockAddrInet6, SockAddrUnix)
-    , hostAddress6ToTuple
-    , hostAddressToTuple
-    )
-import Network.Wai        ()
+import Network.Socket     (SockAddr)
 
 import System.Info (os)
 

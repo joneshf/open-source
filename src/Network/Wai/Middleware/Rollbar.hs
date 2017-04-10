@@ -23,7 +23,6 @@ import Network.HTTP.Simple
     , Request
     , defaultRequest
     , httpNoBody
-    , parseRequest_
     , setRequestBodyJSON
     , setRequestHost
     , setRequestIgnoreStatus
@@ -37,7 +36,7 @@ import Network.HTTP.Types.Status
 import Network.Wai               (Middleware, ResponseReceived)
 
 import System.Environment (getExecutablePath)
-import System.IO          (hPrint, hPutStrLn, stderr)
+import System.IO          (hPutStrLn, stderr)
 
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as TE
@@ -66,8 +65,8 @@ send accessToken environment req res = do
     timestamp <- Just <$> getCurrentTime
     host <- Just <$> getHostName
     root <- Just . RI.Root . T.pack <$> getExecutablePath
-    let request = Just $ RI.Request {..}
-    let server = Just $ RI.Server { RI.branch = Nothing, RI.codeVersion = Nothing, .. }
+    let request = Just RI.Request {..}
+    let server = Just RI.Server { RI.branch = Nothing, RI.codeVersion = Nothing, .. }
     let data' = (RI.error body' payload)
             { RI.environment, RI.request, RI.server, RI.timestamp, RI.uuid }
     let rReq = rollbarRequest RI.Item{..}
@@ -90,8 +89,8 @@ send accessToken environment req res = do
         , ..
         }
 
-myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
-myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
+    myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
+    myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
 
 handleHttpException :: HttpException -> IO ()
 handleHttpException e = do
