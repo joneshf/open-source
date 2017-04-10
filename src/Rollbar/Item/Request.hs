@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
     Module      : Rollbar.Item.Request
@@ -24,9 +25,9 @@ module Rollbar.Item.Request
     ) where
 
 import Data.Aeson
-    (KeyValue, ToJSON, Value, object, pairs, toEncoding, toJSON, (.=))
+    (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
 import Data.CaseInsensitive (original)
-import Data.Maybe           (fromMaybe, mapMaybe)
+import Data.Maybe           (catMaybes, fromMaybe)
 import Data.String          (IsString)
 
 import GHC.Generics (Generic)
@@ -69,18 +70,17 @@ newtype Get
     deriving (Eq, Generic, Show)
 
 instance ToJSON Get where
-    toJSON (Get q) = toJSON (toJSONQuery q)
-    -- TODO: Implement more efficient version
-    toEncoding (Get q) = toEncoding (toJSONQuery q)
+    toJSON (Get q) = object . catMaybes . queryKVs $ q
+    toEncoding (Get q) = pairs . mconcat . catMaybes . queryKVs $ q
 
-toJSONQuery :: Query -> Value
-toJSONQuery = object . mapMaybe go
+queryKVs :: forall kv. (KeyValue kv) => Query -> [Maybe kv]
+queryKVs = fmap go
     where
-    go :: (BS.ByteString, Maybe BS.ByteString) -> Maybe (T.Text, Value)
+    go :: (BS.ByteString, Maybe BS.ByteString) -> Maybe kv
     go (key', val') = do
         key <- myDecodeUtf8 key'
         let val = val' >>= myDecodeUtf8
-        pure (key, toJSON val)
+        pure (key .= val)
 
 -- | The request headers
 newtype Headers
@@ -88,18 +88,17 @@ newtype Headers
     deriving (Eq, Generic, Show)
 
 instance ToJSON Headers where
-    toJSON (Headers hs) = toJSON (toJSONRequestHeaders hs)
-    -- TODO: Implement more efficient version
-    toEncoding (Headers hs) = toEncoding (toJSONRequestHeaders hs)
+    toJSON (Headers hs) = object . catMaybes . requestHeadersKVs $ hs
+    toEncoding (Headers hs) = pairs . mconcat . catMaybes . requestHeadersKVs $ hs
 
-toJSONRequestHeaders :: RequestHeaders -> Value
-toJSONRequestHeaders = object . mapMaybe go
+requestHeadersKVs :: forall kv. KeyValue kv => RequestHeaders -> [Maybe kv]
+requestHeadersKVs = fmap go
     where
-    go :: Header -> Maybe (T.Text, Value)
+    go :: Header -> Maybe kv
     go (key', val') = do
         key <- myDecodeUtf8 $ original key'
         val <- myDecodeUtf8 val'
-        pure (T.pack . show $ key, toJSON val)
+        pure (T.pack (show key) .= val)
 
 -- | The HTTP Verb
 newtype Method

@@ -36,5 +36,9 @@ data Level
     deriving (Bounded, Enum, Eq, Generic, Ord, Show)
 
 instance ToJSON Level where
-    toJSON = genericToJSON defaultOptions { constructorTagModifier = (toLower <$>)}
-    toEncoding = genericToEncoding defaultOptions { constructorTagModifier = (toLower <$>)}
+    toJSON = genericToJSON defaultOptions
+        { constructorTagModifier = fmap toLower
+        }
+    toEncoding = genericToEncoding defaultOptions
+        { constructorTagModifier = fmap toLower
+        }
