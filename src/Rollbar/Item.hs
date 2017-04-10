@@ -29,7 +29,6 @@ import Data.Semigroup       ((<>))
 import Data.String          (IsString)
 import Data.Time            (UTCTime)
 import Data.UUID            (UUID, toText)
-import Data.UUID.V4         ()
 import Data.Version         (Version, showVersion)
 
 import GHC.Generics (Generic)
@@ -44,10 +43,13 @@ import Network.Socket
     )
 import Network.Wai        ()
 
-import qualified Data.ByteString    as BS
-import qualified Data.HashMap.Lazy  as HM
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as TE
+import System.Info (os)
+
+import qualified Data.ByteString              as BS
+import qualified Data.HashMap.Lazy            as HM
+import qualified Data.Text                    as T
+import qualified Data.Text.Encoding           as TE
+import qualified Paths_wai_middleware_rollbar
 
 data Item a
     = Item
@@ -96,11 +98,12 @@ instance ToJSON body => ToJSON (Data body) where
     toJSON = genericToJSON defaultOptions { omitNothingFields = True }
     toEncoding = genericToEncoding defaultOptions { omitNothingFields = True }
 
-error :: message -> Data message
-error message =
+error :: Maybe Body' -> data' -> Data data'
+error body' data' =
     Data
-        { body = Message "" message
-        , codeVersion = Nothing
+        { body = Message (fromMaybe "" body') data'
+        , codeVersion =
+            Just . SemVer . T.pack $ showVersion Paths_wai_middleware_rollbar.version
         , context = Nothing
         , custom = Nothing
         , environment = ""
@@ -108,9 +111,10 @@ error message =
         , framework = Nothing
         , language = Hardcoded
         , level = Just Error
-        , notifier = Nothing
+        , notifier =
+            Just $ Notifier Hardcoded Paths_wai_middleware_rollbar.version
         , person = Nothing
-        , platform = Nothing
+        , platform = Just . Platform $ T.pack os
         , request = Nothing
         , server = Nothing
         , timestamp = Nothing
@@ -196,7 +200,7 @@ data Request
 
 newtype RawBody
     = RawBody BS.ByteString
-    deriving (Eq, Generic, Show)
+    deriving (Eq, Generic, IsString, Show)
 
 instance ToJSON RawBody where
     toJSON (RawBody body) = toJSON (myDecodeUtf8 body)

@@ -1,15 +1,22 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module Network.Wai.Middleware.Rollbar where
 
-import Control.Concurrent     (forkIO)
-import Control.Exception      (Handler(Handler), catches, displayException)
-import Control.Monad          (when)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Concurrent (forkIO)
+import Control.Exception  (Handler(Handler), catches, displayException)
+import Control.Monad      (when)
 
-import Data.Aeson   (ToJSON)
+import Data.Aeson   (ToJSON, defaultOptions, genericToEncoding, toEncoding)
 import Data.Functor (void)
+import Data.Maybe   (fromMaybe)
+import Data.Time    (getCurrentTime)
+import Data.UUID.V4 (nextRandom)
 
+import GHC.Generics (Generic)
+
+import Network.HostName          (getHostName)
 import Network.HTTP.Client       (HttpException)
 import Network.HTTP.Simple
     ( JSONException
@@ -25,49 +32,78 @@ import Network.HTTP.Simple
     , setRequestPort
     , setRequestSecure
     )
-import Network.HTTP.Types.Status (statusCode, statusIsServerError)
-import Network.Wai
-    (Middleware, Response, ResponseReceived, responseStatus)
+import Network.HTTP.Types.Status
+    (Status(Status), statusCode, statusIsServerError, statusMessage)
+import Network.Wai               (Middleware, ResponseReceived)
 
-import Rollbar.Item (AccessToken, Item(..), error)
+import System.Environment (getExecutablePath)
+import System.IO          (hPrint, hPutStrLn, stderr)
 
-import System.IO (hPrint, hPutStrLn, stderr)
+import qualified Data.Text          as T
+import qualified Data.Text.Encoding as TE
+import qualified Network.Wai        as NW
+import qualified Rollbar.Item       as RI
 
-requests :: AccessToken -> Middleware
-requests accessToken app req handler' = app req handler
+requests :: RI.AccessToken -> RI.Environment -> Middleware
+requests accessToken environment app req handler' = app req handler
     where
-    handler :: Response -> IO ResponseReceived
+    handler :: NW.Response -> IO ResponseReceived
     handler res = do
-        _ <- forkIO $ handle500 accessToken res
+        _ <- forkIO $ handle500 accessToken environment req res
         handler' res
 
-handle500 :: AccessToken -> Response -> IO ()
-handle500 accessToken res =
-    when (statusIsServerError status) (void $ httpNoBody request) `catches`
-        [ Handler (handleHttpException request)
-        , Handler (handleJSONException request)
-        ]
-    where
-    request = rollbarRequest Item{..}
-    data' = Rollbar.Item.error code
-    status = responseStatus res
-    code = statusCode status
+handle500 :: RI.AccessToken -> RI.Environment -> NW.Request -> NW.Response -> IO ()
+handle500 accessToken environment req res =
+    when (statusIsServerError $ NW.responseStatus res) (send accessToken environment req res)
+        `catches`
+            [ Handler handleHttpException
+            , Handler handleJSONException
+            ]
 
-handleHttpException :: Request -> HttpException -> IO ()
-handleHttpException req e = do
+send :: RI.AccessToken -> RI.Environment -> NW.Request -> NW.Response -> IO ()
+send accessToken environment req res = do
+    uuid <- Just . RI.UUID4 <$> nextRandom
+    timestamp <- Just <$> getCurrentTime
+    host <- Just <$> getHostName
+    root <- Just . RI.Root . T.pack <$> getExecutablePath
+    let request = Just $ RI.Request {..}
+    let server = Just $ RI.Server { RI.branch = Nothing, RI.codeVersion = Nothing, .. }
+    let data' = (RI.error body' payload)
+            { RI.environment, RI.request, RI.server, RI.timestamp, RI.uuid }
+    let rReq = rollbarRequest RI.Item{..}
+    void $ httpNoBody rReq
+    where
+    Status{..} = NW.responseStatus res
+    headers = RI.Headers $ NW.requestHeaders req
+    body' = RI.Body' <$> myDecodeUtf8 statusMessage
+    body = ""
+    get = RI.Get $ NW.queryString req
+    method = RI.Method $ NW.requestMethod req
+    queryString = RI.QueryString $ NW.rawQueryString req
+    url = RI.URL (NW.requestHeaderHost req, NW.pathInfo req)
+    userIP = RI.IP $ NW.remoteHost req
+    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
+    range = myDecodeUtf8 =<< NW.requestHeaderRange req
+    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
+    payload = Payload
+        { statusMessage = myDecodeUtf8' statusMessage
+        , ..
+        }
+
+myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
+myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
+
+handleHttpException :: HttpException -> IO ()
+handleHttpException e = do
     hPutStrLn stderr "Ran into an exception while sending a request to Rollbar:"
     hPutStrLn stderr $ displayException e
-    hPutStrLn stderr "This is the original request:"
-    hPrint stderr req
 
-handleJSONException :: Request -> JSONException -> IO ()
-handleJSONException req e = do
+handleJSONException :: JSONException -> IO ()
+handleJSONException e = do
     hPutStrLn stderr "Ran into an exception while parsing JSON response from Rollbar:"
     hPutStrLn stderr $ displayException e
-    hPutStrLn stderr "This is the original request:"
-    hPrint stderr req
 
-rollbarRequest :: ToJSON a => Item a -> Request
+rollbarRequest :: ToJSON a => RI.Item a -> Network.HTTP.Simple.Request
 rollbarRequest payload =
     setRequestMethod "POST"
     . setRequestSecure True
@@ -77,3 +113,16 @@ rollbarRequest payload =
     . setRequestBodyJSON payload
     . setRequestIgnoreStatus
     $ defaultRequest
+
+data Payload
+    = Payload
+        { statusCode    :: Int
+        , statusMessage :: T.Text
+        , userAgent     :: Maybe T.Text
+        , range         :: Maybe T.Text
+        , referer       :: Maybe T.Text
+        }
+    deriving (Generic, Show)
+
+instance ToJSON Payload where
+    toEncoding = genericToEncoding defaultOptions
