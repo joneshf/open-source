@@ -17,6 +17,19 @@ library
   hs-source-dirs:      src
   exposed-modules:     Network.Wai.Middleware.Rollbar
                      , Rollbar.Item
+                     , Rollbar.AccessToken
+                     , Rollbar.Item.Body
+                     , Rollbar.Item.Data
+                     , Rollbar.Item.CodeVersion
+                     , Rollbar.Item.Environment
+                     , Rollbar.Item.Hardcoded
+                     , Rollbar.Item.Level
+                     , Rollbar.Item.Person
+                     , Rollbar.Item.Request
+                     , Rollbar.Item.Server
+
+                     , Rollbar.Item.Internal.Notifier
+                     , Rollbar.Item.Internal.Platform
   other-modules:       Paths_wai_middleware_rollbar
   build-depends:       base >= 4.7 && < 5
                      , aeson >= 1.0 && < 1.1

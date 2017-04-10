@@ -2,7 +2,22 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-module Network.Wai.Middleware.Rollbar where
+
+{-|
+    Module      : Network.Wai.Middleware.Rollbar
+    Description : WAI middleware for interfacing with Rollbar
+    Copyright   : (c) Hardy Jones, 2017
+    License     : BSD3
+    Maintainer  : jones3.hardy@gmail.com
+    Stability   : experimental
+
+    Provides middleware for communicating with Rollbar.
+
+    Currently has middleware for sending all server errors to Rollbar.
+    More to come shortly.
+-}
+
+module Network.Wai.Middleware.Rollbar (requests) where
 
 import Control.Concurrent (forkIO)
 import Control.Exception  (Handler(Handler), catches, displayException)
@@ -43,6 +58,10 @@ import qualified Data.Text.Encoding as TE
 import qualified Network.Wai        as NW
 import qualified Rollbar.Item       as RI
 
+-- | Middleware that watches responses
+--  and sends an item to Rollbar if it is a server error (5xx).
+--
+--  Sends additional metadata including the request information.
 requests :: RI.AccessToken -> RI.Environment -> Middleware
 requests accessToken environment app req handler' = app req handler
     where
@@ -66,16 +85,16 @@ send accessToken environment req res = do
     host <- Just <$> getHostName
     root <- Just . RI.Root . T.pack <$> getExecutablePath
     let request = Just RI.Request {..}
-    let server = Just RI.Server { RI.branch = Nothing, RI.codeVersion = Nothing, .. }
-    let data' = (RI.error body' payload)
-            { RI.environment, RI.request, RI.server, RI.timestamp, RI.uuid }
+    let server = Just RI.Server { RI.branch = Nothing, RI.serverCodeVersion = Nothing, .. }
+    let itemData = (RI.error environment messageBody payload)
+            { RI.request, RI.server, RI.timestamp, RI.uuid }
     let rReq = rollbarRequest RI.Item{..}
     void $ httpNoBody rReq
     where
     Status{..} = NW.responseStatus res
     headers = RI.Headers $ NW.requestHeaders req
-    body' = RI.Body' <$> myDecodeUtf8 statusMessage
-    body = ""
+    messageBody = RI.MessageBody <$> myDecodeUtf8 statusMessage
+    rawBody = ""
     get = RI.Get $ NW.queryString req
     method = RI.Method $ NW.requestMethod req
     queryString = RI.QueryString $ NW.rawQueryString req
