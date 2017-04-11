@@ -49,6 +49,20 @@ library
   default-language:    Haskell2010
   ghc-options:        -Wall
 
+test-suite doc-test
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  main-is:             Main.hs
+  hs-source-dirs:      test
+  build-depends:       base
+                     , aeson
+                     , lens >= 4.15 && < 4.16
+                     , lens-aeson >= 1.0 && < 1.1
+                     , QuickCheck >= 2.9 && < 2.10
+                     , text
+                     , wai-middleware-rollbar
+  default-language:    Haskell2010
+
 source-repository head
   type:     git
   location: https://github.com/joneshf/wai-middleware-rollbar
