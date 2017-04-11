@@ -25,6 +25,7 @@ library
                      , Rollbar.Item.Environment
                      , Rollbar.Item.Hardcoded
                      , Rollbar.Item.Level
+                     , Rollbar.Item.MissingHeaders
                      , Rollbar.Item.Person
                      , Rollbar.Item.Request
                      , Rollbar.Item.Server
@@ -55,8 +56,12 @@ test-suite doc-test
   hs-source-dirs:      test
   main-is:             Main.hs
   other-modules:       Rollbar.Item.Data.Test
+                     , Rollbar.Item.Request.Test
   build-depends:       base
                      , aeson
+                     , bytestring
+                     , case-insensitive
+                     , containers >= 0.5 && < 0.6
                      , lens >= 4.15 && < 4.16
                      , lens-aeson >= 1.0 && < 1.1
                      , QuickCheck >= 2.9 && < 2.10
