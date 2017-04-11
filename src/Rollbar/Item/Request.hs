@@ -98,7 +98,7 @@ requestHeadersKVs = fmap go
     go (key', val') = do
         key <- myDecodeUtf8 $ original key'
         val <- myDecodeUtf8 val'
-        pure (T.pack (show key) .= val)
+        pure (key .= val)
 
 -- | The HTTP Verb
 newtype Method
