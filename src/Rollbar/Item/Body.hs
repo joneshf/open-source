@@ -19,8 +19,10 @@ module Rollbar.Item.Body
     , MessageBody(..)
     ) where
 
-import Data.Aeson  (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
-import Data.String (IsString)
+import Data.Aeson
+    (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
+import Data.Aeson.Encoding (pair)
+import Data.String         (IsString)
 
 import GHC.Generics (Generic)
 
@@ -45,8 +47,8 @@ bodyKVs Message{..} =
     ]
 
 instance ToJSON arbitrary => ToJSON (Body arbitrary) where
-    toJSON = object . bodyKVs
-    toEncoding = pairs . mconcat . bodyKVs
+    toJSON x = object ["message" .= object (bodyKVs x)]
+    toEncoding = pairs . pair "message" . pairs . mconcat . bodyKVs
 
 -- | The primary message text to send to Rollbar.
 newtype MessageBody

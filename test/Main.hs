@@ -3,25 +3,34 @@ module Main where
 
 import Control.Lens ((^@..))
 
-import Data.Aeson (toJSON)
+import Data.Aeson      (encode, toJSON)
 import Data.Aeson.Lens (key, members)
-import Data.Text (Text, pack)
+import Data.Text       (Text, pack)
 
 import Prelude hiding (error)
 
 import Rollbar.Item
 
-import Test.QuickCheck (Arbitrary, arbitrary, elements, quickCheck)
+import Test.QuickCheck (Arbitrary, arbitrary, conjoin, elements, quickCheck)
 
 main :: IO ()
 main =
-    quickCheck prop_encodedDataBodyHasRequiredKey
+    quickCheck $ conjoin
+        [ prop_valueDataBodyHasRequiredKey
+        , prop_encodingDataBodyHasRequiredKey
+        ]
 
-prop_encodedDataBodyHasRequiredKey :: Data () -> Bool
-prop_encodedDataBodyHasRequiredKey x =
+prop_valueDataBodyHasRequiredKey :: Data () -> Bool
+prop_valueDataBodyHasRequiredKey x =
     length ms == 1 && fst (head ms) `elem` requiredBodyKeys
     where
     ms = toJSON x ^@.. key "body" . members
+
+prop_encodingDataBodyHasRequiredKey :: Data () -> Bool
+prop_encodingDataBodyHasRequiredKey x =
+    length ms == 1 && fst (head ms) `elem` requiredBodyKeys
+    where
+    ms = encode x ^@.. key "body" . members
 
 instance Arbitrary a => Arbitrary (Data a) where
     arbitrary = do
