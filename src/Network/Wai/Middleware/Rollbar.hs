@@ -20,10 +20,11 @@
     More to come shortly.
 -}
 
-module Network.Wai.Middleware.Rollbar (Settings(..), requests) where
+module Network.Wai.Middleware.Rollbar (Settings(..), exceptions, requests) where
 
 import Control.Concurrent (forkIO)
-import Control.Exception  (Handler(Handler), catches, displayException)
+import Control.Exception
+    (Handler(Handler), SomeException, catches, displayException, throwIO)
 import Control.Monad      (when)
 
 import Data.Aeson   (ToJSON, defaultOptions, genericToEncoding, toEncoding)
@@ -74,6 +75,15 @@ data Settings (headers :: [Symbol])
         --
         -- E.g. "development" or "production"
         }
+
+-- | Middleware that catches exceptions, sends an item to Rollbar,
+--  and rethrows the exception.
+--
+--  Sends additional metadata including the request information.
+exceptions :: RI.RemoveHeaders headers => Settings headers -> Middleware
+exceptions settings app req handler = app req handler `catches`
+    [ Handler $ handleSomeException settings req
+    ]
 
 -- | Middleware that watches responses
 --  and sends an item to Rollbar if it is a server error (5xx).
@@ -132,7 +142,7 @@ send Settings{..} req res = do
     referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
     range = myDecodeUtf8 =<< NW.requestHeaderRange req
     userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
-    payload = Payload
+    payload = RequestPayload
         { statusMessage = myDecodeUtf8' statusMessage
         , ..
         }
@@ -150,6 +160,49 @@ handleJSONException e = do
     hPutStrLn stderr "Ran into an exception while parsing JSON response from Rollbar:"
     hPutStrLn stderr $ displayException e
 
+handleSomeException
+    :: forall a headers
+    . RI.RemoveHeaders headers
+    => Settings headers
+    -> NW.Request
+    -> SomeException
+    -> IO a
+handleSomeException Settings{..} req e = do
+    uuid <- Just . RI.UUID4 <$> nextRandom
+    timestamp <- Just <$> getCurrentTime
+    host <- Just <$> getHostName
+    root <- Just . RI.Root . T.pack <$> getExecutablePath
+    let request = Just RI.Request {..}
+    let server = Just RI.Server { RI.branch = Nothing, RI.serverCodeVersion = Nothing, .. }
+    let itemData = (RI.error environment messageBody payload)
+            { RI.request, RI.server, RI.timestamp, RI.uuid }
+    let rReq = rollbarRequest RI.Item{..}
+    _ <- httpNoBody rReq
+    throwIO e
+    where
+    exception = T.pack $ displayException e
+    headers :: RI.MissingHeaders headers
+    headers = RI.MissingHeaders $ NW.requestHeaders req
+    messageBody = Just $ RI.MessageBody $
+        T.intercalate " "
+            [ "Uncaught exception at:"
+            , myDecodeUtf8' $ NW.requestMethod req
+            , T.intercalate "/" $ NW.pathInfo req
+            ]
+    rawBody = ""
+    get = RI.Get $ NW.queryString req
+    method = RI.Method $ NW.requestMethod req
+    queryString = RI.QueryString $ NW.rawQueryString req
+    url = RI.URL (NW.requestHeaderHost req, NW.pathInfo req)
+    userIP = RI.IP $ NW.remoteHost req
+    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
+    range = myDecodeUtf8 =<< NW.requestHeaderRange req
+    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
+    payload = ExceptionPayload {..}
+
+    myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
+    myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
+
 rollbarRequest
     :: (RI.RemoveHeaders headers, ToJSON a)
     => RI.Item a headers
@@ -165,12 +218,18 @@ rollbarRequest payload =
     $ defaultRequest
 
 data Payload
-    = Payload
+    = RequestPayload
         { statusCode    :: Int
         , statusMessage :: T.Text
         , userAgent     :: Maybe T.Text
         , range         :: Maybe T.Text
         , referer       :: Maybe T.Text
+        }
+    | ExceptionPayload
+        { exception :: T.Text
+        , userAgent :: Maybe T.Text
+        , range     :: Maybe T.Text
+        , referer   :: Maybe T.Text
         }
     deriving (Generic, Show)
 
