@@ -16,36 +16,37 @@
 module Rollbar.Item.Request
     ( Request(..)
     , Get(..)
-    , Headers(..)
     , IP(..)
     , Method(..)
+    , MissingHeaders(..)
     , QueryString(..)
     , RawBody(..)
     , URL(..)
+    , RemoveHeaders
     ) where
 
-import Data.Aeson
-    (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
-import Data.CaseInsensitive (original)
-import Data.Maybe           (catMaybes, fromMaybe)
-import Data.String          (IsString)
+import Data.Aeson  (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
+import Data.Maybe  (catMaybes, fromMaybe)
+import Data.String (IsString)
 
 import GHC.Generics (Generic)
 
-import Network.HTTP.Types (Header, Query, RequestHeaders)
+import Network.HTTP.Types (Query)
 import Network.Socket     (SockAddr)
+
+import Rollbar.Item.MissingHeaders
 
 import qualified Data.ByteString    as BS
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as TE
 
 -- | Data sent to the server
-data Request
+data Request headers
     = Request
         { rawBody     :: RawBody
         , get         :: Get
         -- ^ Query parameters
-        , headers     :: Headers
+        , headers     :: MissingHeaders headers
         , method      :: Method
         , queryString :: QueryString
         -- ^ The entire query string
@@ -82,24 +83,6 @@ queryKVs = fmap go
         let val = val' >>= myDecodeUtf8
         pure (key .= val)
 
--- | The request headers
-newtype Headers
-    = Headers RequestHeaders
-    deriving (Eq, Generic, Show)
-
-instance ToJSON Headers where
-    toJSON (Headers hs) = object . catMaybes . requestHeadersKVs $ hs
-    toEncoding (Headers hs) = pairs . mconcat . catMaybes . requestHeadersKVs $ hs
-
-requestHeadersKVs :: forall kv. KeyValue kv => RequestHeaders -> [Maybe kv]
-requestHeadersKVs = fmap go
-    where
-    go :: Header -> Maybe kv
-    go (key', val') = do
-        key <- myDecodeUtf8 $ original key'
-        val <- myDecodeUtf8 val'
-        pure (key .= val)
-
 -- | The HTTP Verb
 newtype Method
     = Method BS.ByteString
@@ -127,7 +110,7 @@ instance ToJSON IP where
     toJSON (IP ip) = toJSON (show ip)
     toEncoding (IP ip) = toEncoding (show ip)
 
-requestKVs :: KeyValue kv => Request -> [kv]
+requestKVs :: (KeyValue kv, RemoveHeaders headers) => Request headers -> [kv]
 requestKVs Request{..} =
     [ "body" .= rawBody
     , "GET" .= get
@@ -138,7 +121,7 @@ requestKVs Request{..} =
     , "user_ip" .= userIP
     ]
 
-instance ToJSON Request where
+instance (RemoveHeaders headers) => ToJSON (Request headers) where
     toJSON = object . requestKVs
     toEncoding = pairs . mconcat . requestKVs
 

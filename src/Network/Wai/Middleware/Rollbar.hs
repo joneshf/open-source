@@ -1,7 +1,10 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
     Module      : Network.Wai.Middleware.Rollbar
@@ -17,7 +20,7 @@
     More to come shortly.
 -}
 
-module Network.Wai.Middleware.Rollbar (requests) where
+module Network.Wai.Middleware.Rollbar (Settings(..), requests) where
 
 import Control.Concurrent (forkIO)
 import Control.Exception  (Handler(Handler), catches, displayException)
@@ -30,6 +33,7 @@ import Data.Time    (getCurrentTime)
 import Data.UUID.V4 (nextRandom)
 
 import GHC.Generics (Generic)
+import GHC.TypeLits (Symbol)
 
 import Network.HostName          (getHostName)
 import Network.HTTP.Client       (HttpException)
@@ -58,28 +62,52 @@ import qualified Data.Text.Encoding as TE
 import qualified Network.Wai        as NW
 import qualified Rollbar.Item       as RI
 
+-- | Set up the middleware properly
+--  The `headers` are  what you want removed from
+--  the request headers sent to Rollbar.
+data Settings (headers :: [Symbol])
+    = Settings
+        { accessToken :: RI.AccessToken
+        -- ^ Should have a scope "post_server_item".
+        , environment :: RI.Environment
+        -- ^ Should be something meaningful to your program
+        --
+        -- E.g. "development" or "production"
+        }
+
 -- | Middleware that watches responses
 --  and sends an item to Rollbar if it is a server error (5xx).
 --
 --  Sends additional metadata including the request information.
-requests :: RI.AccessToken -> RI.Environment -> Middleware
-requests accessToken environment app req handler' = app req handler
+requests :: RI.RemoveHeaders headers => Settings headers -> Middleware
+requests settings app req handler' = app req handler
     where
     handler :: NW.Response -> IO ResponseReceived
     handler res = do
-        _ <- forkIO $ handle500 accessToken environment req res
+        _ <- forkIO $ handle500 settings req res
         handler' res
 
-handle500 :: RI.AccessToken -> RI.Environment -> NW.Request -> NW.Response -> IO ()
-handle500 accessToken environment req res =
-    when (statusIsServerError $ NW.responseStatus res) (send accessToken environment req res)
+handle500
+    :: RI.RemoveHeaders headers
+    => Settings headers
+    -> NW.Request
+    -> NW.Response
+    -> IO ()
+handle500 settings req res =
+    when (statusIsServerError $ NW.responseStatus res) (send settings req res)
         `catches`
             [ Handler handleHttpException
             , Handler handleJSONException
             ]
 
-send :: RI.AccessToken -> RI.Environment -> NW.Request -> NW.Response -> IO ()
-send accessToken environment req res = do
+send
+    :: forall headers
+    . RI.RemoveHeaders headers
+    => Settings headers
+    -> NW.Request
+    -> NW.Response
+    -> IO ()
+send Settings{..} req res = do
     uuid <- Just . RI.UUID4 <$> nextRandom
     timestamp <- Just <$> getCurrentTime
     host <- Just <$> getHostName
@@ -92,7 +120,8 @@ send accessToken environment req res = do
     void $ httpNoBody rReq
     where
     Status{..} = NW.responseStatus res
-    headers = RI.Headers $ NW.requestHeaders req
+    headers :: RI.MissingHeaders headers
+    headers = RI.MissingHeaders $ NW.requestHeaders req
     messageBody = RI.MessageBody <$> myDecodeUtf8 statusMessage
     rawBody = ""
     get = RI.Get $ NW.queryString req
@@ -121,7 +150,10 @@ handleJSONException e = do
     hPutStrLn stderr "Ran into an exception while parsing JSON response from Rollbar:"
     hPutStrLn stderr $ displayException e
 
-rollbarRequest :: ToJSON a => RI.Item a -> Network.HTTP.Simple.Request
+rollbarRequest
+    :: (RI.RemoveHeaders headers, ToJSON a)
+    => RI.Item a headers
+    -> Network.HTTP.Simple.Request
 rollbarRequest payload =
     setRequestMethod "POST"
     . setRequestSecure True

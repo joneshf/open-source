@@ -22,6 +22,8 @@ module Rollbar.Item.Data
     , Framework(..)
     , Title(..)
     , UUID4(..)
+
+    , RemoveHeaders
     ) where
 
 import Data.Aeson
@@ -46,7 +48,7 @@ import Rollbar.Item.Environment (Environment)
 import Rollbar.Item.Hardcoded   (Hardcoded)
 import Rollbar.Item.Level       (Level)
 import Rollbar.Item.Person      (Person)
-import Rollbar.Item.Request     (Request)
+import Rollbar.Item.Request     (RemoveHeaders, Request)
 import Rollbar.Item.Server      (Server)
 
 import Rollbar.Item.Internal.Notifier (Notifier)
@@ -60,7 +62,7 @@ import qualified Data.Text         as T
 --
 --  N.B. While it's entirely possible for you to create one of these yourself,
 --  it's usually easier to use helpers like 'info' and 'error'.
-data Data body
+data Data body headers
     = Data
         { body        :: Body body
         , codeVersion :: CodeVersion
@@ -77,7 +79,7 @@ data Data body
         , person      :: Maybe Person
         , platform    :: Platform
         -- ^ Metadata about this package. You probably shouldn't create this yourself.
-        , request     :: Maybe Request
+        , request     :: Maybe (Request headers)
         , server      :: Maybe Server
         , timestamp   :: Maybe UTCTime
         , title       :: Maybe Title
@@ -85,7 +87,7 @@ data Data body
         }
     deriving (Eq, Generic, Show)
 
-instance ToJSON body => ToJSON (Data body) where
+instance (RemoveHeaders headers, ToJSON body) => ToJSON (Data body headers) where
     toJSON = genericToJSON defaultOptions
         { fieldLabelModifier = codeVersionModifier
         , omitNothingFields = True

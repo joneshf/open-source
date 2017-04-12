@@ -1,6 +1,8 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeOperators #-}
 
 {-|
     Module      : Rollbar.Item
@@ -59,6 +61,9 @@ module Rollbar.Item
     , module Rollbar.Item.Hardcoded
     , Hardcoded(..)
 
+    , module Rollbar.Item.MissingHeaders
+    , MissingHeaders(..)
+
     , module Rollbar.Item.Person
     , Person(..)
     , Email(..)
@@ -67,9 +72,9 @@ module Rollbar.Item
 
     , module Rollbar.Item.Request
     , Get(..)
-    , Headers(..)
     , IP(..)
     , Method(..)
+    , MissingHeaders(..)
     , QueryString(..)
     , RawBody(..)
     , URL(..)
@@ -95,6 +100,7 @@ import Rollbar.Item.Data
 import Rollbar.Item.Environment
 import Rollbar.Item.Hardcoded
 import Rollbar.Item.Level
+import Rollbar.Item.MissingHeaders
 import Rollbar.Item.Person
 import Rollbar.Item.Request
 import Rollbar.Item.Server
@@ -108,7 +114,11 @@ import qualified Data.Text                    as T
 import qualified Paths_wai_middleware_rollbar
 
 -- | Creates 'Data' with the level set to 'Debug'.
-debug :: Environment -> Maybe MessageBody -> payload -> Data payload
+debug
+    :: Environment
+    -> Maybe MessageBody
+    -> payload
+    -> Data payload ("Authorization" ': headers)
 debug environment messageBody payload =
     Data
         { body = Message (fromMaybe "" messageBody) payload
@@ -132,40 +142,59 @@ debug environment messageBody payload =
         }
 
 -- | Creates 'Data' with the level set to 'Info'.
-info :: Environment -> Maybe MessageBody -> payload -> Data payload
+info
+    :: Environment
+    -> Maybe MessageBody
+    -> payload
+    -> Data payload ("Authorization" ': headers)
 info environment messageBody payload =
     (debug environment messageBody payload) { level = Info }
 
 -- | Creates 'Data' with the level set to 'Warning'.
-warning :: Environment -> Maybe MessageBody -> payload -> Data payload
+warning
+    :: Environment
+    -> Maybe MessageBody
+    -> payload
+    -> Data payload ("Authorization" ': headers)
 warning environment messageBody payload =
     (debug environment messageBody payload) { level = Warning }
 
 -- | Creates 'Data' with the level set to 'Error'.
-error :: Environment -> Maybe MessageBody -> payload -> Data payload
+error
+    :: Environment
+    -> Maybe MessageBody
+    -> payload
+    -> Data payload ("Authorization" ': headers)
 error environment messageBody payload =
     (debug environment messageBody payload) { level = Error }
 
 -- | Creates 'Data' with the level set to 'Critical'.
-critical :: Environment -> Maybe MessageBody -> payload -> Data payload
+critical
+    :: Environment
+    -> Maybe MessageBody
+    -> payload
+    -> Data payload ("Authorization" ': headers)
 critical environment messageBody payload =
     (debug environment messageBody payload) { level = Critical }
 
 -- | The thing we actually give to Rollbar.
-data Item a
+data Item a headers
     = Item
         { accessToken :: AccessToken
         -- ^ Should have a scope "post_server_item".
-        , itemData    :: Data a
+        , itemData    :: Data a headers
         }
     deriving (Eq, Generic, Show)
 
-itemKVs :: (KeyValue kv, ToJSON v) => Item v -> [kv]
+itemKVs
+    :: (KeyValue kv, RemoveHeaders headers, ToJSON v)
+    => Item v headers
+    -> [kv]
 itemKVs Item{..} =
     [ "access_token" .= accessToken
     , "data" .= itemData
     ]
 
-instance ToJSON a => ToJSON (Item a) where
+instance (RemoveHeaders headers, ToJSON a) => ToJSON (Item a headers) where
     toJSON = object . itemKVs
     toEncoding = pairs . mconcat . itemKVs

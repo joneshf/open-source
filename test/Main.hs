@@ -4,11 +4,11 @@ module Main where
 import Test.QuickCheck (conjoin, quickCheck)
 
 import qualified Rollbar.Item.Data.Test
+import qualified Rollbar.Item.MissingHeaders.Test
 import qualified Rollbar.Item.Request.Test
 
 main :: IO ()
-main =
-    quickCheck $ conjoin
-        [ Rollbar.Item.Data.Test.props
-        , Rollbar.Item.Request.Test.props
-        ]
+main = do
+    Rollbar.Item.Data.Test.props
+    Rollbar.Item.MissingHeaders.Test.props
+    Rollbar.Item.Request.Test.props
