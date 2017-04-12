@@ -58,6 +58,7 @@ import Network.Wai               (Middleware, ResponseReceived)
 import System.Environment (getExecutablePath)
 import System.IO          (hPutStrLn, stderr)
 
+import qualified Data.ByteString    as BS
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as TE
 import qualified Network.Wai        as NW
@@ -117,28 +118,12 @@ send
     -> NW.Request
     -> NW.Response
     -> IO ()
-send Settings{..} req res = do
-    uuid <- Just . RI.UUID4 <$> nextRandom
-    timestamp <- Just <$> getCurrentTime
-    host <- Just <$> getHostName
-    root <- Just . RI.Root . T.pack <$> getExecutablePath
-    let request = Just RI.Request {..}
-    let server = Just RI.Server { RI.branch = Nothing, RI.serverCodeVersion = Nothing, .. }
-    let itemData = (RI.error environment messageBody payload)
-            { RI.request, RI.server, RI.timestamp, RI.uuid }
-    let rReq = rollbarRequest RI.Item{..}
+send settings req res = do
+    rReq <- mkRollbarRequest settings req payload messageBody
     void $ httpNoBody rReq
     where
     Status{..} = NW.responseStatus res
-    headers :: RI.MissingHeaders headers
-    headers = RI.MissingHeaders $ NW.requestHeaders req
     messageBody = RI.MessageBody <$> myDecodeUtf8 statusMessage
-    rawBody = ""
-    get = RI.Get $ NW.queryString req
-    method = RI.Method $ NW.requestMethod req
-    queryString = RI.QueryString $ NW.rawQueryString req
-    url = RI.URL (NW.requestHeaderHost req, NW.pathInfo req)
-    userIP = RI.IP $ NW.remoteHost req
     referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
     range = myDecodeUtf8 =<< NW.requestHeaderRange req
     userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
@@ -146,9 +131,6 @@ send Settings{..} req res = do
         { statusMessage = myDecodeUtf8' statusMessage
         , ..
         }
-
-    myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
-    myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
 
 handleHttpException :: HttpException -> IO ()
 handleHttpException e = do
@@ -167,7 +149,32 @@ handleSomeException
     -> NW.Request
     -> SomeException
     -> IO a
-handleSomeException Settings{..} req e = do
+handleSomeException settings req e = do
+    rReq <- mkRollbarRequest settings req payload messageBody
+    _ <- httpNoBody rReq
+    throwIO e
+    where
+    exception = T.pack $ displayException e
+    messageBody = Just $ RI.MessageBody $
+        T.intercalate " "
+            [ "Uncaught exception at:"
+            , myDecodeUtf8' $ NW.requestMethod req
+            , T.intercalate "/" $ NW.pathInfo req
+            ]
+    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
+    range = myDecodeUtf8 =<< NW.requestHeaderRange req
+    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
+    payload = ExceptionPayload {..}
+
+mkRollbarRequest
+    :: forall headers
+    . RI.RemoveHeaders headers
+    => Settings headers
+    -> NW.Request
+    -> Payload
+    -> Maybe RI.MessageBody
+    -> IO Request
+mkRollbarRequest Settings{..} req payload messageBody = do
     uuid <- Just . RI.UUID4 <$> nextRandom
     timestamp <- Just <$> getCurrentTime
     host <- Just <$> getHostName
@@ -176,32 +183,22 @@ handleSomeException Settings{..} req e = do
     let server = Just RI.Server { RI.branch = Nothing, RI.serverCodeVersion = Nothing, .. }
     let itemData = (RI.error environment messageBody payload)
             { RI.request, RI.server, RI.timestamp, RI.uuid }
-    let rReq = rollbarRequest RI.Item{..}
-    _ <- httpNoBody rReq
-    throwIO e
+    pure $ rollbarRequest RI.Item{..}
     where
-    exception = T.pack $ displayException e
     headers :: RI.MissingHeaders headers
     headers = RI.MissingHeaders $ NW.requestHeaders req
-    messageBody = Just $ RI.MessageBody $
-        T.intercalate " "
-            [ "Uncaught exception at:"
-            , myDecodeUtf8' $ NW.requestMethod req
-            , T.intercalate "/" $ NW.pathInfo req
-            ]
     rawBody = ""
     get = RI.Get $ NW.queryString req
     method = RI.Method $ NW.requestMethod req
     queryString = RI.QueryString $ NW.rawQueryString req
     url = RI.URL (NW.requestHeaderHost req, NW.pathInfo req)
     userIP = RI.IP $ NW.remoteHost req
-    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
-    range = myDecodeUtf8 =<< NW.requestHeaderRange req
-    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
-    payload = ExceptionPayload {..}
 
-    myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
-    myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
+myDecodeUtf8 :: BS.ByteString -> Maybe T.Text
+myDecodeUtf8 = either (const Nothing) Just . TE.decodeUtf8'
+
+myDecodeUtf8' :: BS.ByteString -> T.Text
+myDecodeUtf8' = fromMaybe "" . myDecodeUtf8
 
 rollbarRequest
     :: (RI.RemoveHeaders headers, ToJSON a)
