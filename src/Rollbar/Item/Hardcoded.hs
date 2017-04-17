@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
     Module      : Rollbar.Item.Hardcoded
@@ -17,7 +18,10 @@ module Rollbar.Item.Hardcoded
     ( Hardcoded(..)
     ) where
 
-import Data.Aeson (ToJSON, toEncoding, toJSON)
+import Data.Aeson
+    (FromJSON, ToJSON, Value(String), parseJSON, toEncoding, toJSON)
+import Data.Aeson.Types (typeMismatch)
+import Data.Text        (pack)
 
 import GHC.Generics (Generic)
 import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
@@ -31,3 +35,8 @@ data Hardcoded (symbol :: Symbol)
 instance KnownSymbol symbol => ToJSON (Hardcoded symbol) where
     toJSON = toJSON . symbolVal
     toEncoding = toEncoding . symbolVal
+
+instance KnownSymbol symbol => FromJSON (Hardcoded symbol) where
+    parseJSON (String str)
+        | str == pack (symbolVal (Hardcoded :: Hardcoded symbol)) = pure Hardcoded
+    parseJSON v = typeMismatch "Hardcoded symbol" v

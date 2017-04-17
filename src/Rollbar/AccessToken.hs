@@ -13,7 +13,7 @@ module Rollbar.AccessToken
     ( AccessToken(..)
     ) where
 
-import Data.Aeson  (ToJSON)
+import Data.Aeson  (ToJSON, FromJSON)
 import Data.String (IsString)
 
 import qualified Data.Text as T
@@ -21,4 +21,4 @@ import qualified Data.Text as T
 -- | Should have the scope "post_server_item".
 newtype AccessToken
     = AccessToken T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

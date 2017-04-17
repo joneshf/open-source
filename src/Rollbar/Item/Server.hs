@@ -18,9 +18,22 @@ module Rollbar.Item.Server
     , Branch(..)
     ) where
 
-import Data.Aeson  (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
-import Data.Maybe  (catMaybes)
-import Data.String (IsString)
+import Data.Aeson
+    ( FromJSON
+    , KeyValue
+    , ToJSON
+    , Value(Object)
+    , object
+    , pairs
+    , parseJSON
+    , toEncoding
+    , toJSON
+    , (.:)
+    , (.=)
+    )
+import Data.Aeson.Types (typeMismatch)
+import Data.Maybe       (catMaybes)
+import Data.String      (IsString)
 
 import GHC.Generics (Generic)
 
@@ -52,6 +65,15 @@ serverKVs Server{..} =
     , ("code_version" .=) <$> serverCodeVersion
     ]
 
+instance FromJSON Server where
+    parseJSON (Object o) =
+        Server
+            <$> o .: "host"
+            <*> o .: "root"
+            <*> o .: "branch"
+            <*> o .: "code_version"
+    parseJSON v = typeMismatch "Server" v
+
 instance ToJSON Server where
     toJSON = object . catMaybes . serverKVs
     toEncoding = pairs . mconcat . catMaybes . serverKVs
@@ -59,9 +81,9 @@ instance ToJSON Server where
 -- | The root directory.
 newtype Root
     = Root T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | The git branch the server is running on.
 newtype Branch
     = Branch T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

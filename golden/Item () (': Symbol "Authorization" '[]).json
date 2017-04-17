@@ -1,0 +1,105 @@
+{
+    "seed": 5582690880873757554,
+    "samples": [
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.3.0"
+                },
+                "platform": "linux",
+                "environment": "\u0016ó.\u0001\u00196 éq\\%/rD[\nR",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "3\u0008jl\u0001\u0016F72\u001fY@|¨\u0012"
+                    }
+                },
+                "code_version": "0.3.0",
+                "language": "haskell",
+                "level": "warning"
+            },
+            "access_token": "y´2 F\u0007"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.3.0"
+                },
+                "platform": "linux",
+                "environment": "!",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "¬=q"
+                    }
+                },
+                "code_version": "0.3.0",
+                "language": "haskell",
+                "level": "debug"
+            },
+            "access_token": "4.4B\n#F\n]|zV\rBk\u000c\r\u000bp\r\u000f\u0014§\u0012"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.3.0"
+                },
+                "platform": "linux",
+                "environment": "'\n\u0015ç(\u001f\u001c³7\rò",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "=}`\u001fÝ\u0017»Lg±T\u001cPZÍ;]þWFô"
+                    }
+                },
+                "code_version": "0.3.0",
+                "language": "haskell",
+                "level": "critical"
+            },
+            "access_token": "a$X\u000fÅÏ\u0000mð2-DõOP\u001c6\u0006_\u0016Q"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.3.0"
+                },
+                "platform": "linux",
+                "environment": "D!F\u0003@",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "8D*7,Å%qtf1\u0004æ?&÷\u0015"
+                    }
+                },
+                "code_version": "0.3.0",
+                "language": "haskell",
+                "level": "info"
+            },
+            "access_token": "Ì\\pc\u001d¥V\rupz}\u0000\u0001P¢¹Ln>pëa}þz"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.3.0"
+                },
+                "platform": "linux",
+                "environment": "",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": ""
+                    }
+                },
+                "code_version": "0.3.0",
+                "language": "haskell",
+                "level": "debug"
+            },
+            "access_token": "Sj\u0001ÎU\u0000}W\u0012Ã\u0006r\u0001Ë\u0002\u0011c\u0001 5\u000f\u0014"
+        }
+    ]
+}

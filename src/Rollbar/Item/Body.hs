@@ -20,8 +20,20 @@ module Rollbar.Item.Body
     ) where
 
 import Data.Aeson
-    (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
+    ( FromJSON
+    , KeyValue
+    , ToJSON
+    , Value(Object)
+    , object
+    , pairs
+    , parseJSON
+    , toEncoding
+    , toJSON
+    , (.:)
+    , (.=)
+    )
 import Data.Aeson.Encoding (pair)
+import Data.Aeson.Types    (typeMismatch)
 import Data.String         (IsString)
 
 import GHC.Generics (Generic)
@@ -46,6 +58,12 @@ bodyKVs Message{..} =
     , "data" .= messageData
     ]
 
+instance FromJSON arbitrary => FromJSON (Body arbitrary) where
+    parseJSON (Object o') = do
+        o <- o' .: "message"
+        Message <$> o .: "body" <*> o .: "data"
+    parseJSON v = typeMismatch "Body arbitrary" v
+
 instance ToJSON arbitrary => ToJSON (Body arbitrary) where
     toJSON x = object ["message" .= object (bodyKVs x)]
     toEncoding = pairs . pair "message" . pairs . mconcat . bodyKVs
@@ -53,4 +71,4 @@ instance ToJSON arbitrary => ToJSON (Body arbitrary) where
 -- | The primary message text to send to Rollbar.
 newtype MessageBody
     = MessageBody T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

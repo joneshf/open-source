@@ -13,7 +13,7 @@ module Rollbar.Item.Environment
     ( Environment(..)
     ) where
 
-import Data.Aeson  (ToJSON)
+import Data.Aeson  (ToJSON, FromJSON)
 import Data.String (IsString)
 
 import qualified Data.Text as T
@@ -22,4 +22,4 @@ import qualified Data.Text as T
 --  E.g. "development", "production", "staging"
 newtype Environment
     = Environment T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

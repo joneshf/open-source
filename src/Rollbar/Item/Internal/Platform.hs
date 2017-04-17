@@ -15,7 +15,7 @@ module Rollbar.Item.Internal.Platform
     ( Platform(..)
     ) where
 
-import Data.Aeson  (ToJSON)
+import Data.Aeson  (FromJSON, ToJSON)
 import Data.String (IsString)
 
 import qualified Data.Text as T
@@ -23,4 +23,4 @@ import qualified Data.Text as T
 -- | Should be something meaningful to rollbar, like "linux".
 newtype Platform
     = Platform T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

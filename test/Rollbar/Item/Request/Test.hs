@@ -7,21 +7,18 @@ module Rollbar.Item.Request.Test where
 import Control.Lens ((&), (^@..))
 
 import Data.Aeson           (encode, toJSON)
-import Data.Aeson.Lens      (key, members)
-import Data.Bifunctor       (bimap)
-import Data.CaseInsensitive (mk, original)
-import Data.Text            (Text, pack)
+import Data.Aeson.Lens      (members)
+import Data.CaseInsensitive (original)
 
 import Prelude hiding (error)
 
-import Rollbar.Item.Request (MissingHeaders(..), RemoveHeaders)
+import Rollbar.Item.Request (MissingHeaders(..))
+import Rollbar.QuickCheck   ()
 
-import Test.QuickCheck
-    (Arbitrary, Property, arbitrary, conjoin, elements, quickCheck)
+import Test.QuickCheck (conjoin, quickCheck)
 
-import Data.ByteString.Char8 as BSC8
-import Data.Set              as S
-import Data.Text.Encoding    as TE
+import Data.Set           as S
+import Data.Text.Encoding as TE
 
 props :: IO ()
 props =
@@ -43,8 +40,3 @@ prop_encodingHeadersArentWrapped hs@(MissingHeaders rhs) =
     where
     actual = encode hs ^@.. members & fmap fst & S.fromList
     expected = S.fromList $ either (const "") id . TE.decodeUtf8' . original . fst <$> rhs
-
-instance Arbitrary (MissingHeaders ("Authorization" ': headers)) where
-    arbitrary = do
-        xs <- arbitrary
-        pure . MissingHeaders $ bimap (mk . BSC8.pack) BSC8.pack <$> xs

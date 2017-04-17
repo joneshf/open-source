@@ -14,14 +14,17 @@ module Rollbar.Item.Level
     ) where
 
 import Data.Aeson
-    ( ToJSON
+    ( FromJSON
+    , ToJSON
     , defaultOptions
+    , genericParseJSON
     , genericToEncoding
     , genericToJSON
+    , parseJSON
     , toEncoding
     , toJSON
     )
-import Data.Aeson.Types (constructorTagModifier)
+import Data.Aeson.Types (Options, constructorTagModifier)
 import Data.Char        (toLower)
 
 import GHC.Generics (Generic)
@@ -35,10 +38,14 @@ data Level
     | Critical
     deriving (Bounded, Enum, Eq, Generic, Ord, Show)
 
+instance FromJSON Level where
+    parseJSON = genericParseJSON options
+
 instance ToJSON Level where
-    toJSON = genericToJSON defaultOptions
-        { constructorTagModifier = fmap toLower
-        }
-    toEncoding = genericToEncoding defaultOptions
-        { constructorTagModifier = fmap toLower
-        }
+    toJSON = genericToJSON options
+    toEncoding = genericToEncoding options
+
+options :: Options
+options = defaultOptions
+    { constructorTagModifier = fmap toLower
+    }

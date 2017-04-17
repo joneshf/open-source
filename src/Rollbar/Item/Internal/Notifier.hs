@@ -17,7 +17,8 @@ module Rollbar.Item.Internal.Notifier
     ( Notifier(..)
     ) where
 
-import Data.Aeson   (ToJSON, defaultOptions, genericToEncoding, toEncoding)
+import Data.Aeson
+    (FromJSON, ToJSON, defaultOptions, genericToEncoding, toEncoding)
 import Data.Version (Version)
 
 import GHC.Generics (Generic)
@@ -34,5 +35,6 @@ data Notifier
         }
     deriving (Eq, Generic, Show)
 
+instance FromJSON Notifier
 instance ToJSON Notifier where
     toEncoding = genericToEncoding defaultOptions

@@ -18,7 +18,9 @@ module Rollbar.Item.MissingHeaders
     , RemoveHeaders
     ) where
 
-import Data.Aeson           (KeyValue, ToJSON, object, toJSON, (.=))
+import Data.Aeson
+    (FromJSON, KeyValue, ToJSON, object, parseJSON, toJSON, (.=))
+import Data.Bifunctor       (bimap)
 import Data.CaseInsensitive (mk, original)
 import Data.Maybe           (catMaybes)
 import Data.Proxy           (Proxy(Proxy))
@@ -54,6 +56,9 @@ instance (KnownSymbol header, RemoveHeaders headers)
         where
         go (rh, _) =
             rh /= (mk . BSC8.pack $ symbolVal (Proxy :: Proxy header))
+
+instance FromJSON (MissingHeaders headers) where
+    parseJSON v = MissingHeaders . fmap (bimap (mk . BS.pack) BS.pack) <$> parseJSON v
 
 instance RemoveHeaders headers => ToJSON (MissingHeaders headers) where
     toJSON = object . catMaybes . requestHeadersKVs . removeHeaders

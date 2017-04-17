@@ -19,7 +19,8 @@ module Rollbar.Item.Person
     ) where
 
 import Data.Aeson
-    ( ToJSON
+    ( FromJSON
+    , ToJSON
     , defaultOptions
     , genericToEncoding
     , genericToJSON
@@ -45,6 +46,7 @@ data Person
         }
     deriving (Eq, Generic, Show)
 
+instance FromJSON Person
 instance ToJSON Person where
     toJSON = genericToJSON defaultOptions { omitNothingFields = True }
     toEncoding = genericToEncoding defaultOptions { omitNothingFields = True }
@@ -52,14 +54,14 @@ instance ToJSON Person where
 -- | The user's identifier. This uniquely identifies a 'Person' to Rollbar.
 newtype Id
     = Id T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | The user's name.
 newtype Username
     = Username T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | The user's email.
 newtype Email
     = Email T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)

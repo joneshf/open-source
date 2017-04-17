@@ -85,9 +85,22 @@ module Rollbar.Item
     , Root(..)
     ) where
 
-import Data.Aeson   (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
-import Data.Maybe   (fromMaybe)
-import Data.Version (showVersion)
+import Data.Aeson
+    ( FromJSON
+    , KeyValue
+    , ToJSON
+    , Value(Object)
+    , object
+    , pairs
+    , parseJSON
+    , toEncoding
+    , toJSON
+    , (.:)
+    , (.=)
+    )
+import Data.Aeson.Types (typeMismatch)
+import Data.Maybe       (fromMaybe)
+import Data.Version     (showVersion)
 
 import GHC.Generics (Generic)
 
@@ -194,6 +207,10 @@ itemKVs Item{..} =
     [ "access_token" .= accessToken
     , "data" .= itemData
     ]
+
+instance FromJSON a => FromJSON (Item a headers) where
+    parseJSON (Object o) = Item <$> o .: "access_token" <*> o .: "data"
+    parseJSON v          = typeMismatch "Item a headers" v
 
 instance (RemoveHeaders headers, ToJSON a) => ToJSON (Item a headers) where
     toJSON = object . itemKVs

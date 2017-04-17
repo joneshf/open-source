@@ -25,16 +25,32 @@ module Rollbar.Item.Request
     , RemoveHeaders
     ) where
 
-import Data.Aeson  (KeyValue, ToJSON, object, pairs, toEncoding, toJSON, (.=))
-import Data.Maybe  (catMaybes, fromMaybe)
-import Data.String (IsString)
+import Data.Aeson
+    ( FromJSON
+    , KeyValue
+    , ToJSON
+    , Value(Object, String)
+    , object
+    , pairs
+    , parseJSON
+    , toEncoding
+    , toJSON
+    , (.:)
+    , (.=)
+    )
+import Data.Aeson.Types (typeMismatch)
+import Data.Bifunctor   (bimap)
+import Data.Maybe       (catMaybes, fromMaybe)
+import Data.String      (IsString)
 
 import GHC.Generics (Generic)
 
 import Network.HTTP.Types (Query)
-import Network.Socket     (SockAddr)
+import Network.Socket     (SockAddr(SockAddrInet), tupleToHostAddress)
 
 import Rollbar.Item.MissingHeaders
+
+import Text.Read (readMaybe)
 
 import qualified Data.ByteString    as BS
 import qualified Data.Text          as T
@@ -61,6 +77,9 @@ newtype RawBody
     = RawBody BS.ByteString
     deriving (Eq, Generic, IsString, Show)
 
+instance FromJSON RawBody where
+    parseJSON v = RawBody . BS.pack <$> parseJSON v
+
 instance ToJSON RawBody where
     toJSON (RawBody body) = toJSON (myDecodeUtf8 body)
     toEncoding (RawBody body) = toEncoding (myDecodeUtf8 body)
@@ -69,6 +88,9 @@ instance ToJSON RawBody where
 newtype Get
     = Get Query
     deriving (Eq, Generic, Show)
+
+instance FromJSON Get where
+    parseJSON v = Get . fmap (bimap BS.pack (fmap BS.pack)) <$> parseJSON v
 
 instance ToJSON Get where
     toJSON (Get q) = object . catMaybes . queryKVs $ q
@@ -88,6 +110,9 @@ newtype Method
     = Method BS.ByteString
     deriving (Eq, Generic, Show)
 
+instance FromJSON Method where
+    parseJSON v = Method . BS.pack <$> parseJSON v
+
 instance ToJSON Method where
     toJSON (Method q) = toJSON (myDecodeUtf8 q)
     toEncoding (Method q) = toEncoding (myDecodeUtf8 q)
@@ -97,6 +122,9 @@ newtype QueryString
     = QueryString BS.ByteString
     deriving (Eq, Generic, Show)
 
+instance FromJSON QueryString where
+    parseJSON v = QueryString . BS.pack <$> parseJSON v
+
 instance ToJSON QueryString where
     toJSON (QueryString q) = toJSON (myDecodeUtf8' q)
     toEncoding (QueryString q) = toEncoding (myDecodeUtf8' q)
@@ -105,6 +133,17 @@ instance ToJSON QueryString where
 newtype IP
     = IP SockAddr
     deriving (Eq, Generic, Show)
+
+instance FromJSON IP where
+    parseJSON v@(String s) = case T.splitOn "." s of
+        [a', b', c', d] -> case T.splitOn ":" d of
+            [e', f'] -> maybe (typeMismatch "IP" v) pure $ do
+                [a, b, c, e] <- traverse (readMaybe . T.unpack) [a', b', c', e']
+                f <- (readMaybe . T.unpack) f'
+                pure . IP . SockAddrInet f $ tupleToHostAddress (a, b, c, e)
+            _ -> typeMismatch "IP" v
+        _ -> typeMismatch "IP" v
+    parseJSON v = typeMismatch "IP" v
 
 instance ToJSON IP where
     toJSON (IP ip) = toJSON (show ip)
@@ -121,6 +160,18 @@ requestKVs Request{..} =
     , "user_ip" .= userIP
     ]
 
+instance FromJSON (Request headers) where
+    parseJSON (Object o) =
+        Request
+            <$> o .: "body"
+            <*> o .: "GET"
+            <*> o .: "headers"
+            <*> o .: "method"
+            <*> o .: "query_string"
+            <*> o .: "url"
+            <*> o .: "user_ip"
+    parseJSON v = typeMismatch "Request headers" v
+
 instance (RemoveHeaders headers) => ToJSON (Request headers) where
     toJSON = object . requestKVs
     toEncoding = pairs . mconcat . requestKVs
@@ -133,6 +184,12 @@ newtype URL
 prettyURL :: URL -> T.Text
 prettyURL (URL (host, parts)) =
     T.intercalate "/" (fromMaybe "" (host >>= myDecodeUtf8) : parts)
+
+instance FromJSON URL where
+    parseJSON (String s) = case T.splitOn "/" s of
+        host:parts | "http" `T.isPrefixOf` host -> pure $ URL (Just $ TE.encodeUtf8 host, parts)
+        parts -> pure $ URL (Nothing, parts)
+    parseJSON v       = typeMismatch "URL" v
 
 instance ToJSON URL where
     toJSON = toJSON . prettyURL

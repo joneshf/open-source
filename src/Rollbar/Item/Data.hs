@@ -27,18 +27,22 @@ module Rollbar.Item.Data
     ) where
 
 import Data.Aeson
-    ( ToJSON
-    , Value
+    ( FromJSON
+    , ToJSON
+    , Value(String)
     , defaultOptions
+    , genericParseJSON
     , genericToEncoding
     , genericToJSON
+    , parseJSON
     , toEncoding
     , toJSON
     )
-import Data.Aeson.Types (fieldLabelModifier, omitNothingFields)
+import Data.Aeson.Types
+    (Options, fieldLabelModifier, omitNothingFields, typeMismatch)
 import Data.String      (IsString)
 import Data.Time        (UTCTime)
-import Data.UUID        (UUID, toText)
+import Data.UUID        (UUID, fromText, toText)
 
 import GHC.Generics (Generic)
 
@@ -87,15 +91,18 @@ data Data body headers
         }
     deriving (Eq, Generic, Show)
 
+instance FromJSON body => FromJSON (Data body headers) where
+    parseJSON = genericParseJSON options
+
 instance (RemoveHeaders headers, ToJSON body) => ToJSON (Data body headers) where
-    toJSON = genericToJSON defaultOptions
-        { fieldLabelModifier = codeVersionModifier
-        , omitNothingFields = True
-        }
-    toEncoding = genericToEncoding defaultOptions
-        { fieldLabelModifier = codeVersionModifier
-        , omitNothingFields = True
-        }
+    toJSON = genericToJSON options
+    toEncoding = genericToEncoding options
+
+options :: Options
+options = defaultOptions
+    { fieldLabelModifier = codeVersionModifier
+    , omitNothingFields = True
+    }
 
 codeVersionModifier :: (Eq s, IsString s) => s -> s
 codeVersionModifier = \case
@@ -106,27 +113,32 @@ codeVersionModifier = \case
 --  E.g. "scotty", "servant", "yesod"
 newtype Framework
     = Framework T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | The place in the code where this item came from.
 newtype Context
     = Context T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | How to group the item.
 newtype Fingerprint
     = Fingerprint T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | The title of the item.
 newtype Title
     = Title T.Text
-    deriving (Eq, IsString, Show, ToJSON)
+    deriving (Eq, FromJSON, IsString, Show, ToJSON)
 
 -- | A unique identifier for each item.
 newtype UUID4
     = UUID4 UUID
     deriving (Eq, Generic, Show)
+
+instance FromJSON UUID4 where
+    parseJSON v@(String s) =
+        maybe (typeMismatch "UUID4" v) (pure . UUID4) $ fromText s
+    parseJSON v = typeMismatch "UUID4" v
 
 instance ToJSON UUID4 where
     toJSON (UUID4 u) = toJSON (toText u)
