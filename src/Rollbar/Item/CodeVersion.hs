@@ -14,13 +14,13 @@ module Rollbar.Item.CodeVersion
     ( CodeVersion(..)
     ) where
 
-import Data.Aeson (ToJSON, toEncoding, toJSON, FromJSON, parseJSON)
+import Data.Aeson       (FromJSON, ToJSON, parseJSON, toEncoding, toJSON)
 import Data.Aeson.Types (typeMismatch)
 
 import GHC.Generics (Generic)
 
 import qualified Data.Aeson as A
-import qualified Data.Text as T
+import qualified Data.Text  as T
 
 -- | Rollbar supports different ways to say what version the code is.
 data CodeVersion
@@ -41,7 +41,7 @@ prettyCodeVersion (SHA h)    = h
 instance FromJSON CodeVersion where
     parseJSON (A.String s) = case T.splitOn "." s of
         [_major, _minor, _patch] -> pure $ SemVer s
-        _ -> pure $ SHA s
+        _                        -> pure $ SHA s
     parseJSON (A.Number n) = pure $ Number $ floor n
     parseJSON v = typeMismatch "CodeVersion" v
 

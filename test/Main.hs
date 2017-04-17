@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Test.QuickCheck (conjoin, quickCheck)
-
 import qualified Rollbar.Golden
 import qualified Rollbar.Item.Data.Test
 import qualified Rollbar.Item.MissingHeaders.Test

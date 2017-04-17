@@ -13,7 +13,7 @@ module Rollbar.AccessToken
     ( AccessToken(..)
     ) where
 
-import Data.Aeson  (ToJSON, FromJSON)
+import Data.Aeson  (FromJSON, ToJSON)
 import Data.String (IsString)
 
 import qualified Data.Text as T
