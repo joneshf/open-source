@@ -1,5 +1,5 @@
 name:                wai-middleware-rollbar
-version:             0.4.0
+version:             0.5.0
 synopsis:            Middleware that communicates to Rollbar.
 description:         Middleware that communicates to Rollbar.
 homepage:            https://github.com/joneshf/wai-middleware-rollbar#readme
