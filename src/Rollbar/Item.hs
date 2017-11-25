@@ -100,7 +100,6 @@ import Data.Aeson
     )
 import Data.Aeson.Types (typeMismatch)
 import Data.Maybe       (fromMaybe)
-import Data.Version     (showVersion)
 
 import GHC.Generics (Generic)
 
@@ -135,8 +134,7 @@ debug
 debug environment messageBody payload =
     Data
         { body = Message (fromMaybe "" messageBody) payload
-        , codeVersion =
-            SemVer . T.pack $ showVersion Paths_wai_middleware_rollbar.version
+        , codeVersion = Nothing
         , context = Nothing
         , custom = Nothing
         , environment = environment

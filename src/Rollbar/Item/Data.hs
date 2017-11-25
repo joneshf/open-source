@@ -69,8 +69,7 @@ import qualified Data.Text         as T
 data Data body headers
     = Data
         { body        :: Body body
-        , codeVersion :: CodeVersion
-        -- ^ Metadata about this package. You probably shouldn't create this yourself.
+        , codeVersion :: Maybe CodeVersion
         , context     :: Maybe Context
         , custom      :: Maybe (HM.HashMap T.Text Value)
         , environment :: Environment

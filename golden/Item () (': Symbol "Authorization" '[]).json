@@ -15,7 +15,6 @@
                         "body": "3\u0008jl\u0001\u0016F72\u001fY@|¨\u0012"
                     }
                 },
-                "code_version": "0.3.0",
                 "language": "haskell",
                 "level": "warning"
             },
@@ -35,7 +34,6 @@
                         "body": "¬=q"
                     }
                 },
-                "code_version": "0.3.0",
                 "language": "haskell",
                 "level": "debug"
             },
@@ -55,7 +53,6 @@
                         "body": "=}`\u001fÝ\u0017»Lg±T\u001cPZÍ;]þWFô"
                     }
                 },
-                "code_version": "0.3.0",
                 "language": "haskell",
                 "level": "critical"
             },
@@ -75,7 +72,6 @@
                         "body": "8D*7,Å%qtf1\u0004æ?&÷\u0015"
                     }
                 },
-                "code_version": "0.3.0",
                 "language": "haskell",
                 "level": "info"
             },
@@ -95,7 +91,6 @@
                         "body": ""
                     }
                 },
-                "code_version": "0.3.0",
                 "language": "haskell",
                 "level": "debug"
             },
