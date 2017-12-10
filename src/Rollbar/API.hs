@@ -14,6 +14,7 @@
 -}
 module Rollbar.API
     ( itemsPOST
+    , itemsPOSTWithException
     , makeRequest
     ) where
 
@@ -27,20 +28,32 @@ import Network.HTTP.Client
     , defaultRequest
     , setRequestIgnoreStatus
     )
-import Network.HTTP.Simple (httpJSON, setRequestBodyJSON)
+import Network.HTTP.Simple
+    (JSONException, httpJSON, httpJSONEither, setRequestBodyJSON)
+import Rollbar.Item        (Item, RemoveHeaders)
 
-import Rollbar.Item (Item, RemoveHeaders)
+-- | Sends an 'Rollbar.Item.Item' off to Rollbar.
+--
+--   Creates a new 'Network.HTTP.Client.Manager' to send off the request.
+--   Makes no claims about what you get back.
+itemsPOST
+    :: (FromJSON c, MonadIO f, RemoveHeaders b, ToJSON a)
+    => Item a b
+    -> f (Response (Either JSONException c))
+itemsPOST = httpJSONEither . makeRequest
 
 -- | Sends an 'Rollbar.Item.Item' off to Rollbar.
 --
 --   Creates a new 'Network.HTTP.Client.Manager' to send off the request.
 --   Makes no claims about what you get back.
 --   Throws a 'Network.HTTP.Simple.JSONException' if it cannot parse the response.
-itemsPOST
+--
+--   Yes, this name is annoying, so are exceptions.
+itemsPOSTWithException
     :: (FromJSON c, MonadIO f, RemoveHeaders b, ToJSON a)
     => Item a b
     -> f (Response c)
-itemsPOST = httpJSON . makeRequest
+itemsPOSTWithException = httpJSON . makeRequest
 
 -- | Converts an item into a request ready to send to Rollbar.
 --
