@@ -67,7 +67,7 @@ test-suite doc-test
                      , case-insensitive
                      , containers >= 0.5 && < 0.6
                      , hspec >= 2.4 && < 2.5
-                     , hspec-golden-aeson >= 0.2 && < 0.4
+                     , hspec-golden-aeson >= 0.2 && < 0.5
                      , lens >= 4.15 && < 4.16
                      , lens-aeson >= 1.0 && < 1.1
                      , text
