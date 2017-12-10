@@ -12,7 +12,7 @@ category:            Web, Wai
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-tested-with:         GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2
+tested-with:         GHC == 8.0.2, GHC == 8.2.2
 
 library
   hs-source-dirs:      src
@@ -34,7 +34,7 @@ library
                      , Rollbar.Item.Internal.Notifier
                      , Rollbar.Item.Internal.Platform
   other-modules:       Paths_wai_middleware_rollbar
-  build-depends:       base >= 4.7 && < 5
+  build-depends:       base >= 4.9 && < 5
                      , aeson >= 1.0 && < 1.3
                      , bytestring >= 0.10 && < 0.11
                      , case-insensitive >= 1.2 && < 1.3
