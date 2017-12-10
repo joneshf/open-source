@@ -14,6 +14,7 @@
 -}
 module Rollbar.API
     ( itemsPOST
+    , itemsPOST'
     , itemsPOSTWithException
     , makeRequest
     ) where
@@ -23,14 +24,20 @@ import Control.Monad.IO.Class (MonadIO)
 import Data.Aeson (FromJSON, ToJSON)
 
 import Network.HTTP.Client
-    ( Request(host, method, path, port, secure)
+    ( Manager
+    , Request(host, method, path, port, secure)
     , Response
     , defaultRequest
     , setRequestIgnoreStatus
     )
 import Network.HTTP.Simple
-    (JSONException, httpJSON, httpJSONEither, setRequestBodyJSON)
-import Rollbar.Item        (Item, RemoveHeaders)
+    ( JSONException
+    , httpJSON
+    , httpJSONEither
+    , setRequestBodyJSON
+    , setRequestManager
+    )
+import Rollbar.Item         (Item, RemoveHeaders)
 
 -- | Sends an 'Rollbar.Item.Item' off to Rollbar.
 --
@@ -41,6 +48,16 @@ itemsPOST
     => Item a b
     -> f (Response (Either JSONException c))
 itemsPOST = httpJSONEither . makeRequest
+
+-- | Sends an 'Rollbar.Item.Item' off to Rollbar.
+--
+--   Makes no claims about what you get back.
+itemsPOST'
+    :: (FromJSON c, MonadIO f, RemoveHeaders b, ToJSON a)
+    => Manager
+    -> Item a b
+    -> f (Response (Either JSONException c))
+itemsPOST' manager = httpJSONEither . setRequestManager manager . makeRequest
 
 -- | Sends an 'Rollbar.Item.Item' off to Rollbar.
 --
