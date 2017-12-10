@@ -17,11 +17,12 @@ tested-with:         GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2
 library
   hs-source-dirs:      src
   exposed-modules:     Network.Wai.Middleware.Rollbar
-                     , Rollbar.Item
+                     , Rollbar.API
                      , Rollbar.AccessToken
+                     , Rollbar.Item
                      , Rollbar.Item.Body
-                     , Rollbar.Item.Data
                      , Rollbar.Item.CodeVersion
+                     , Rollbar.Item.Data
                      , Rollbar.Item.Environment
                      , Rollbar.Item.Hardcoded
                      , Rollbar.Item.Level
