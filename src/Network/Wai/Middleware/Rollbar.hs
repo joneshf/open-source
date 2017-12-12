@@ -71,6 +71,12 @@ data Settings (headers :: [Symbol])
     = Settings
         { accessToken :: RI.AccessToken
         -- ^ Should have a scope "post_server_item".
+        , branch :: Maybe RI.Branch
+        -- ^ Should be the branch of the running application.
+        --
+        -- Will default to `master` if not set.
+        , codeVersion :: Maybe RI.CodeVersion
+        -- ^ Should be the version of the running application.
         , environment :: RI.Environment
         -- ^ Should be something meaningful to your program
         --
@@ -180,9 +186,9 @@ mkRollbarRequest Settings{..} req payload messageBody = do
     host <- Just <$> getHostName
     root <- Just . RI.Root . T.pack <$> getExecutablePath
     let request = Just RI.Request {..}
-    let server = Just RI.Server { RI.branch = Nothing, RI.serverCodeVersion = Nothing, .. }
+    let server = Just RI.Server { RI.serverCodeVersion = codeVersion, .. }
     let itemData = (RI.error environment messageBody payload)
-            { RI.request, RI.server, RI.timestamp, RI.uuid }
+            { RI.codeVersion, RI.request, RI.server, RI.timestamp, RI.uuid }
     pure $ rollbarRequest RI.Item{..}
     where
     headers :: RI.MissingHeaders headers
