@@ -34,7 +34,7 @@ module Rollbar.API
 
 import Control.Monad.IO.Class (MonadIO)
 
-import Data.Aeson
+import Data.Aeson.Types
     ( FromJSON(parseJSON)
     , SumEncoding(UntaggedValue)
     , ToJSON
