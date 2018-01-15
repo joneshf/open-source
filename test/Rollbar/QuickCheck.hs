@@ -17,6 +17,7 @@ import Prelude hiding (error)
 import Rollbar.Item
 
 import Test.QuickCheck
+import Test.QuickCheck.Modifiers (getASCIIString)
 
 import qualified Data.ByteString.Char8 as BSC8
 import qualified Data.Text             as T
@@ -25,12 +26,12 @@ instance Arbitrary a => Arbitrary (Item a '["Authorization"]) where
     arbitrary = Item <$> arbitrary <*> arbitrary
 
 instance Arbitrary AccessToken where
-    arbitrary = AccessToken . T.pack <$> arbitrary
+    arbitrary = AccessToken . T.pack . getASCIIString <$> arbitrary
 
 instance Arbitrary a => Arbitrary (Data a '["Authorization"]) where
     arbitrary = do
-        env <- Environment . T.pack <$> arbitrary
-        message <- fmap (MessageBody . T.pack) <$> arbitrary
+        env <- Environment . T.pack . getASCIIString <$> arbitrary
+        message <- fmap (MessageBody . T.pack . getASCIIString) <$> arbitrary
         payload <- arbitrary
         elements $ (\f -> f env message payload) <$> datas
 

@@ -1,5 +1,5 @@
 {
-    "seed": -4219904015638680085,
+    "seed": 3766355646320614590,
     "samples": [
         {
             "data": {
@@ -8,17 +8,17 @@
                     "version": "0.8.1"
                 },
                 "platform": "linux",
-                "environment": "𝇡񒷞N񿒟\u0011򍾅b𰡖򜨪!\\}&\u0019p&\u001b\u000e2ez4!t󚝴o\u001d\u000f^",
+                "environment": "Um*]-\u001e\"\u00026\u0008+",
                 "body": {
                     "message": {
                         "data": [],
-                        "body": "e<R󜉵V񿥚8󯓳?\u0007oO\u0019\u0012|?𵴍"
+                        "body": "5"
                     }
                 },
                 "language": "haskell",
                 "level": "debug"
             },
-            "access_token": " _򘀤)\u001438󖜱-񵷨~𦇠𓺫U0򢮰򣖨򵒨󥍇(*)"
+            "access_token": "j\u0004shy67]>dA6\u0002Z/~I\nI"
         },
         {
             "data": {
@@ -27,17 +27,17 @@
                     "version": "0.8.1"
                 },
                 "platform": "linux",
-                "environment": "񜨀󄒷I񥥧1,~>\u001f-",
+                "environment": "9rnP\u0002 2W(Wm?P\u000b\u0001d7$\u000cw\n/",
                 "body": {
                     "message": {
                         "data": [],
-                        "body": "\u0003\u001aD\u001c\u001cD)􍽑D)y8\u0011c57񆙢󻋂?}j򌀵 #iH\u001a:"
+                        "body": "9Td+\u0012&\u0007&x{\u00103q_\u0015\"+L\u0010\u0006\u001a\u0007,\n\u000b78,!"
                     }
                 },
                 "language": "haskell",
-                "level": "critical"
+                "level": "debug"
             },
-            "access_token": "󩣏)\u0011'򪡍7%C䨴@^"
+            "access_token": "Ve\"p\u001d3"
         },
         {
             "data": {
@@ -46,17 +46,36 @@
                     "version": "0.8.1"
                 },
                 "platform": "linux",
-                "environment": "[F\tY򐫍d񑃁@\u0005/3v𗪮l\u001fY.]P",
+                "environment": ">Di``,!3",
                 "body": {
                     "message": {
                         "data": [],
-                        "body": "\u0002"
+                        "body": "\u0006\u0012Xaj\u001e\u000cUtE>A9@~\u0010\u000f%"
+                    }
+                },
+                "language": "haskell",
+                "level": "error"
+            },
+            "access_token": ",\u0005f\u001b\u0010j0B\u0006@(k$N\u0006%RCM\n\u0003"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.8.1"
+                },
+                "platform": "linux",
+                "environment": "O\u000fyv\u0000\u0007oj%|>",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "X\u000e\u0004x4p\u0017r\u0010$\u001c.\u00088"
                     }
                 },
                 "language": "haskell",
                 "level": "info"
             },
-            "access_token": "\u000c1q\u0011%\u0003!񌭺򀜙󴿹m􉿸^򪣋4\u000eBR\u000e򅤋\n􀮘/񢕓YX"
+            "access_token": "\u000f m[j\u001c@b\u001d"
         },
         {
             "data": {
@@ -65,36 +84,17 @@
                     "version": "0.8.1"
                 },
                 "platform": "linux",
-                "environment": "5f󬁣򭐹񐨲4\\pd񄲥)񌨸\u0014󑕶\u0000&􌬾C3",
+                "environment": "\u0015\u0013",
                 "body": {
                     "message": {
                         "data": [],
-                        "body": "𳛡9yV\u0011!󦩨𺌡\u00149򹒙Kx"
+                        "body": "lx\u0015#;e\u0013\"A>8Yw\u0001[\t0"
                     }
                 },
                 "language": "haskell",
                 "level": "error"
             },
-            "access_token": "2al򖽐򈉆댱\u0013K𺥼𗀢2R\u0006O򱚉\u0019SS\u0012򸘼4hN􇭓f񄢨T􉠕"
-        },
-        {
-            "data": {
-                "notifier": {
-                    "name": "wai-middleware-rollbar",
-                    "version": "0.8.1"
-                },
-                "platform": "linux",
-                "environment": "\\U🠅󈯃LU8\u0017Jc\u0005)\u000f^>K",
-                "body": {
-                    "message": {
-                        "data": [],
-                        "body": "\u0003\u001f🅃󮢨"
-                    }
-                },
-                "language": "haskell",
-                "level": "error"
-            },
-            "access_token": "(\t\u001bX񳦛Y\u0006Iw󎘃\u001d9R"
+            "access_token": "\u001c9"
         }
     ]
 }
