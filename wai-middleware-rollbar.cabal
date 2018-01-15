@@ -62,7 +62,7 @@ test-suite doc-test
                      , Rollbar.Item.Request.Test
                      , Rollbar.QuickCheck
   build-depends:       base
-                     , QuickCheck >= 2.9 && < 2.11
+                     , QuickCheck >= 2.9 && < 2.12
                      , aeson
                      , bytestring
                      , case-insensitive
