@@ -5,7 +5,7 @@
             "data": {
                 "notifier": {
                     "name": "wai-middleware-rollbar",
-                    "version": "0.8.2"
+                    "version": "0.8.3"
                 },
                 "platform": "linux",
                 "environment": "{kYdfxDLS \u001b",
@@ -24,7 +24,7 @@
             "data": {
                 "notifier": {
                     "name": "wai-middleware-rollbar",
-                    "version": "0.8.2"
+                    "version": "0.8.3"
                 },
                 "platform": "linux",
                 "environment": "\u0006B|\u00086\tf",
@@ -43,7 +43,7 @@
             "data": {
                 "notifier": {
                     "name": "wai-middleware-rollbar",
-                    "version": "0.8.2"
+                    "version": "0.8.3"
                 },
                 "platform": "linux",
                 "environment": "gC+\u0011F.",
@@ -62,7 +62,7 @@
             "data": {
                 "notifier": {
                     "name": "wai-middleware-rollbar",
-                    "version": "0.8.2"
+                    "version": "0.8.3"
                 },
                 "platform": "linux",
                 "environment": "\u0001^$G\u0014Q\u0007}*\u0014eH\u001d77ql;@V",
@@ -81,7 +81,7 @@
             "data": {
                 "notifier": {
                     "name": "wai-middleware-rollbar",
-                    "version": "0.8.2"
+                    "version": "0.8.3"
                 },
                 "platform": "linux",
                 "environment": "1c8r\u0016<ra!\u0017\\nZ\u000f=\u0005?}-!\t\u0007",
