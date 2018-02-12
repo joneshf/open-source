@@ -33,7 +33,8 @@ library
 
                      , Rollbar.Item.Internal.Notifier
                      , Rollbar.Item.Internal.Platform
-  other-modules:       Paths_wai_middleware_rollbar
+  other-modules:       Network.Wai.Middleware.Rollbar.Payload
+                     , Paths_wai_middleware_rollbar
   build-depends:       base >= 4.9 && < 5
                      , aeson >= 1.0 && < 1.3
                      , bytestring >= 0.10 && < 0.11

@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
@@ -150,7 +150,7 @@ instance ToJSON IP where
     toEncoding (IP ip) = toEncoding (show ip)
 
 requestKVs :: (KeyValue kv, RemoveHeaders headers) => Request headers -> [kv]
-requestKVs Request{..} =
+requestKVs Request{get, headers, method, queryString, rawBody, url, userIP} =
     [ "body" .= rawBody
     , "GET" .= get
     , "headers" .= headers

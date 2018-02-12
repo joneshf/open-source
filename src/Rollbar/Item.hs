@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
 {-|
@@ -201,7 +201,7 @@ itemKVs
     :: (KeyValue kv, RemoveHeaders headers, ToJSON v)
     => Item v headers
     -> [kv]
-itemKVs Item{..} =
+itemKVs Item{accessToken, itemData} =
     [ "access_token" .= accessToken
     , "data" .= itemData
     ]

@@ -3,7 +3,6 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
@@ -27,17 +26,16 @@ import Control.Exception
     (Handler(Handler), SomeException, catches, displayException, throwIO)
 import Control.Monad      (when)
 
-import Data.Aeson   (ToJSON, defaultOptions, genericToEncoding, toEncoding)
+import Data.Aeson   (ToJSON)
 import Data.Functor (void)
 import Data.Maybe   (fromMaybe)
 import Data.Time    (getCurrentTime)
 import Data.UUID.V4 (nextRandom)
 
-import GHC.Generics (Generic)
 import GHC.TypeLits (Symbol)
 
-import Network.HostName          (getHostName)
-import Network.HTTP.Client       (HttpException)
+import Network.HostName                       (getHostName)
+import Network.HTTP.Client                    (HttpException)
 import Network.HTTP.Simple
     ( JSONException
     , Request
@@ -53,16 +51,18 @@ import Network.HTTP.Simple
     )
 import Network.HTTP.Types.Status
     (Status(Status), statusCode, statusIsServerError, statusMessage)
-import Network.Wai               (Middleware, ResponseReceived)
+import Network.Wai                            (Middleware, ResponseReceived)
+import Network.Wai.Middleware.Rollbar.Payload (Payload)
 
 import System.Environment (getExecutablePath)
 import System.IO          (hPutStrLn, stderr)
 
-import qualified Data.ByteString    as BS
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as TE
-import qualified Network.Wai        as NW
-import qualified Rollbar.Item       as RI
+import qualified Data.ByteString                        as BS
+import qualified Data.Text                              as T
+import qualified Data.Text.Encoding                     as TE
+import qualified Network.Wai                            as NW
+import qualified Network.Wai.Middleware.Rollbar.Payload as Payload
+import qualified Rollbar.Item                           as RI
 
 -- | Set up the middleware properly
 --  The `headers` are  what you want removed from
@@ -71,7 +71,7 @@ data Settings (headers :: [Symbol])
     = Settings
         { accessToken :: RI.AccessToken
         -- ^ Should have a scope "post_server_item".
-        , branch :: Maybe RI.Branch
+        , branch      :: Maybe RI.Branch
         -- ^ Should be the branch of the running application.
         --
         -- Will default to `master` if not set.
@@ -128,14 +128,17 @@ send settings req res = do
     rReq <- mkRollbarRequest settings req payload messageBody
     void $ httpNoBody rReq
     where
-    Status{..} = NW.responseStatus res
+    Status{statusCode, statusMessage} = NW.responseStatus res
     messageBody = RI.MessageBody <$> myDecodeUtf8 statusMessage
     referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
     range = myDecodeUtf8 =<< NW.requestHeaderRange req
     userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
-    payload = RequestPayload
-        { statusMessage = myDecodeUtf8' statusMessage
-        , ..
+    payload = Payload.RequestPayload
+        { Payload.range
+        , Payload.referer
+        , Payload.statusCode
+        , Payload.statusMessage = myDecodeUtf8' statusMessage
+        , Payload.userAgent
         }
 
 handleHttpException :: HttpException -> IO ()
@@ -170,7 +173,12 @@ handleSomeException settings req e = do
     referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
     range = myDecodeUtf8 =<< NW.requestHeaderRange req
     userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
-    payload = ExceptionPayload {..}
+    payload = Payload.ExceptionPayload
+      { Payload.exception
+      , Payload.referer
+      , Payload.range
+      , Payload.userAgent
+      }
 
 mkRollbarRequest
     :: forall headers
@@ -180,16 +188,25 @@ mkRollbarRequest
     -> Payload
     -> Maybe RI.MessageBody
     -> IO Request
-mkRollbarRequest Settings{..} req payload messageBody = do
+mkRollbarRequest Settings{accessToken, branch, codeVersion, environment} req payload messageBody = do
     uuid <- Just . RI.UUID4 <$> nextRandom
     timestamp <- Just <$> getCurrentTime
     host <- Just <$> getHostName
     root <- Just . RI.Root . T.pack <$> getExecutablePath
-    let request = Just RI.Request {..}
-    let server = Just RI.Server { RI.serverCodeVersion = codeVersion, .. }
+    let request = Just RI.Request
+          { RI.get
+          , RI.headers
+          , RI.method
+          , RI.queryString
+          , RI.rawBody
+          , RI.url
+          , RI.userIP
+          }
+    let server = Just RI.Server
+          { RI.branch, RI.host, RI.root, RI.serverCodeVersion = codeVersion }
     let itemData = (RI.error environment messageBody payload)
-            { RI.codeVersion, RI.request, RI.server, RI.timestamp, RI.uuid }
-    pure $ rollbarRequest RI.Item{..}
+          { RI.codeVersion, RI.request, RI.server, RI.timestamp, RI.uuid }
+    pure $ rollbarRequest RI.Item{RI.accessToken, RI.itemData}
     where
     headers :: RI.MissingHeaders headers
     headers = RI.MissingHeaders $ NW.requestHeaders req
@@ -219,22 +236,3 @@ rollbarRequest payload =
     . setRequestBodyJSON payload
     . setRequestIgnoreStatus
     $ defaultRequest
-
-data Payload
-    = RequestPayload
-        { statusCode    :: Int
-        , statusMessage :: T.Text
-        , userAgent     :: Maybe T.Text
-        , range         :: Maybe T.Text
-        , referer       :: Maybe T.Text
-        }
-    | ExceptionPayload
-        { exception :: T.Text
-        , userAgent :: Maybe T.Text
-        , range     :: Maybe T.Text
-        , referer   :: Maybe T.Text
-        }
-    deriving (Generic, Show)
-
-instance ToJSON Payload where
-    toEncoding = genericToEncoding defaultOptions

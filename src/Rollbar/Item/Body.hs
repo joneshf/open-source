@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 {-|
     Module      : Rollbar.Item.Body
@@ -53,7 +53,7 @@ data Body arbitrary
     deriving (Eq, Generic, Show)
 
 bodyKVs :: (KeyValue kv, ToJSON v) => Body v -> [kv]
-bodyKVs Message{..} =
+bodyKVs Message{messageBody, messageData} =
     [ "body" .= messageBody
     , "data" .= messageData
     ]

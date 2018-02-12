@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 {-|
     Module      : Rollbar.Item.Server
@@ -58,7 +58,7 @@ data Server
     deriving (Eq, Generic, Show)
 
 serverKVs :: KeyValue kv => Server -> [Maybe kv]
-serverKVs Server{..} =
+serverKVs Server{branch, host, root, serverCodeVersion} =
     [ ("host" .=) <$> host
     , ("root" .=) <$> root
     , ("branch" .=) <$> branch
