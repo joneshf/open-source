@@ -77,7 +77,7 @@ mkRollbarScribe proxy accessToken manager severity verbosity = do
   setupWorkers proxy queue finalize manager
   let liPush item = when (permitItem severity item) $
         atomically (writeTBMQueue queue $ rollbarItem' item)
-      rollbarItem' item = rollbarItem proxy accessToken item verbosity
+      rollbarItem' item = rollbarItem proxy accessToken verbosity item
       scribeFinalizer = do
         putMVar finalize ()
         takeMVar finalize
@@ -87,10 +87,10 @@ rollbarItem ::
   (LogItem a, RemoveHeaders headers) =>
   proxy headers ->
   AccessToken ->
-  Katip.Item a ->
   Verbosity ->
+  Katip.Item a ->
   Item Value ("Authorization" ': headers)
-rollbarItem _ accessToken item verbosity = Item { accessToken, itemData }
+rollbarItem _ accessToken verbosity item = Item { accessToken, itemData }
   where
   environment :: Environment
   environment = Environment (getEnvironment $ _itemEnv item)
