@@ -12,7 +12,6 @@ module Katip.Scribes.Rollbar
 
 import Prelude hiding (error)
 
-import "base" Control.Concurrent.MVar (MVar, newEmptyMVar, putMVar, takeMVar)
 import "base" Control.Monad           (replicateM, when)
 import "base" Data.Foldable           (for_)
 import "base" Data.Functor            (void)
@@ -89,14 +88,13 @@ mkRollbarScribe ::
   IO Scribe
 mkRollbarScribe proxy accessToken branch codeVersion manager severity verbosity = do
   queue <- newTBMQueueIO queueSize
-  finalize <- newEmptyMVar
-  setupWorkers proxy queue finalize manager
+  workers <- replicateM workerSize (async $ mkWorker proxy manager queue)
   let liPush item = when (permitItem severity item) $
         atomically (writeTBMQueue queue $ rollbarItem' item)
       rollbarItem' item = rollbarItem proxy accessToken branch codeVersion verbosity item
       scribeFinalizer = do
-        putMVar finalize ()
-        takeMVar finalize
+        atomically (closeTBMQueue queue)
+        for_ workers waitCatch
   pure Scribe { liPush, scribeFinalizer }
 
 rollbarItem ::
@@ -140,22 +138,6 @@ rollbarItem _ accessToken branch serverCodeVersion verbosity item =
   timestamp = _itemTime item
   value :: Value
   value = itemJson verbosity item
-
--- | Setup the workers and wait until the finalizer is evaluated.
---   Then, close the queueu, wait for the workers and continue finalization.
-setupWorkers ::
-  RemoveHeaders headers =>
-  proxy headers ->
-  TBMQueue (Item Value ("Authorization" ': headers)) ->
-  MVar () ->
-  Manager ->
-  IO ()
-setupWorkers proxy queue finalize manager = void $ async $ do
-  workers <- replicateM workerSize (async $ mkWorker proxy manager queue)
-  takeMVar finalize
-  atomically (closeTBMQueue queue)
-  for_ workers waitCatch
-  putMVar finalize ()
 
 mkWorker ::
   (RemoveHeaders headers) =>
