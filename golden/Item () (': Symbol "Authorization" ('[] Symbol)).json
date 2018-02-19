@@ -1,0 +1,100 @@
+{
+    "seed": 7114407485812634252,
+    "samples": [
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.1.0.0"
+                },
+                "platform": "linux",
+                "environment": "HB\u0010BuQ\u0017\u00064d*HE\u000b9\u0019\u001b*\u000e\u0013",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": ""
+                    }
+                },
+                "language": "haskell",
+                "level": "critical"
+            },
+            "access_token": "9d"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.1.0.0"
+                },
+                "platform": "linux",
+                "environment": "\u001dGesd@(b)ppm/Z",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": ")\u0011"
+                    }
+                },
+                "language": "haskell",
+                "level": "debug"
+            },
+            "access_token": "\u0018NYo"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.1.0.0"
+                },
+                "platform": "linux",
+                "environment": "/dt",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": ""
+                    }
+                },
+                "language": "haskell",
+                "level": "debug"
+            },
+            "access_token": "\nwz\u0017"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.1.0.0"
+                },
+                "platform": "linux",
+                "environment": "\u0003+(up!I",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "j+&e\"\u001eqz3pc,\u000elr\u0015+';\u0013\u0017ot\"_\t\u000bm\u0012"
+                    }
+                },
+                "language": "haskell",
+                "level": "error"
+            },
+            "access_token": "fqoNui?+\u000fyAu\u0005>\u0013a"
+        },
+        {
+            "data": {
+                "notifier": {
+                    "name": "wai-middleware-rollbar",
+                    "version": "0.1.0.0"
+                },
+                "platform": "linux",
+                "environment": "V\u001csj\u001edR`T4?\u000eJ\u000cf",
+                "body": {
+                    "message": {
+                        "data": [],
+                        "body": "\u00138=\u0008]\u00030"
+                    }
+                },
+                "language": "haskell",
+                "level": "error"
+            },
+            "access_token": ".=#\n$\rD4 /1*c *O"
+        }
+    ]
+}
