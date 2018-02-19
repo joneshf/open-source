@@ -1,5 +1,5 @@
 author: Hardy Jones
-category: Web
+category: Logging
 copyright: 2018 Hardy Jones
 extra-source-files:
   - README.md
@@ -20,4 +20,5 @@ library:
 license: BSD3
 maintainer: jones3.hardy@gmail.com
 name: katip-rollbar
+synopsis: Katip scribe that logs to Rollbar
 version: '0.1.0.0'
