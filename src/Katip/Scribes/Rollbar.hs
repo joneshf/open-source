@@ -71,10 +71,10 @@ import "rollbar-hs" Rollbar.Item.Server
 import qualified "katip" Katip
 
 queueSize :: Int
-queueSize = 10
+queueSize = 4096
 
 workerSize :: Int
-workerSize = 3
+workerSize = 10
 
 mkRollbarScribe ::
   RemoveHeaders headers =>
@@ -82,7 +82,7 @@ mkRollbarScribe ::
   AccessToken ->
   Maybe Branch ->
   Maybe CodeVersion ->
-  Manager ->
+  Manager -> -- ^ Must support TLS
   Severity ->
   Verbosity ->
   IO Scribe
