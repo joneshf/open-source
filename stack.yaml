@@ -1,0 +1,6 @@
+flags: {}
+packages:
+- .
+extra-deps:
+- rollbar-hs-0.1.0.1
+resolver: lts-10.5
