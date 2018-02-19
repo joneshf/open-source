@@ -6,7 +6,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module Katip.Scribes.Rollbar where
+module Katip.Scribes.Rollbar
+  ( mkRollbarScribe
+  ) where
 
 import Prelude hiding (error)
 
