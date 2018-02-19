@@ -16,7 +16,7 @@ import "base" Data.Foldable           (for_)
 import "base" Data.Functor            (void)
 import "base" GHC.Conc                (atomically)
 
-import "async" Control.Concurrent.Async            (async, waitCatchSTM)
+import "async" Control.Concurrent.Async            (async, waitCatch)
 import "stm-chans" Control.Concurrent.STM.TBMQueue
     ( TBMQueue
     , closeTBMQueue
@@ -151,9 +151,8 @@ setupWorkers ::
 setupWorkers proxy queue finalize manager = void $ async $ do
   workers <- replicateM workerSize (async $ mkWorker proxy manager queue)
   takeMVar finalize
-  atomically $ do
-    closeTBMQueue queue
-    for_ workers waitCatchSTM
+  atomically (closeTBMQueue queue)
+  for_ workers waitCatch
   putMVar finalize ()
 
 mkWorker ::
