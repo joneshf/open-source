@@ -28,7 +28,7 @@ import Rollbar.Item.Hardcoded (Hardcoded)
 -- | Metadata describing this package.
 data Notifier
     = Notifier
-        { name    :: Hardcoded "wai-middleware-rollbar"
+        { name    :: Hardcoded "rollbar-hs"
         -- ^ The name of this package
         , version :: Version
         -- ^ The version of this package
