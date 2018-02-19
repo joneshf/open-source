@@ -23,6 +23,7 @@ library:
 license: BSD3
 maintainer: jones3.hardy@gmail.com
 name: rollbar-hs
+synopsis: Core Rollbar data types and APIs.
 tests:
   doc-test:
     dependencies:
