@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: haskell:8.2.2
+    steps:
+      - checkout
+      - run:
+          name: Setup
+          command: stack setup
+      - run:
+          name: Build
+          command: stack build --no-run-tests --test
+      - run:
+          name: Test
+          command: stack test
