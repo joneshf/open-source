@@ -23,3 +23,8 @@ jobs:
           paths:
             - .stack-work
             - /root/.stack
+workflows:
+  version: 2
+  base:
+    jobs:
+      - test
