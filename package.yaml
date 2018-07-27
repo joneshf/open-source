@@ -1,6 +1,7 @@
 author: Hardy Jones
 category: Web
 copyright: 2018 Hardy Jones
+description: Core Rollbar data types and APIs.
 extra-source-files:
   - README.md
 github: joneshf/rollbar-hs
