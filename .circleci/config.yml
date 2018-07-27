@@ -1,5 +1,14 @@
 version: 2
 jobs:
+  sdist:
+    docker:
+      - image: haskell:8.2.2
+    steps:
+      - checkout
+      - run:
+          name: Build sdist
+          command: make sdist
+
   test:
     docker:
       - image: haskell:8.2.2
@@ -20,8 +29,10 @@ jobs:
           paths:
             - .stack-work
             - /root/.stack
+
 workflows:
   version: 2
   base:
     jobs:
+      - sdist
       - test
