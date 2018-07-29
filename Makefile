@@ -22,7 +22,7 @@ $(CABAL_FILE): package.yaml
 	# We can run `hpack` indirectly with little overhead.
 	$(STACK) $(STACK_FLAGS) build --dry-run
 
-$(DOC_TEST): $(EMPTY)/build golden/**/*.json
+$(DOC_TEST): $(EMPTY)/build
 	$@
 
 $(EMPTY)/build: $(EMPTY)/stack-setup README.md Setup.hs package.yaml stack.yaml src/**/*.hs test/**/*.hs | $(DIST)
