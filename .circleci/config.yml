@@ -50,6 +50,8 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
+          at: .make
+      - attach_workspace:
           at: dist
       - run:
           name: Test
