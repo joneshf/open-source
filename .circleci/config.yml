@@ -10,9 +10,6 @@ jobs:
             - v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
             - v1-stack-{{ checksum "package.yaml" }}-
             - v1-stack-
-            - v1-stack-root-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-            - v1-stack-root-{{ checksum "package.yaml" }}-
-            - v1-stack-root-
           name: Restoring stack cache
       - run:
           name: Test
