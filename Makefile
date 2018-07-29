@@ -30,9 +30,6 @@ $(EMPTY)/build: $(EMPTY)/stack-setup README.md Setup.hs package.yaml stack.yaml 
 	cp -R $$($(STACK) $(STACK_FLAGS) path --dist-dir)/build $(DIST)/build
 	touch $@
 
-$(EMPTY)/doc-test: $(EMPTY)/build
-	touch $@
-
 $(EMPTY)/stack-setup: | $(EMPTY)
 	$(STACK) $(STACK_FLAGS) setup
 	touch $@

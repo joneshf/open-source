@@ -15,6 +15,10 @@ jobs:
           name: Compile
           command: make build
       - persist_to_workspace:
+          root: .make
+          paths:
+            - '*'
+      - persist_to_workspace:
           root: dist
           paths:
             - '*'
