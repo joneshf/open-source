@@ -15,7 +15,7 @@ jobs:
           name: Compile
           command: make build
       - persist_to_workspace:
-          root: $CIRCLE_WORKING_DIRECTORY
+          root: .
           paths:
             - .make
             - dist
@@ -47,7 +47,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: $CIRCLE_WORKING_DIRECTORY
+          at: .
       - run:
           name: Test
           command: make test
