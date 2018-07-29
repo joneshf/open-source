@@ -1,40 +1,36 @@
-PROJECT_NAME := rollbar-hs
+BIN ?= bin
+CABAL ?= cabal
+DIST ?= dist
+EMPTY ?= .make
+PROJECT_NAME ?= rollbar-hs
+STACK ?= stack
+STACK_WORK ?= .stack-work
+VERBOSITY ?= warn
 
-BIN := bin
-CABAL := cabal
 CABAL_FILE := $(PROJECT_NAME).cabal
-DIST := dist
-EMPTY := .make
 GHCID := $(BIN)/ghcid
-STACK := stack
-STACK_WORK := .stack-work
+STACK_FLAGS := --verbosity $(VERBOSITY)
 
 .DEFAULT_GOAL := build
 
-$(BIN):
-	mkdir -p $@
-
-$(DIST):
-	mkdir -p $@
-
-$(EMPTY):
+$(BIN) $(DIST) $(EMPTY):
 	mkdir -p $@
 
 $(EMPTY)/stack-setup: | $(EMPTY)
-	$(STACK) setup
+	$(STACK) $(STACK_FLAGS) setup
 	touch $@
 
 $(GHCID): $(EMPTY)/stack-setup | $(BIN)
-	$(STACK) install ghcid --local-bin-path $(BIN)
+	$(STACK) $(STACK_FLAGS) install ghcid --local-bin-path $(BIN)
 
-$(CABAL_FILE):
+$(CABAL_FILE): package.yaml
 	# `stack` has no way to run `hpack` directly.
 	# We can run `hpack` indirectly with little overhead.
-	$(STACK) build --dry-run
+	$(STACK) $(STACK_FLAGS) build --dry-run
 
 .PHONY: build
 build: $(EMPTY)/stack-setup
-	$(STACK) build --no-run-tests --test
+	$(STACK) $(STACK_FLAGS) build --no-run-tests --test
 
 .PHONY: cabal-check
 cabal-check: $(CABAL_FILE)
@@ -54,7 +50,7 @@ sdist: cabal-check | $(DIST)
 
 .PHONY: test
 test: build
-	$(STACK) test
+	$(STACK) $(STACK_FLAGS) test
 
 .PHONY: upload-hackage
 upload-hackage: sdist
