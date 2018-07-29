@@ -25,6 +25,23 @@ jobs:
             - .stack-work
             - /root/.stack
 
+  doc-test:
+    docker:
+      - image: haskell:8.2.2
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Doc test
+          command: make test-doc-test
+
+  for-github:
+    docker:
+      - image: alpine
+    steps:
+      - command: echo passed
+
   sdist:
     docker:
       - image: haskell:8.2.2
@@ -40,22 +57,15 @@ jobs:
           name: Build sdist
           command: make sdist
 
-  doc-test:
-    docker:
-      - image: haskell:8.2.2
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Doc test
-          command: make test-doc-test
-
 workflows:
   version: 2
   base:
     jobs:
       - compile
+      - for-github:
+          requires:
+            - doc-test
+            - sdist
       - sdist
       - doc-test:
           requires:
