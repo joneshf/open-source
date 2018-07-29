@@ -17,7 +17,6 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - .make
             - dist
       - save_cache:
           key: v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
@@ -41,7 +40,7 @@ jobs:
           name: Build sdist
           command: make sdist
 
-  test:
+  doc-test:
     docker:
       - image: haskell:8.2.2
     steps:
@@ -49,8 +48,8 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Test
-          command: make test
+          name: Doc test
+          command: make test-doc-test
 
 workflows:
   version: 2
@@ -58,6 +57,6 @@ workflows:
     jobs:
       - compile
       - sdist
-      - test:
+      - doc-test:
           requires:
             - compile

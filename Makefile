@@ -22,12 +22,13 @@ $(CABAL_FILE): package.yaml
 	# We can run `hpack` indirectly with little overhead.
 	$(STACK) $(STACK_FLAGS) build --dry-run
 
-$(DOC_TEST): $(EMPTY)/build
-	$@
+$(DOC_TEST):
+	rm -f $(EMPTY)/build
+	$(MAKE) $(EMPTY)/build
 
 $(EMPTY)/build: $(EMPTY)/stack-setup README.md Setup.hs package.yaml stack.yaml src/**/*.hs test/**/*.hs | $(DIST)
 	$(STACK) $(STACK_FLAGS) build --no-run-tests --test
-	cp -R $$($(STACK) $(STACK_FLAGS) path --dist-dir)/build $(DIST)/build
+	cp -R $$($(STACK) $(STACK_FLAGS) path --dist-dir)/build $(DIST)
 	touch $@
 
 $(EMPTY)/stack-setup: | $(EMPTY)
@@ -57,7 +58,11 @@ sdist: cabal-check | $(DIST)
 	$(CABAL) sdist
 
 .PHONY: test
-test: $(DOC_TEST)
+test: $(EMPTY)/build test-doc-test
+
+.PHONY: test-doc-test
+test-doc-test: $(DOC_TEST)
+	$<
 
 .PHONY: upload-hackage
 upload-hackage: sdist
