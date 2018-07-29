@@ -12,7 +12,7 @@ DOC_TEST := $(DIST)/build/doc-test/doc-test
 GHCID := $(BIN)/ghcid
 STACK_FLAGS := --verbosity $(VERBOSITY)
 
-.DEFAULT_GOAL := $(EMPTY)/build
+.DEFAULT_GOAL := build
 
 $(BIN) $(DIST) $(EMPTY):
 	mkdir -p $@
@@ -39,6 +39,9 @@ $(EMPTY)/stack-setup: | $(EMPTY)
 
 $(GHCID): $(EMPTY)/stack-setup | $(BIN)
 	$(STACK) $(STACK_FLAGS) install ghcid --local-bin-path $(BIN)
+
+.PHONT: build
+build: $(EMPTY)/build
 
 .PHONY: cabal-check
 cabal-check: $(CABAL_FILE)
