@@ -1,6 +1,8 @@
 ### Project specific ###
 
 *.cabal
+.make
+bin
 
 # Created by https://www.gitignore.io/api/vim,osx,linux,macos,emacs,windows,haskell,visualstudiocode
 

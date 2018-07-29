@@ -1,6 +1,9 @@
 author: Hardy Jones
 category: Web
 copyright: 2018 Hardy Jones
+description: |
+  Provides a type-safe encoding of the Rollbar API.
+  Also provides functions to communicate with the Rollbar API.
 extra-source-files:
   - README.md
 github: joneshf/rollbar-hs
