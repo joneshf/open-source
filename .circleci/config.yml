@@ -40,7 +40,9 @@ jobs:
     docker:
       - image: alpine
     steps:
-      - command: echo passed
+      - run:
+          name: Passed
+          command: echo passed
 
   sdist:
     docker:
