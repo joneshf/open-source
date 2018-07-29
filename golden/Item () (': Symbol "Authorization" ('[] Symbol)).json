@@ -5,7 +5,7 @@
             "data": {
                 "notifier": {
                     "name": "rollbar-hs",
-                    "version": "0.2.0.0"
+                    "version": "0.3.0.0"
                 },
                 "platform": "linux",
                 "environment": "HB\u0010BuQ\u0017\u00064d*HE\u000b9\u0019\u001b*\u000e\u0013",
@@ -24,7 +24,7 @@
             "data": {
                 "notifier": {
                     "name": "rollbar-hs",
-                    "version": "0.2.0.0"
+                    "version": "0.3.0.0"
                 },
                 "platform": "linux",
                 "environment": "\u001dGesd@(b)ppm/Z",
@@ -43,7 +43,7 @@
             "data": {
                 "notifier": {
                     "name": "rollbar-hs",
-                    "version": "0.2.0.0"
+                    "version": "0.3.0.0"
                 },
                 "platform": "linux",
                 "environment": "/dt",
@@ -62,7 +62,7 @@
             "data": {
                 "notifier": {
                     "name": "rollbar-hs",
-                    "version": "0.2.0.0"
+                    "version": "0.3.0.0"
                 },
                 "platform": "linux",
                 "environment": "\u0003+(up!I",
@@ -81,7 +81,7 @@
             "data": {
                 "notifier": {
                     "name": "rollbar-hs",
-                    "version": "0.2.0.0"
+                    "version": "0.3.0.0"
                 },
                 "platform": "linux",
                 "environment": "V\u001csj\u001edR`T4?\u000eJ\u000cf",
