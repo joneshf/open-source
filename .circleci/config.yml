@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Compile
           command: make build
-      - presist_to_workspace:
+      - persist_to_workspace:
           root: dist
           paths:
             - '*'
