@@ -1,14 +1,13 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 module Rollbar.Item.MissingHeaders.Test where
 
-import Control.Lens ((&), (^@..))
-
-import Data.Aeson      (encode, toJSON)
-import Data.Aeson.Lens (members)
+import Data.Aeson (Value(Object), decode', encode, toJSON)
+import Data.Text  (Text)
 
 import Prelude hiding (error)
 
@@ -18,6 +17,8 @@ import Rollbar.QuickCheck          ()
 import Test.QuickCheck (conjoin, quickCheck)
 
 import Data.Set as S
+
+import qualified Data.HashMap.Strict
 
 props :: IO ()
 props = do
@@ -40,25 +41,25 @@ prop_valueAuthorizationIsRemoved :: MissingHeaders '["Authorization"] -> Bool
 prop_valueAuthorizationIsRemoved hs =
     "Authorization" `S.notMember` actual
     where
-    actual = toJSON hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (keys $ toJSON hs)
 
 prop_encodingAuthorizationIsRemoved :: MissingHeaders '["Authorization"] -> Bool
 prop_encodingAuthorizationIsRemoved hs =
     "Authorization" `S.notMember` actual
     where
-    actual = encode hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (foldMap keys $ decode' $ encode hs)
 
 prop_valueX_AccessTokenIsRemoved :: MissingHeaders '["X-AccessToken"] -> Bool
 prop_valueX_AccessTokenIsRemoved hs =
     "X-AccessToken" `S.notMember` actual
     where
-    actual = toJSON hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (keys $ toJSON hs)
 
 prop_encodingX_AccessTokenIsRemoved :: MissingHeaders '["X-AccessToken"] -> Bool
 prop_encodingX_AccessTokenIsRemoved hs =
     "X-AccessToken" `S.notMember` actual
     where
-    actual = encode hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (foldMap keys $ decode' $ encode hs)
 
 prop_valueAllHeadersAreRemoved
     :: MissingHeaders
@@ -70,7 +71,7 @@ prop_valueAllHeadersAreRemoved hs =
         && "Server" `S.notMember` actual
         && "X-AccessToken" `S.notMember` actual
     where
-    actual = toJSON hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (keys $ toJSON hs)
 
 prop_encodingAllHeadersAreRemoved
     :: MissingHeaders
@@ -82,4 +83,9 @@ prop_encodingAllHeadersAreRemoved hs =
         && "Server" `S.notMember` actual
         && "X-AccessToken" `S.notMember` actual
     where
-    actual = encode hs ^@.. members & fmap fst & S.fromList
+    actual = S.fromList (foldMap keys $ decode' $ encode hs)
+
+keys :: Value -> [Text]
+keys = \case
+  Object o -> Data.HashMap.Strict.keys o
+  _ -> mempty

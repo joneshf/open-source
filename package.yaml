@@ -39,10 +39,9 @@ tests:
       - containers >= 0.5
       - hspec >= 2.4
       - hspec-golden-aeson >= 0.2
-      - lens >= 4.15
-      - lens-aeson >= 1.0
       - rollbar-hs
       - text >= 1.2
+      - unordered-containers >= 0.2
     main: Main.hs
     source-dirs: test
 version: '0.3.0.1'
