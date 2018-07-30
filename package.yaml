@@ -36,7 +36,6 @@ tests:
       - base >= 4.9
       - bytestring >= 0.10
       - case-insensitive >= 1.2
-      - containers >= 0.5
       - hspec >= 2.4
       - hspec-golden-aeson >= 0.2
       - rollbar-hs

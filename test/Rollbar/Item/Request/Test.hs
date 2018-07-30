@@ -7,6 +7,9 @@ module Rollbar.Item.Request.Test where
 
 import Data.Aeson           (Value(Object), decode', encode, toJSON)
 import Data.CaseInsensitive (original)
+import Data.Foldable        (fold)
+import Data.Functor         (void)
+import Data.HashSet         (HashSet)
 import Data.Text            (Text)
 
 import Prelude hiding (error)
@@ -16,10 +19,9 @@ import Rollbar.QuickCheck   ()
 
 import Test.QuickCheck (conjoin, quickCheck)
 
-import Data.Set           as S
-import Data.Text.Encoding as TE
+import qualified Data.Text.Encoding as TE
 
-import qualified Data.HashMap.Strict
+import qualified Data.HashSet
 
 props :: IO ()
 props =
@@ -30,19 +32,22 @@ props =
 
 prop_valueHeadersArentWrapped :: MissingHeaders '["Authorization"] -> Bool
 prop_valueHeadersArentWrapped hs@(MissingHeaders rhs) =
-    actual `S.isSubsetOf` expected
+    actual `isSubsetOf` expected
     where
-    actual = S.fromList (keys $ toJSON hs)
-    expected = S.fromList $ either (const "") id . TE.decodeUtf8' . original . fst <$> rhs
+    actual = keys (toJSON hs)
+    expected = Data.HashSet.fromList $ fold . TE.decodeUtf8' . original . fst <$> rhs
+    isSubsetOf x y = Data.HashSet.difference x y == mempty
 
 prop_encodingHeadersArentWrapped :: MissingHeaders '["Authorization"] -> Bool
 prop_encodingHeadersArentWrapped hs@(MissingHeaders rhs) =
-    actual `S.isSubsetOf` expected
+    actual `isSubsetOf` expected
     where
-    actual = S.fromList (foldMap keys $ decode' $ encode hs)
-    expected = S.fromList $ either (const "") id . TE.decodeUtf8' . original . fst <$> rhs
+    actual = foldMap keys (decode' $ encode hs)
+    expected = Data.HashSet.fromList $ fold . TE.decodeUtf8' . original . fst <$> rhs
+    isSubsetOf x y = Data.HashSet.difference x y == mempty
 
-keys :: Value -> [Text]
+keys :: Value -> HashSet Text
 keys = \case
-  Object o -> Data.HashMap.Strict.keys o
+  Object o -> Data.HashSet.fromMap (void o)
   _ -> mempty
+

@@ -6,8 +6,10 @@
 {-# LANGUAGE TypeOperators #-}
 module Rollbar.Item.MissingHeaders.Test where
 
-import Data.Aeson (Value(Object), decode', encode, toJSON)
-import Data.Text  (Text)
+import Data.Aeson   (Value(Object), decode', encode, toJSON)
+import Data.Functor (void)
+import Data.HashSet (HashSet)
+import Data.Text    (Text)
 
 import Prelude hiding (error)
 
@@ -16,9 +18,7 @@ import Rollbar.QuickCheck          ()
 
 import Test.QuickCheck (conjoin, quickCheck)
 
-import Data.Set as S
-
-import qualified Data.HashMap.Strict
+import qualified Data.HashSet
 
 props :: IO ()
 props = do
@@ -39,53 +39,55 @@ props = do
 
 prop_valueAuthorizationIsRemoved :: MissingHeaders '["Authorization"] -> Bool
 prop_valueAuthorizationIsRemoved hs =
-    "Authorization" `S.notMember` actual
+    "Authorization" `notMember` actual
     where
-    actual = S.fromList (keys $ toJSON hs)
+    actual = keys (toJSON hs)
 
 prop_encodingAuthorizationIsRemoved :: MissingHeaders '["Authorization"] -> Bool
 prop_encodingAuthorizationIsRemoved hs =
-    "Authorization" `S.notMember` actual
+    "Authorization" `notMember` actual
     where
-    actual = S.fromList (foldMap keys $ decode' $ encode hs)
+    actual = foldMap keys (decode' $ encode hs)
 
 prop_valueX_AccessTokenIsRemoved :: MissingHeaders '["X-AccessToken"] -> Bool
 prop_valueX_AccessTokenIsRemoved hs =
-    "X-AccessToken" `S.notMember` actual
+    "X-AccessToken" `notMember` actual
     where
-    actual = S.fromList (keys $ toJSON hs)
+    actual = keys (toJSON hs)
 
 prop_encodingX_AccessTokenIsRemoved :: MissingHeaders '["X-AccessToken"] -> Bool
 prop_encodingX_AccessTokenIsRemoved hs =
-    "X-AccessToken" `S.notMember` actual
+    "X-AccessToken" `notMember` actual
     where
-    actual = S.fromList (foldMap keys $ decode' $ encode hs)
+    actual = foldMap keys (decode' $ encode hs)
 
 prop_valueAllHeadersAreRemoved
     :: MissingHeaders
         '["Authorization", "this is made up", "Server", "X-AccessToken"]
     -> Bool
 prop_valueAllHeadersAreRemoved hs =
-    "Authorization" `S.notMember` actual
-        && "this is made up" `S.notMember` actual
-        && "Server" `S.notMember` actual
-        && "X-AccessToken" `S.notMember` actual
+    "Authorization" `notMember` actual
+        && "this is made up" `notMember` actual
+        && "Server" `notMember` actual
+        && "X-AccessToken" `notMember` actual
     where
-    actual = S.fromList (keys $ toJSON hs)
+    actual = keys (toJSON hs)
 
 prop_encodingAllHeadersAreRemoved
     :: MissingHeaders
         '["Authorization", "this is made up", "Server", "X-AccessToken"]
     -> Bool
 prop_encodingAllHeadersAreRemoved hs =
-    "Authorization" `S.notMember` actual
-        && "this is made up" `S.notMember` actual
-        && "Server" `S.notMember` actual
-        && "X-AccessToken" `S.notMember` actual
+    "Authorization" `notMember` actual
+        && "this is made up" `notMember` actual
+        && "Server" `notMember` actual
+        && "X-AccessToken" `notMember` actual
     where
-    actual = S.fromList (foldMap keys $ decode' $ encode hs)
+    actual = foldMap keys (decode' $ encode hs)
 
-keys :: Value -> [Text]
+keys :: Value -> HashSet Text
 keys = \case
-  Object o -> Data.HashMap.Strict.keys o
+  Object o -> Data.HashSet.fromMap (void o)
   _ -> mempty
+
+notMember x = not . Data.HashSet.member x
