@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0.1
+
+* [Add a changelog](https://github.com/joneshf/rollbar-hs/pull/10)
+
 ## 0.3.0.0
 
 * [Bump `aeson` upper bound](https://github.com/joneshf/rollbar-hs/pull/3)
