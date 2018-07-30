@@ -1,15 +1,16 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Rollbar.Item.Data.Test where
 
-import Data.Aeson      (Value(Null, Object), decode', encode, toJSON)
-import Data.Text       (Text)
+import           Data.Aeson          (Value (Null, Object), decode', encode,
+                                      toJSON)
+import           Data.Text           (Text)
 
-import Rollbar.Item
-import Rollbar.QuickCheck ()
+import           Rollbar.Item
+import           Rollbar.QuickCheck  ()
 
-import Test.QuickCheck (conjoin, quickCheck)
+import           Test.QuickCheck     (conjoin, quickCheck)
 
 import qualified Data.HashMap.Strict
 
@@ -39,5 +40,5 @@ key :: Text -> Value -> [(Text, Value)]
 key k = \case
   Object o -> case Data.HashMap.Strict.lookupDefault Null k o of
     Object o -> Data.HashMap.Strict.toList o
-    _ -> mempty
+    _        -> mempty
   _ -> mempty
