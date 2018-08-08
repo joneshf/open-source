@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1.0
+
+* [Drop some test dependencies](https://github.com/joneshf/rollbar-hs/pull/12)
+* [Relax upper bound for `network` to 2.8](https://github.com/joneshf/rollbar-hs/pull/14)
+
 ## 0.3.0.1
 
 * [Add a changelog](https://github.com/joneshf/rollbar-hs/pull/10)
