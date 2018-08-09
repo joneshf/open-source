@@ -31,6 +31,7 @@ let
   tools-infrastructure = [
     nixpkgs.cabal2nix
     nixpkgs.curl
+    nixpkgs.which
   ];
 
   # All of the tools.
