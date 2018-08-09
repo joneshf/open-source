@@ -2,39 +2,37 @@ version: 2
 jobs:
   compile:
     docker:
-      - image: haskell:8.2.2
+      - image: nixorg/nix:circleci
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-            - v1-stack-{{ checksum "package.yaml" }}-
-            - v1-stack-
+            - v1-nix-{{ checksum "package.yaml" }}
+            - v1-nix-
           name: Restoring stack cache
       - run:
           name: Compile
-          command: make build
+          command: nix-shell --run 'make build'
       - persist_to_workspace:
           root: .
           paths:
             - dist
       - save_cache:
-          key: v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-          name: Caching stack
+          key: v1-nix-{{ checksum "package.yaml" }}
+          name: Caching nix
           paths:
-            - .stack-work
-            - /root/.stack
+            - /nix
 
   doc-test:
     docker:
-      - image: haskell:8.2.2
+      - image: nixorg/nix:circleci
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: Doc test
-          command: make test-doc-test
+          command: nix-shell --run 'make test-doc-test'
 
   for-github:
     docker:
@@ -46,18 +44,17 @@ jobs:
 
   sdist:
     docker:
-      - image: haskell:8.2.2
+      - image: nixorg/nix:circleci
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-            - v1-stack-{{ checksum "package.yaml" }}-
-            - v1-stack-
+            - v1-nix-{{ checksum "package.yaml" }}
+            - v1-nix-
           name: Restoring stack cache
       - run:
           name: Build sdist
-          command: make sdist
+          command: nix-shell --run 'make sdist'
 
 workflows:
   version: 2
