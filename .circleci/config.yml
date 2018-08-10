@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  compile:
+  ghc-8.2.2:
     docker:
       - image: nixorg/nix:circleci
     steps:
@@ -12,27 +12,12 @@ jobs:
           name: Restoring stack cache
       - run:
           name: Compile
-          command: nix-shell --run 'make build'
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist
+          command: nix-shell --run 'make sdist test -j2'
       - save_cache:
           key: v1-nix-{{ checksum "package.yaml" }}
           name: Caching nix
           paths:
             - /nix
-
-  doc-test:
-    docker:
-      - image: nixorg/nix:circleci
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Doc test
-          command: nix-shell --run 'make test-doc-test'
 
   for-github:
     docker:
@@ -42,30 +27,11 @@ jobs:
           name: Passed
           command: echo passed
 
-  sdist:
-    docker:
-      - image: nixorg/nix:circleci
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-nix-{{ checksum "package.yaml" }}
-            - v1-nix-
-          name: Restoring stack cache
-      - run:
-          name: Build sdist
-          command: nix-shell --run 'make sdist'
-
 workflows:
   version: 2
   base:
     jobs:
-      - compile
       - for-github:
           requires:
-            - doc-test
-            - sdist
-      - sdist
-      - doc-test:
-          requires:
-            - compile
+            - ghc-8.2.2
+      - ghc-8.2.2
