@@ -9,8 +9,6 @@ jobs:
           keys:
             - v2-nix-{{ checksum "package.yaml" }}
             - v2-nix-
-            - v1-nix-{{ checksum "package.yaml" }}
-            - v1-nix-
           name: Restoring cache
       - run:
           name: Compile
