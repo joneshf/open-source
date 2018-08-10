@@ -7,6 +7,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+            - v2-nix-{{ checksum "package.yaml" }}
+            - v2-nix-
             - v1-nix-{{ checksum "package.yaml" }}
             - v1-nix-
           name: Restoring cache
@@ -14,7 +16,7 @@ jobs:
           name: Compile
           command: nix-shell --run 'make sdist test -j2'
       - save_cache:
-          key: v1-nix-{{ checksum "package.yaml" }}
+          key: v2-nix-{{ checksum "package.yaml" }}
           name: Caching nix
           paths:
             - /nix
