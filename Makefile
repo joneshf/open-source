@@ -31,7 +31,6 @@ check: $(CABAL_FILE)
 .PHONY: clean
 clean:
 	rm -f $(CABAL_FILE)
-	rm -f default.nix
 	rm -fr $(DIST)
 
 default.nix: $(CABAL_FILE)
