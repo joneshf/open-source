@@ -1,26 +1,33 @@
 version: 2
+
+build-steps: &build-steps
+  steps:
+    - checkout
+    - restore_cache:
+        keys:
+          - v2-nix-{{ checksum "package.yaml" }}
+          - v2-nix-
+        name: Restoring cache
+    - run:
+        name: Compile
+        command: nix-shell --run 'make sdist test --jobs=2'
+        environment:
+          CABAL_BUILD_FLAGS: --jobs=2
+          NIX_SHELL_FLAGS: --arg complier "$COMPILER"
+    - save_cache:
+        key: v2-nix-{{ checksum "package.yaml" }}
+        name: Caching nix
+        paths:
+          - /nix
+          - dist
+
 jobs:
   ghc-8.2.2:
+    <<: *build-steps
     docker:
       - image: nixorg/nix@sha256:96c3f56563a3b9549ac1da12ff7567c39cb6e648afd6a17d4a1a41f0596ad8f6
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v2-nix-{{ checksum "package.yaml" }}
-            - v2-nix-
-          name: Restoring cache
-      - run:
-          name: Compile
-          command: nix-shell --run 'make sdist test --jobs=2'
-          environment:
-            CABAL_BUILD_FLAGS: --jobs=2
-      - save_cache:
-          key: v2-nix-{{ checksum "package.yaml" }}
-          name: Caching nix
-          paths:
-            - /nix
-            - dist
+    environment:
+      COMPILER: ghc822
 
   for-github:
     docker:
