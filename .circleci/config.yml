@@ -10,10 +10,9 @@ build-steps: &build-steps
         name: Restoring cache
     - run:
         name: Compile
-        command: nix-shell --run 'make sdist test --jobs=2'
+        command: nix-shell --argstr compiler "${COMPILER}" --run 'make sdist test --jobs=2'
         environment:
           CABAL_BUILD_FLAGS: --jobs=2
-          NIX_SHELL_FLAGS: --arg complier "$COMPILER"
     - save_cache:
         key: v2-nix-{{ checksum "package.yaml" }}
         name: Caching nix
