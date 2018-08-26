@@ -1,40 +1,26 @@
 version: 2
 jobs:
-  compile:
+  ghc-8.2.2:
     docker:
-      - image: haskell:8.2.2
+      - image: nixorg/nix@sha256:96c3f56563a3b9549ac1da12ff7567c39cb6e648afd6a17d4a1a41f0596ad8f6
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-            - v1-stack-{{ checksum "package.yaml" }}-
-            - v1-stack-
-          name: Restoring stack cache
+            - v2-nix-{{ checksum "package.yaml" }}
+            - v2-nix-
+          name: Restoring cache
       - run:
           name: Compile
-          command: make build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist
+          command: nix-shell --run 'make sdist test --jobs=2'
+          environment:
+            CABAL_BUILD_FLAGS: --jobs=2
       - save_cache:
-          key: v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-          name: Caching stack
+          key: v2-nix-{{ checksum "package.yaml" }}
+          name: Caching nix
           paths:
-            - .stack-work
-            - /root/.stack
-
-  doc-test:
-    docker:
-      - image: haskell:8.2.2
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Doc test
-          command: make test-doc-test
+            - /nix
+            - dist
 
   for-github:
     docker:
@@ -44,31 +30,11 @@ jobs:
           name: Passed
           command: echo passed
 
-  sdist:
-    docker:
-      - image: haskell:8.2.2
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-stack-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
-            - v1-stack-{{ checksum "package.yaml" }}-
-            - v1-stack-
-          name: Restoring stack cache
-      - run:
-          name: Build sdist
-          command: make sdist
-
 workflows:
   version: 2
   base:
     jobs:
-      - compile
       - for-github:
           requires:
-            - doc-test
-            - sdist
-      - sdist
-      - doc-test:
-          requires:
-            - compile
+            - ghc-8.2.2
+      - ghc-8.2.2

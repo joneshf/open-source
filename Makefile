@@ -1,64 +1,52 @@
-BIN ?= bin
 CABAL ?= cabal
+CABAL_FLAGS ?=
+CABAL_BUILD_FLAGS ?=
 DIST ?= dist
-EMPTY ?= .make
-PROJECT_NAME ?= rollbar-hs
-STACK ?= stack
-STACK_WORK ?= .stack-work
-VERBOSITY ?= warn
+GHCID ?= ghcid
+GHCID_FLAGS ?= --ghc-options=-fno-code
+HPACK ?= hpack
+NIX_SHELL ?= nix-shell
+NIX_SHELL_FLAGS ?=
+PROJECT_NAME := rollbar-hs
 
 CABAL_FILE := $(PROJECT_NAME).cabal
+CONFIGURE := $(DIST)/setup-config
 DOC_TEST := $(DIST)/build/doc-test/doc-test
-GHCID := $(BIN)/ghcid
-STACK_FLAGS := --verbosity $(VERBOSITY)
 
 .DEFAULT_GOAL := build
 
-$(BIN) $(DIST) $(EMPTY):
-	mkdir -p $@
-
 $(CABAL_FILE): package.yaml
-	# `stack` has no way to run `hpack` directly.
-	# We can run `hpack` indirectly with little overhead.
-	$(STACK) $(STACK_FLAGS) build --dry-run
+	$(HPACK)
 
-$(DOC_TEST):
-	rm -f $(EMPTY)/build
-	$(MAKE) $(EMPTY)/build
+$(CONFIGURE): $(CABAL_FILE)
+	$(CABAL) $(CABAL_FLAGS) configure --enable-tests
 
-$(EMPTY)/build: $(EMPTY)/stack-setup README.md Setup.hs package.yaml stack.yaml src/**/*.hs test/**/*.hs | $(DIST)
-	$(STACK) $(STACK_FLAGS) build --no-run-tests --test
-	cp -R $$($(STACK) $(STACK_FLAGS) path --dist-dir)/build $(DIST)
-	touch $@
+.PHONY: build
+build $(DOC_TEST): $(CONFIGURE) default.nix
+	$(CABAL) $(CABAL_FLAGS) build $(CABAL_BUILD_FLAGS)
 
-$(EMPTY)/stack-setup: | $(EMPTY)
-	$(STACK) $(STACK_FLAGS) setup
-	touch $@
-
-$(GHCID): $(EMPTY)/stack-setup | $(BIN)
-	$(STACK) $(STACK_FLAGS) install ghcid --local-bin-path $(BIN)
-
-.PHONT: build
-build: $(EMPTY)/build
-
-.PHONY: cabal-check
-cabal-check: $(CABAL_FILE)
-	$(CABAL) check
+.PHONY: check
+check: $(CABAL_FILE)
+	$(CABAL) $(CABAL_FLAGS) check
 
 .PHONY: clean
 clean:
 	rm -f $(CABAL_FILE)
-	rm -fr $(BIN)
 	rm -fr $(DIST)
-	rm -fr $(EMPTY)
-	rm -fr $(STACK_WORK)
+
+default.nix: $(CABAL_FILE)
+	cabal2nix . > $@
 
 .PHONY: sdist
-sdist: cabal-check | $(DIST)
-	$(CABAL) sdist
+sdist: check
+	$(CABAL) $(CABAL_FLAGS) sdist
+
+.PHONY: shell
+shell:
+	$(NIX_SHELL) --pure $(NIX_SHELL_FLAGS)
 
 .PHONY: test
-test: $(EMPTY)/build test-doc-test
+test: test-doc-test
 
 .PHONY: test-doc-test
 test-doc-test: $(DOC_TEST)
@@ -66,8 +54,8 @@ test-doc-test: $(DOC_TEST)
 
 .PHONY: upload-hackage
 upload-hackage: sdist
-	@ $(CABAL) upload $(DIST)/$(PROJECT_NAME)-*.tar.gz
+	@ $(CABAL) $(CABAL_FLAGS) upload $(DIST)/$(PROJECT_NAME)-*.tar.gz
 
 .PHONY: watch
-watch: $(GHCID)
-	$(GHCID)
+watch: $(CONFIGURE)
+	$(GHCID) --command "cabal repl lib:$(PROJECT_NAME) $(GHCID_FLAGS)"
