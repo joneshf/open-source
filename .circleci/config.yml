@@ -2,7 +2,7 @@ version: 2
 jobs:
   ghc-8.2.2:
     docker:
-      - image: nixorg/nix:circleci
+      - image: nixorg/nix@sha256:96c3f56563a3b9549ac1da12ff7567c39cb6e648afd6a17d4a1a41f0596ad8f6
     steps:
       - checkout
       - restore_cache:
