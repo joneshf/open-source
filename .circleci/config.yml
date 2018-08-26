@@ -12,7 +12,7 @@ jobs:
           name: Restoring cache
       - run:
           name: Compile
-          command: nix-shell --run 'make sdist test -j2'
+          command: nix-shell --run 'make sdist test --jobs=2'
           environment:
             CABAL_BUILD_FLAGS: --jobs=2
       - save_cache:
