@@ -5,7 +5,8 @@ build-steps: &build-steps
     - checkout
     - restore_cache:
         keys:
-          - v2-nix-{{ checksum "package.yaml" }}
+          - v2-nix-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.yaml" }}
+          - v2-nix-{{ .Environment.CIRCLE_JOB }}-
           - v2-nix-
         name: Restoring cache
     - run:
@@ -14,7 +15,7 @@ build-steps: &build-steps
         environment:
           CABAL_BUILD_FLAGS: --jobs=2
     - save_cache:
-        key: v2-nix-{{ checksum "package.yaml" }}
+        key: v2-nix-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.yaml" }}
         name: Caching nix
         paths:
           - /nix
