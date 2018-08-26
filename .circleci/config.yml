@@ -29,6 +29,13 @@ jobs:
     environment:
       COMPILER: ghc822
 
+  ghc-8.4.3:
+    <<: *build-steps
+    docker:
+      - image: nixorg/nix@sha256:96c3f56563a3b9549ac1da12ff7567c39cb6e648afd6a17d4a1a41f0596ad8f6
+    environment:
+      COMPILER: ghc843
+
   for-github:
     docker:
       - image: alpine
@@ -44,4 +51,6 @@ workflows:
       - for-github:
           requires:
             - ghc-8.2.2
+            - ghc-8.4.3
       - ghc-8.2.2
+      - ghc-8.4.3
