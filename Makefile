@@ -1,5 +1,6 @@
 CABAL ?= cabal
 CABAL_FLAGS ?=
+CABAL_BUILD_FLAGS ?=
 DIST ?= dist
 GHCID ?= ghcid
 GHCID_FLAGS ?= --ghc-options=-fno-code
@@ -22,7 +23,7 @@ $(CONFIGURE): $(CABAL_FILE)
 
 .PHONY: build
 build $(DOC_TEST): $(CONFIGURE) default.nix
-	$(CABAL) $(CABAL_FLAGS) build
+	$(CABAL) $(CABAL_FLAGS) build $(CABAL_BUILD_FLAGS)
 
 .PHONY: check
 check: $(CABAL_FILE)

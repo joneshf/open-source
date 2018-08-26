@@ -13,6 +13,8 @@ jobs:
       - run:
           name: Compile
           command: nix-shell --run 'make sdist test -j2'
+          environment:
+            CABAL_BUILD_FLAGS: --jobs=2
       - save_cache:
           key: v2-nix-{{ checksum "package.yaml" }}
           name: Caching nix
