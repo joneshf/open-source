@@ -41,6 +41,46 @@ See the [install instructions][direnv install] for setting up [`direnv`][].
 
 After it is setup, it should be enough to allow it to work: `direnv allow`.
 
+## Development
+
+[`shake`][] is used to build everything in this repo.
+Installation of [`shake`][] is taken care of by [`nix`][].
+
+Everything can be built from the top-level:
+
+```sh
+$ shake build
+```
+
+The default rule is `build`. The above is equivalent to:
+
+```sh
+$ shake
+```
+
+Tests can be run from the top-level as well:
+
+```sh
+$ shake test
+```
+
+Individual packages can be watched for changes.
+For example, for the `rollbar-hs` package:
+
+```sh
+$ shake watch-rollbar-hs
+```
+
+Packages can be uploaded to hackage if they are unrealeased:
+
+```sh
+$ shake upload-to-hackage
+```
+
+This rule is safe to run at any time.
+It will only upload if the version doesn't exist.
+It will do nothing if the version already exists.
+
 ## License
 
 Unless otherwise specified,
@@ -48,5 +88,6 @@ everything here is licensed under the license located in the top-level directory
 
 [`direnv`]: https://github.com/direnv/direnv
 [`nix`]: https://nixos.org
+[`shake`]: https://shakebuild.com/
 [direnv install]: https://github.com/direnv/direnv#install
 [nix install]: https://nixos.org/nix/

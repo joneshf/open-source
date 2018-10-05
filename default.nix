@@ -4,7 +4,38 @@
 
 let
 
-  buildInputs = [
+  buildInputs =
+    [ haskell-packages ] ++
+    tools;
+
+  haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
+    haskell-packages-rollbar-hs p ++
+    haskell-packages-shake p
+  );
+
+  haskell-packages-rollbar-hs = p: [
+    p.QuickCheck
+    p.aeson
+    p.base
+    p.bytestring
+    p.case-insensitive
+    p.hostname
+    p.hspec
+    p.hspec-golden-aeson
+    p.http-client
+    p.http-conduit
+    p.http-types
+    p.network
+    p.text
+    p.time
+    p.unordered-containers
+    p.uuid
+  ];
+
+  haskell-packages-shake = p: [
+    p.base
+    p.shake
+    p.typed-process
   ];
 
   nixpkgs = import nixpkgs-tarball {};
@@ -16,6 +47,29 @@ let
   revision = "d3d465e32f53dd88c2b4229c207ff7d005098f1d";
 
   sha256 = "sha256:092zf82gh6hn6y6zksxqv70ncpcimd51c3mj4mbrxpwl3w0gg3qd";
+
+  tools =
+    tools-building ++
+    tools-developing ++
+    tools-formatting ++
+    tools-static-analyzing;
+
+  tools-building = [
+    nixpkgs.haskellPackages.cabal-install
+    nixpkgs.haskellPackages.hpack
+  ];
+
+  tools-developing = [
+    nixpkgs.haskellPackages.ghcid
+  ];
+
+  tools-formatting = [
+    nixpkgs.haskellPackages.stylish-haskell
+  ];
+
+  tools-static-analyzing = [
+    nixpkgs.haskellPackages.hlint
+  ];
 
   url = "https://github.com/NixOS/nixpkgs/archive/${revision}.tar.gz";
 

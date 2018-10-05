@@ -1,6 +1,7 @@
 ### Project specific ###
 
 .direnv.cache
+_build
 
 # Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,sublimetext,visualstudiocode
 
