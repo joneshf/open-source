@@ -22,13 +22,13 @@ import "shake" Development.Shake
     , (%>)
     )
 import "shake" Development.Shake.FilePath
-    ( dropDirectory1
-    , dropExtension
+    ( dropExtension
     , replaceFileName
     , takeFileName
     , (<.>)
     , (</>)
     )
+import "directory" System.Directory         (getCurrentDirectory)
 import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
 import "typed-process" System.Process.Typed
     ( proc
@@ -39,6 +39,7 @@ import "typed-process" System.Process.Typed
 
 main :: IO ()
 main = do
+  root <- getCurrentDirectory
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
   let options = shakeOptions { shakeFiles, shakeThreads, shakeVersion }
       shakeFiles = buildDir
@@ -54,25 +55,17 @@ main = do
         ]
       )
 
-    phony "clean"
-      ( removeFilesAfter
-        ""
-        [ buildDir
-        , distKatipRollbar
-        , distRollbarHS
-        , distWaiMiddlewareRollbar
-        ]
-      )
+    phony "clean" (removeFilesAfter "" [buildDir])
 
     phony "sdist"
       ( need
-        [ distKatipRollbar
+        [ buildKatipRollbar
           </> katipRollbar
           <> "-"
           <> katipRollbarVersion
           <> ".tar.gz"
-        , distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"
-        , distWaiMiddlewareRollbar
+        , buildRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"
+        , buildWaiMiddlewareRollbar
           </> waiMiddlewareRollbar
           <> "-"
           <> waiMiddlewareRollbarVersion
@@ -82,13 +75,13 @@ main = do
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
-    phony "test" (need [distRollbarHS </> "build/doc-test/doc-test.out"])
+    phony "test" (need [buildRollbarHS </> "build/doc-test/doc-test.out"])
 
     phony "upload-to-hackage"
       ( need
-        [ distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion
-        , distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion
-        , distWaiMiddlewareRollbar
+        [ buildKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion
+        , buildRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion
+        , buildWaiMiddlewareRollbar
           </> waiMiddlewareRollbar
           <> "-"
           <> waiMiddlewareRollbarVersion
@@ -106,7 +99,7 @@ main = do
           , "cabal repl lib:"
             <> katipRollbar
             <> " --builddir "
-            <> distKatipRollbar
+            <> root </> buildKatipRollbar
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -124,7 +117,7 @@ main = do
           , "cabal repl lib:"
             <> rollbarHS
             <> " --builddir "
-            <> distRollbarHS
+            <> root </> buildRollbarHS
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -142,7 +135,7 @@ main = do
           , "cabal repl lib:"
             <> waiMiddlewareRollbar
             <> " --builddir "
-            <> distWaiMiddlewareRollbar
+            <> root </> buildWaiMiddlewareRollbar
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -161,7 +154,7 @@ main = do
         (Traced "cabal build")
         "cabal build"
         "--builddir"
-        [distKatipRollbar]
+        [root </> buildKatipRollbar]
 
     buildRollbarHS </> ".build" %> \out -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
@@ -172,7 +165,7 @@ main = do
         (Traced "cabal build")
         "cabal build"
         "--builddir"
-        [distRollbarHS]
+        [root </> buildRollbarHS]
 
     buildWaiMiddlewareRollbar </> ".build" %> \out -> do
       srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
@@ -183,7 +176,7 @@ main = do
         (Traced "cabal build")
         "cabal build"
         "--builddir"
-        [distWaiMiddlewareRollbar]
+        [root </> buildWaiMiddlewareRollbar]
 
     buildKatipRollbar </> ".check" %> \out -> do
       need [packageKatipRollbar </> katipRollbar <.> "cabal"]
@@ -223,7 +216,7 @@ main = do
         (Traced "cabal configure")
         "cabal configure"
         "--builddir"
-        [distKatipRollbar]
+        [root </> buildKatipRollbar]
 
     buildRollbarHS </> ".configure" %> \out -> do
       need [buildDir </> ".update", packageRollbarHS </> rollbarHS <.> "cabal"]
@@ -233,7 +226,7 @@ main = do
         (Traced "cabal configure")
         "cabal configure"
         "--builddir"
-        [distRollbarHS]
+        [root </> buildRollbarHS]
         "--enable-tests"
 
     buildWaiMiddlewareRollbar </> ".configure" %> \out -> do
@@ -247,9 +240,9 @@ main = do
         (Traced "cabal configure")
         "cabal configure"
         "--builddir"
-        [distWaiMiddlewareRollbar]
+        [root </> buildWaiMiddlewareRollbar]
 
-    distRollbarHS </> "build/doc-test/doc-test" %> \_ -> do
+    buildRollbarHS </> "build/doc-test/doc-test" %> \_ -> do
       srcs <-
         getDirectoryFiles
           ""
@@ -261,17 +254,17 @@ main = do
         "cabal build"
         "test:doc-test"
         "--builddir"
-        [distRollbarHS]
+        [root </> buildRollbarHS]
 
-    distRollbarHS </> "build/doc-test/doc-test.out" %> \out -> do
+    buildRollbarHS </> "build/doc-test/doc-test.out" %> \out -> do
       need [dropExtension out]
       cmd_
         (Cwd packageRollbarHS)
         (FileStdout out)
         (Traced "rollbar doc-test")
-        [(dropDirectory1 . dropDirectory1 . dropExtension) out]
+        [((root </>) . dropExtension) out]
 
-    distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion <.> "tar.gz" %> \_ -> do
+    buildKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageKatipRollbar </> "src//*.hs"]
       need
         ( (buildKatipRollbar </> ".check")
@@ -283,9 +276,9 @@ main = do
         (Traced "cabal sdist")
         "cabal sdist"
         "--builddir"
-        [distKatipRollbar]
+        [root </> buildKatipRollbar]
 
-    distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <.> "tar.gz" %> \_ -> do
+    buildRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
       need
         ( (buildRollbarHS </> ".check")
@@ -297,9 +290,9 @@ main = do
         (Traced "cabal sdist")
         "cabal sdist"
         "--builddir"
-        [distRollbarHS]
+        [root </> buildRollbarHS]
 
-    distWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion <.> "tar.gz" %> \_ -> do
+    buildWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
       need
         ( (buildWaiMiddlewareRollbar </> ".check")
@@ -311,9 +304,9 @@ main = do
         (Traced "cabal sdist")
         "cabal sdist"
         "--builddir"
-        [distWaiMiddlewareRollbar]
+        [root </> buildWaiMiddlewareRollbar]
 
-    distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion %> \out -> do
+    buildKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion %> \out -> do
       (Exit x, Stdout result) <-
         cmd (Traced "cabal info") "cabal info" [takeFileName out]
       case x of
@@ -323,7 +316,7 @@ main = do
           writeFile' out ""
         ExitSuccess -> writeFile' out result
 
-    distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion %> \out -> do
+    buildRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion %> \out -> do
       (Exit x, Stdout result) <-
         cmd (Traced "cabal info") "cabal info" [takeFileName out]
       case x of
@@ -333,7 +326,7 @@ main = do
           writeFile' out ""
         ExitSuccess -> writeFile' out result
 
-    distWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion %> \out -> do
+    buildWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion %> \out -> do
       (Exit x, Stdout result) <-
         cmd (Traced "cabal info") "cabal info" [takeFileName out]
       case x of
@@ -362,15 +355,6 @@ buildRollbarHS = buildDir </> packageRollbarHS
 
 buildWaiMiddlewareRollbar :: FilePath
 buildWaiMiddlewareRollbar = buildDir </> packageWaiMiddlewareRollbar
-
-distKatipRollbar :: FilePath
-distKatipRollbar = packageKatipRollbar </> "dist"
-
-distRollbarHS :: FilePath
-distRollbarHS = packageRollbarHS </> "dist"
-
-distWaiMiddlewareRollbar :: FilePath
-distWaiMiddlewareRollbar = packageWaiMiddlewareRollbar </> "dist"
 
 ghciFlags :: [String]
 ghciFlags =

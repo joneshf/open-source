@@ -49,6 +49,7 @@ let
 
   haskell-packages-shake = p: [
     p.base
+    p.directory
     p.shake
     p.typed-process
   ];
