@@ -1,11 +1,13 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
+{-# LANGUAGE TypeApplications #-}
 module Main where
 
 import "base" Control.Monad.IO.Class        (liftIO)
-import "base" Data.Foldable                 (for_, toList)
-import "base" Data.List.NonEmpty            (NonEmpty((:|)))
+import "base" Data.Foldable                 (for_)
+import "text" Data.Text                     (pack, unpack)
 import "shake" Development.Shake
     ( CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
@@ -15,6 +17,7 @@ import "shake" Development.Shake
     , cmd
     , cmd_
     , getDirectoryFiles
+    , getDirectoryFilesIO
     , getHashedShakeVersion
     , need
     , phony
@@ -24,6 +27,7 @@ import "shake" Development.Shake
     , shakeOptions
     , want
     , writeFile'
+    , writeFileChanged
     , (%>)
     )
 import "shake" Development.Shake.FilePath
@@ -33,6 +37,15 @@ import "shake" Development.Shake.FilePath
     , (<.>)
     , (</>)
     )
+import "dhall" Dhall
+    ( Interpret
+    , auto
+    , detailed
+    , expected
+    , input
+    )
+import "dhall" Dhall.Core                   (pretty)
+import "base" GHC.Generics                  (Generic)
 import "directory" System.Directory         (getCurrentDirectory)
 import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
 import "typed-process" System.Process.Typed
@@ -46,16 +59,26 @@ data Package
   = Haskell
     { manifest :: Manifest
     , name     :: String
-    , tests    :: Maybe (NonEmpty String)
+    , tests    :: [String]
     , version  :: String
     }
+  deriving (Generic)
+
+instance Interpret Package
 
 data Manifest
   = Cabal
   | Hpack
+  deriving (Generic)
+
+instance Interpret Manifest
 
 main :: IO ()
 main = do
+  writeFileChanged "Manifest.dhall" (unpack $ pretty $ expected $ auto @Manifest)
+  writeFileChanged "Package.dhall" (unpack $ pretty $ expected $ auto @Package)
+  packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
+  packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
   let options = shakeOptions { shakeFiles, shakeThreads, shakeVersion }
       shakeFiles = buildDir
@@ -86,7 +109,7 @@ x <-> y = x <> "-" <> y
 
 build :: Package ->  FilePath
 build = \case
-  Haskell {name} -> buildDir </> packageDir </> name </> ".build"
+  Haskell { name } -> buildDir </> packageDir </> name </> ".build"
 
 buildDir :: FilePath
 buildDir = "_build"
@@ -101,8 +124,8 @@ ghciFlags =
   , "-v1"
   ]
 
-haskell :: Manifest -> String -> Maybe (NonEmpty String) -> String -> Rules ()
-haskell manifest name tests' version = do
+haskell :: Manifest -> String -> [String] -> String -> Rules ()
+haskell manifest name tests version = do
   root <- liftIO getCurrentDirectory
   let build' = buildDir </> package
       package = packageDir </> name
@@ -154,31 +177,30 @@ haskell manifest name tests' version = do
       "cabal configure"
       "--builddir"
       [root </> build']
-      ("--enable-tests" <$ tests')
+      ("--enable-tests" <$ tests)
 
-  for_ tests' $ \tests ->
-    for_ tests $ \suite -> do
-      build' </> "build" </> suite </> suite %> \_ -> do
-        srcs <-
-          getDirectoryFiles
-            ""
-            [package </> "src//*.hs", package </> "test//*.hs"]
-        need ((build' </> ".build") : srcs)
-        cmd_
-          (Cwd package)
-          (Traced "cabal build")
-          "cabal build"
-          ["test:" <> suite]
-          "--builddir"
-          [root </> build']
+  for_ tests $ \suite -> do
+    build' </> "build" </> suite </> suite %> \_ -> do
+      srcs <-
+        getDirectoryFiles
+          ""
+          [package </> "src//*.hs", package </> "test//*.hs"]
+      need ((build' </> ".build") : srcs)
+      cmd_
+        (Cwd package)
+        (Traced "cabal build")
+        "cabal build"
+        ["test:" <> suite]
+        "--builddir"
+        [root </> build']
 
-      build' </> "build" </> suite </> suite <.> "out" %> \out -> do
-        need [dropExtension out]
-        cmd_
-          (Cwd package)
-          (FileStdout out)
-          (Traced $ name <> " " <> suite)
-          [((root </>) . dropExtension) out]
+    build' </> "build" </> suite </> suite <.> "out" %> \out -> do
+      need [dropExtension out]
+      cmd_
+        (Cwd package)
+        (FileStdout out)
+        (Traced $ name <> " " <> suite)
+        [((root </>) . dropExtension) out]
 
   build' </> name <-> version %> \out -> do
     (Exit x, Stdout result) <-
@@ -210,41 +232,19 @@ haskell manifest name tests' version = do
 packageDir :: FilePath
 packageDir = "packages"
 
-packages :: [Package]
-packages =
-  [ Haskell
-    { manifest = Hpack
-    , name = "katip-rollbar"
-    , tests = Nothing
-    , version = "0.3.0.1"
-    }
-  , Haskell
-    { manifest = Hpack
-    , name = "rollbar-hs"
-    , tests = Just ("doc-test" :| [])
-    , version = "0.3.1.0"
-    }
-  , Haskell
-    { manifest = Cabal
-    , name = "wai-middleware-rollbar"
-    , tests = Nothing
-    , version = "0.11.0"
-    }
-  ]
-
 sdist :: Package -> FilePath
 sdist = \case
-  Haskell {name, version} ->
+  Haskell { name, version } ->
     buildDir </> packageDir </> name </> name <-> version <.> "tar.gz"
 
 test :: Package -> [FilePath]
 test = \case
-  Haskell {name, tests} -> foldMap (toList . fmap go) tests
+  Haskell { name, tests } -> fmap go tests
     where
     go suite =
       buildDir </> packageDir </> name </> "build" </> suite </> suite <.> "out"
 
 uploadToHackage :: Package -> FilePath
 uploadToHackage = \case
-  Haskell {name, version} ->
+  Haskell { name, version } ->
     buildDir </> packageDir </> name </> name <-> version

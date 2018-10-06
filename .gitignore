@@ -1,7 +1,9 @@
 ### Project specific ###
 
-.direnv.cache
-_build
+/.direnv.cache
+/Manifest.dhall
+/Package.dhall
+/_build
 
 # Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,sublimetext,visualstudiocode
 
