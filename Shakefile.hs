@@ -48,17 +48,30 @@ main = do
 
     phony "build"
       ( need
-        [ buildRollbarHS </> ".build"
+        [ buildKatipRollbar </> ".build"
+        , buildRollbarHS </> ".build"
         , buildWaiMiddlewareRollbar </> ".build"
         ]
       )
 
     phony "clean"
-      (removeFilesAfter "" [buildDir, distRollbarHS, distWaiMiddlewareRollbar])
+      ( removeFilesAfter
+        ""
+        [ buildDir
+        , distKatipRollbar
+        , distRollbarHS
+        , distWaiMiddlewareRollbar
+        ]
+      )
 
     phony "sdist"
       ( need
-        [ distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"
+        [ distKatipRollbar
+          </> katipRollbar
+          <> "-"
+          <> katipRollbarVersion
+          <> ".tar.gz"
+        , distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"
         , distWaiMiddlewareRollbar
           </> waiMiddlewareRollbar
           <> "-"
@@ -73,13 +86,30 @@ main = do
 
     phony "upload-to-hackage"
       ( need
-        [ distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion
+        [ distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion
+        , distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion
         , distWaiMiddlewareRollbar
           </> waiMiddlewareRollbar
           <> "-"
           <> waiMiddlewareRollbarVersion
         ]
       )
+
+    phony ("watch-" <> katipRollbar) $ do
+      need [buildKatipRollbar </> ".configure"]
+      runAfter
+        ( runProcess_
+        $ setWorkingDir packageKatipRollbar
+        $ proc
+          "ghcid"
+          [ "--command"
+          , "cabal repl lib:"
+            <> katipRollbar
+            <> " --ghc-options '"
+            <> unwords ghciFlags
+            <> "'"
+          ]
+        )
 
     phony ("watch-" <> rollbarHS) $ do
       need [buildRollbarHS </> ".configure"]
@@ -116,6 +146,15 @@ main = do
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
+    buildKatipRollbar </> ".build" %> \out -> do
+      srcs <- getDirectoryFiles "" [packageKatipRollbar </> "src//*.hs"]
+      need ((buildKatipRollbar </> ".configure") : srcs)
+      cmd
+        (Cwd packageKatipRollbar)
+        (FileStdout out)
+        (Traced "cabal build")
+        "cabal build"
+
     buildRollbarHS </> ".build" %> \out -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
       need ((buildRollbarHS </> ".configure") : srcs)
@@ -134,6 +173,15 @@ main = do
         (Traced "cabal build")
         "cabal build"
 
+    buildKatipRollbar </> ".check" %> \out -> do
+      need [packageKatipRollbar </> katipRollbar <.> "cabal"]
+      cmd
+        (Cwd packageKatipRollbar)
+        (EchoStdout True)
+        (FileStdout out)
+        (Traced "cabal check")
+        "cabal check"
+
     buildRollbarHS </> ".check" %> \out -> do
       need [packageRollbarHS </> rollbarHS <.> "cabal"]
       cmd
@@ -151,6 +199,17 @@ main = do
         (FileStdout out)
         (Traced "cabal check")
         "cabal check"
+
+    buildKatipRollbar </> ".configure" %> \out -> do
+      need
+        [ buildDir </> ".update"
+        , packageKatipRollbar </> katipRollbar <.> "cabal"
+        ]
+      cmd
+        (Cwd packageKatipRollbar)
+        (FileStdout out)
+        (Traced "cabal configure")
+        "cabal configure"
 
     buildRollbarHS </> ".configure" %> \out -> do
       need [buildDir </> ".update", packageRollbarHS </> rollbarHS <.> "cabal"]
@@ -192,6 +251,15 @@ main = do
         (Traced "rollbar doc-test")
         [(dropDirectory1 . dropDirectory1 . dropExtension) out]
 
+    distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion <.> "tar.gz" %> \_ -> do
+      srcs <- getDirectoryFiles "" [packageKatipRollbar </> "src//*.hs"]
+      need
+        ( (buildKatipRollbar </> ".check")
+        : (buildKatipRollbar </> ".configure")
+        : srcs
+        )
+      cmd_ (Cwd packageKatipRollbar) (Traced "cabal sdist") "cabal sdist"
+
     distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
       need
@@ -213,6 +281,16 @@ main = do
         (Traced "cabal sdist")
         "cabal sdist"
 
+    distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion %> \out -> do
+      (Exit x, Stdout result) <-
+        cmd (Traced "cabal info") "cabal info" [takeFileName out]
+      case x of
+        ExitFailure _ -> do
+          need [buildKatipRollbar </> ".build", out <.> "tar.gz"]
+          cmd_ (Traced "cabal upload") "cabal upload" [out <.> "tar.gz"]
+          writeFile' out ""
+        ExitSuccess -> writeFile' out result
+
     distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion %> \out -> do
       (Exit x, Stdout result) <-
         cmd (Traced "cabal info") "cabal info" [takeFileName out]
@@ -233,6 +311,10 @@ main = do
           writeFile' out ""
         ExitSuccess -> writeFile' out result
 
+    packageKatipRollbar </> katipRollbar <.> "cabal" %> \out -> do
+      need [replaceFileName out "package.yaml"]
+      cmd_ (Cwd packageKatipRollbar) (Traced "hpack") "hpack"
+
     packageRollbarHS </> rollbarHS <.> "cabal" %> \out -> do
       need [replaceFileName out "package.yaml"]
       cmd_ (Cwd packageRollbarHS) (Traced "hpack") "hpack"
@@ -240,11 +322,17 @@ main = do
 buildDir :: FilePath
 buildDir = "_build"
 
+buildKatipRollbar :: FilePath
+buildKatipRollbar = buildDir </> packageKatipRollbar
+
 buildRollbarHS :: FilePath
 buildRollbarHS = buildDir </> packageRollbarHS
 
 buildWaiMiddlewareRollbar :: FilePath
 buildWaiMiddlewareRollbar = buildDir </> packageWaiMiddlewareRollbar
+
+distKatipRollbar :: FilePath
+distKatipRollbar = packageKatipRollbar </> "dist"
 
 distRollbarHS :: FilePath
 distRollbarHS = packageRollbarHS </> "dist"
@@ -262,8 +350,17 @@ ghciFlags =
   , "-v1"
   ]
 
+katipRollbar :: FilePath
+katipRollbar = "katip-rollbar"
+
+katipRollbarVersion :: FilePath
+katipRollbarVersion = "0.3.0.1"
+
 packageDir :: FilePath
 packageDir = "packages"
+
+packageKatipRollbar :: FilePath
+packageKatipRollbar = packageDir </> katipRollbar
 
 packageRollbarHS :: FilePath
 packageRollbarHS = packageDir </> rollbarHS

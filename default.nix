@@ -9,10 +9,24 @@ let
     tools;
 
   haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
+    haskell-packages-katip-rollbar p ++
     haskell-packages-rollbar-hs p ++
     haskell-packages-shake p ++
     haskell-packages-wai-middleware-rollbar p
   );
+
+  haskell-packages-katip-rollbar = p: [
+    p.aeson
+    p.async
+    p.base
+    p.hostname
+    p.http-client
+    p.katip
+    p.rollbar-hs
+    p.stm-chans
+    p.text
+    p.time
+  ];
 
   haskell-packages-rollbar-hs = p: [
     p.QuickCheck
