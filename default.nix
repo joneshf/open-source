@@ -10,7 +10,8 @@ let
 
   haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
     haskell-packages-rollbar-hs p ++
-    haskell-packages-shake p
+    haskell-packages-shake p ++
+    haskell-packages-wai-middleware-rollbar p
   );
 
   haskell-packages-rollbar-hs = p: [
@@ -36,6 +37,21 @@ let
     p.base
     p.shake
     p.typed-process
+  ];
+
+  haskell-packages-wai-middleware-rollbar = p: [
+    p.aeson
+    p.base
+    p.bytestring
+    p.hostname
+    p.http-client
+    p.http-conduit
+    p.http-types
+    p.rollbar-hs
+    p.text
+    p.time
+    p.uuid
+    p.wai
   ];
 
   nixpkgs = import nixpkgs-tarball {};

@@ -30,7 +30,12 @@ import "shake" Development.Shake.FilePath
     , (</>)
     )
 import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
-import "typed-process" System.Process.Typed (runProcess_, setWorkingDir, shell, proc)
+import "typed-process" System.Process.Typed
+    ( proc
+    , runProcess_
+    , setWorkingDir
+    , shell
+    )
 
 main :: IO ()
 main = do
@@ -41,13 +46,25 @@ main = do
   shakeArgs options $ do
     want ["build"]
 
-    phony "build" (need [buildRollbarHS </> ".build"])
+    phony "build"
+      ( need
+        [ buildRollbarHS </> ".build"
+        , buildWaiMiddlewareRollbar </> ".build"
+        ]
+      )
 
-    phony "clean" (removeFilesAfter "" [buildDir, distRollbarHS])
+    phony "clean"
+      (removeFilesAfter "" [buildDir, distRollbarHS, distWaiMiddlewareRollbar])
 
     phony "sdist"
       ( need
-        [distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"]
+        [ distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <> ".tar.gz"
+        , distWaiMiddlewareRollbar
+          </> waiMiddlewareRollbar
+          <> "-"
+          <> waiMiddlewareRollbarVersion
+          <> ".tar.gz"
+        ]
       )
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
@@ -55,7 +72,14 @@ main = do
     phony "test" (need [distRollbarHS </> "build/doc-test/doc-test.out"])
 
     phony "upload-to-hackage"
-      (need [distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion])
+      ( need
+        [ distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion
+        , distWaiMiddlewareRollbar
+          </> waiMiddlewareRollbar
+          <> "-"
+          <> waiMiddlewareRollbarVersion
+        ]
+      )
 
     phony ("watch-" <> rollbarHS) $ do
       need [buildRollbarHS </> ".configure"]
@@ -67,6 +91,22 @@ main = do
           [ "--command"
           , "cabal repl lib:"
             <> rollbarHS
+            <> " --ghc-options '"
+            <> unwords ghciFlags
+            <> "'"
+          ]
+        )
+
+    phony ("watch-" <> waiMiddlewareRollbar) $ do
+      need [buildWaiMiddlewareRollbar </> ".configure"]
+      runAfter
+        ( runProcess_
+        $ setWorkingDir packageWaiMiddlewareRollbar
+        $ proc
+          "ghcid"
+          [ "--command"
+          , "cabal repl lib:"
+            <> waiMiddlewareRollbar
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -85,10 +125,28 @@ main = do
         (Traced "cabal build")
         "cabal build"
 
+    buildWaiMiddlewareRollbar </> ".build" %> \out -> do
+      srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
+      need ((buildWaiMiddlewareRollbar </> ".configure") : srcs)
+      cmd
+        (Cwd packageWaiMiddlewareRollbar)
+        (FileStdout out)
+        (Traced "cabal build")
+        "cabal build"
+
     buildRollbarHS </> ".check" %> \out -> do
       need [packageRollbarHS </> rollbarHS <.> "cabal"]
       cmd
         (Cwd packageRollbarHS)
+        (EchoStdout True)
+        (FileStdout out)
+        (Traced "cabal check")
+        "cabal check"
+
+    buildWaiMiddlewareRollbar </> ".check" %> \out -> do
+      need [packageWaiMiddlewareRollbar </> waiMiddlewareRollbar <.> "cabal"]
+      cmd
+        (Cwd packageWaiMiddlewareRollbar)
         (EchoStdout True)
         (FileStdout out)
         (Traced "cabal check")
@@ -102,6 +160,17 @@ main = do
         (Traced "cabal configure")
         "cabal configure"
         "--enable-tests"
+
+    buildWaiMiddlewareRollbar </> ".configure" %> \out -> do
+      need
+        [ buildDir </> ".update"
+        , packageWaiMiddlewareRollbar </> waiMiddlewareRollbar <.> "cabal"
+        ]
+      cmd
+        (Cwd packageWaiMiddlewareRollbar)
+        (FileStdout out)
+        (Traced "cabal configure")
+        "cabal configure"
 
     distRollbarHS </> "build/doc-test/doc-test" %> \_ -> do
       srcs <-
@@ -132,12 +201,34 @@ main = do
         )
       cmd_ (Cwd packageRollbarHS) (Traced "cabal sdist") "cabal sdist"
 
+    distWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion <.> "tar.gz" %> \_ -> do
+      srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
+      need
+        ( (buildWaiMiddlewareRollbar </> ".check")
+        : (buildWaiMiddlewareRollbar </> ".configure")
+        : srcs
+        )
+      cmd_
+        (Cwd packageWaiMiddlewareRollbar)
+        (Traced "cabal sdist")
+        "cabal sdist"
+
     distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion %> \out -> do
       (Exit x, Stdout result) <-
         cmd (Traced "cabal info") "cabal info" [takeFileName out]
       case x of
         ExitFailure _ -> do
           need [buildRollbarHS </> ".build", out <.> "tar.gz"]
+          cmd_ (Traced "cabal upload") "cabal upload" [out <.> "tar.gz"]
+          writeFile' out ""
+        ExitSuccess -> writeFile' out result
+
+    distWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion %> \out -> do
+      (Exit x, Stdout result) <-
+        cmd (Traced "cabal info") "cabal info" [takeFileName out]
+      case x of
+        ExitFailure _ -> do
+          need [buildWaiMiddlewareRollbar </> ".build", out <.> "tar.gz"]
           cmd_ (Traced "cabal upload") "cabal upload" [out <.> "tar.gz"]
           writeFile' out ""
         ExitSuccess -> writeFile' out result
@@ -152,8 +243,14 @@ buildDir = "_build"
 buildRollbarHS :: FilePath
 buildRollbarHS = buildDir </> packageRollbarHS
 
+buildWaiMiddlewareRollbar :: FilePath
+buildWaiMiddlewareRollbar = buildDir </> packageWaiMiddlewareRollbar
+
 distRollbarHS :: FilePath
 distRollbarHS = packageRollbarHS </> "dist"
+
+distWaiMiddlewareRollbar :: FilePath
+distWaiMiddlewareRollbar = packageWaiMiddlewareRollbar </> "dist"
 
 ghciFlags :: [String]
 ghciFlags =
@@ -171,8 +268,17 @@ packageDir = "packages"
 packageRollbarHS :: FilePath
 packageRollbarHS = packageDir </> rollbarHS
 
+packageWaiMiddlewareRollbar :: FilePath
+packageWaiMiddlewareRollbar = packageDir </> waiMiddlewareRollbar
+
 rollbarHS :: FilePath
 rollbarHS = "rollbar-hs"
 
 rollbarHSVersion :: String
 rollbarHSVersion = "0.3.1.0"
+
+waiMiddlewareRollbar :: FilePath
+waiMiddlewareRollbar = "wai-middleware-rollbar"
+
+waiMiddlewareRollbarVersion :: String
+waiMiddlewareRollbarVersion = "0.11.0"
