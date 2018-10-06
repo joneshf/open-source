@@ -81,6 +81,9 @@ main = do
     for_ packages $ \case
       Haskell manifest name tests version -> haskell manifest name tests version
 
+(<->) :: FilePath -> FilePath -> FilePath
+x <-> y = x <> "-" <> y
+
 build :: Package ->  FilePath
 build = \case
   Haskell {name} -> buildDir </> packageDir </> name </> ".build"
@@ -177,7 +180,7 @@ haskell manifest name tests' version = do
           (Traced $ name <> " " <> suite)
           [((root </>) . dropExtension) out]
 
-  build' </> name <> "-" <> version %> \out -> do
+  build' </> name <-> version %> \out -> do
     (Exit x, Stdout result) <-
       cmd (Traced "cabal info") "cabal info" [takeFileName out]
     case x of
@@ -187,7 +190,7 @@ haskell manifest name tests' version = do
         writeFile' out ""
       ExitSuccess -> writeFile' out result
 
-  build' </> name <> "-" <> version <.> "tar.gz" %> \_ -> do
+  build' </> name <-> version <.> "tar.gz" %> \_ -> do
     srcs <- getDirectoryFiles "" [package </> "src//*.hs"]
     need ((build' </> ".check") : (build' </> ".configure") : srcs)
     cmd_
@@ -232,7 +235,7 @@ packages =
 sdist :: Package -> FilePath
 sdist = \case
   Haskell {name, version} ->
-    buildDir </> packageDir </> name </> name <> "-" <> version <.> "tar.gz"
+    buildDir </> packageDir </> name </> name <-> version <.> "tar.gz"
 
 test :: Package -> [FilePath]
 test = \case
@@ -244,4 +247,4 @@ test = \case
 uploadToHackage :: Package -> FilePath
 uploadToHackage = \case
   Haskell {name, version} ->
-    buildDir </> packageDir </> name </> name <> "-" <> version
+    buildDir </> packageDir </> name </> name <-> version
