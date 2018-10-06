@@ -105,6 +105,8 @@ main = do
           [ "--command"
           , "cabal repl lib:"
             <> katipRollbar
+            <> " --builddir "
+            <> distKatipRollbar
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -121,6 +123,8 @@ main = do
           [ "--command"
           , "cabal repl lib:"
             <> rollbarHS
+            <> " --builddir "
+            <> distRollbarHS
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -137,6 +141,8 @@ main = do
           [ "--command"
           , "cabal repl lib:"
             <> waiMiddlewareRollbar
+            <> " --builddir "
+            <> distWaiMiddlewareRollbar
             <> " --ghc-options '"
             <> unwords ghciFlags
             <> "'"
@@ -154,6 +160,8 @@ main = do
         (FileStdout out)
         (Traced "cabal build")
         "cabal build"
+        "--builddir"
+        [distKatipRollbar]
 
     buildRollbarHS </> ".build" %> \out -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
@@ -163,6 +171,8 @@ main = do
         (FileStdout out)
         (Traced "cabal build")
         "cabal build"
+        "--builddir"
+        [distRollbarHS]
 
     buildWaiMiddlewareRollbar </> ".build" %> \out -> do
       srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
@@ -172,6 +182,8 @@ main = do
         (FileStdout out)
         (Traced "cabal build")
         "cabal build"
+        "--builddir"
+        [distWaiMiddlewareRollbar]
 
     buildKatipRollbar </> ".check" %> \out -> do
       need [packageKatipRollbar </> katipRollbar <.> "cabal"]
@@ -210,6 +222,8 @@ main = do
         (FileStdout out)
         (Traced "cabal configure")
         "cabal configure"
+        "--builddir"
+        [distKatipRollbar]
 
     buildRollbarHS </> ".configure" %> \out -> do
       need [buildDir </> ".update", packageRollbarHS </> rollbarHS <.> "cabal"]
@@ -218,6 +232,8 @@ main = do
         (FileStdout out)
         (Traced "cabal configure")
         "cabal configure"
+        "--builddir"
+        [distRollbarHS]
         "--enable-tests"
 
     buildWaiMiddlewareRollbar </> ".configure" %> \out -> do
@@ -230,6 +246,8 @@ main = do
         (FileStdout out)
         (Traced "cabal configure")
         "cabal configure"
+        "--builddir"
+        [distWaiMiddlewareRollbar]
 
     distRollbarHS </> "build/doc-test/doc-test" %> \_ -> do
       srcs <-
@@ -242,6 +260,8 @@ main = do
         (Traced "cabal build")
         "cabal build"
         "test:doc-test"
+        "--builddir"
+        [distRollbarHS]
 
     distRollbarHS </> "build/doc-test/doc-test.out" %> \out -> do
       need [dropExtension out]
@@ -258,7 +278,12 @@ main = do
         : (buildKatipRollbar </> ".configure")
         : srcs
         )
-      cmd_ (Cwd packageKatipRollbar) (Traced "cabal sdist") "cabal sdist"
+      cmd_
+        (Cwd packageKatipRollbar)
+        (Traced "cabal sdist")
+        "cabal sdist"
+        "--builddir"
+        [distKatipRollbar]
 
     distRollbarHS </> rollbarHS <> "-" <> rollbarHSVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageRollbarHS </> "src//*.hs"]
@@ -267,7 +292,12 @@ main = do
         : (buildRollbarHS </> ".configure")
         : srcs
         )
-      cmd_ (Cwd packageRollbarHS) (Traced "cabal sdist") "cabal sdist"
+      cmd_
+        (Cwd packageRollbarHS)
+        (Traced "cabal sdist")
+        "cabal sdist"
+        "--builddir"
+        [distRollbarHS]
 
     distWaiMiddlewareRollbar </> waiMiddlewareRollbar <> "-" <> waiMiddlewareRollbarVersion <.> "tar.gz" %> \_ -> do
       srcs <- getDirectoryFiles "" [packageWaiMiddlewareRollbar </> "src//*.hs"]
@@ -280,6 +310,8 @@ main = do
         (Cwd packageWaiMiddlewareRollbar)
         (Traced "cabal sdist")
         "cabal sdist"
+        "--builddir"
+        [distWaiMiddlewareRollbar]
 
     distKatipRollbar </> katipRollbar <> "-" <> katipRollbarVersion %> \out -> do
       (Exit x, Stdout result) <-
