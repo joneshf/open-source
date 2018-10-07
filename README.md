@@ -1,5 +1,7 @@
 # open-source
 
+[![CircleCI](https://circleci.com/gh/joneshf/open-source.svg?style=svg)](https://circleci.com/gh/joneshf/open-source)
+
 A single repo for all of my open source stuff.
 
 ## Setup
