@@ -9,7 +9,6 @@ jobs:
           keys:
             - v1-nix-{{ checksum "default.nix" }}
             - v1-nix-
-            - v1-
           name: Restoring nix cache
       - run:
           command: nix-shell --run 'exit'
@@ -24,7 +23,6 @@ jobs:
           keys:
             - v1-build-{{ checksum "Shakefile.hs" }}
             - v1-build-
-            - v1-
           name: Restoring build cache
       - run:
           command: nix-shell --run 'shake build'
