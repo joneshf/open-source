@@ -6,8 +6,10 @@ in    { manifest =
           (constructors Manifest).Hpack {=}
       , name =
           "rollbar-hs"
+      , sourceDirectory =
+          "src"
       , tests =
-          [ "doc-test" ]
+          [ { suite = "doc-test", testDirectory = "test" } ]
       , version =
           "0.3.1.0"
       }

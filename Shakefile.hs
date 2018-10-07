@@ -63,17 +63,6 @@ import "typed-process" System.Process.Typed
 
 import qualified "bytestring" Data.ByteString
 
-data Package
-  = Haskell
-    { manifest :: Manifest
-    , name     :: String
-    , tests    :: [String]
-    , version  :: String
-    }
-  deriving (Generic)
-
-instance Interpret Package
-
 data Manifest
   = Cabal
   | Hpack
@@ -81,10 +70,32 @@ data Manifest
 
 instance Interpret Manifest
 
+data Package
+  = Haskell
+    { manifest        :: Manifest
+    , name            :: String
+    , sourceDirectory :: FilePath
+    , tests           :: [Test]
+    , version         :: String
+    }
+  deriving (Generic)
+
+instance Interpret Package
+
+data Test
+  = Test
+    { suite         :: String
+    , testDirectory :: FilePath
+    }
+  deriving (Generic)
+
+instance Interpret Test
+
 main :: IO ()
 main = do
   writeFileChanged "Manifest.dhall" (unpack $ pretty $ expected $ auto @Manifest)
   writeFileChanged "Package.dhall" (unpack $ pretty $ expected $ auto @Package)
+  writeFileChanged "Test.dhall" (unpack $ pretty $ expected $ auto @Test)
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
@@ -135,8 +146,8 @@ main = do
           )
 
     for_ packages $ \case
-      Haskell manifest name tests' version ->
-        haskell manifest name tests' version
+      Haskell manifest name sourceDirectory tests' version ->
+        haskell manifest name sourceDirectory tests' version
 
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
@@ -158,8 +169,8 @@ ghciFlags =
   , "-v1"
   ]
 
-haskell :: Manifest -> String -> [String] -> String -> Rules ()
-haskell manifest name tests version = do
+haskell :: Manifest -> String -> FilePath -> [Test] -> String -> Rules ()
+haskell manifest name sourceDirectory tests version = do
   root <- liftIO getCurrentDirectory
   let build' = buildDir </> package
       package = packageDir </> name
@@ -183,7 +194,7 @@ haskell manifest name tests version = do
       )
 
   build' </> ".build" %> \out -> do
-    srcs <- getDirectoryFiles "" [package </> "src//*.hs"]
+    srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
     need ((build' </> ".configure") : srcs)
     cmd
       (Cwd package)
@@ -213,28 +224,31 @@ haskell manifest name tests version = do
       [root </> build']
       ("--enable-tests" <$ tests)
 
-  for_ tests $ \suite -> do
-    build' </> "build" </> suite </> suite %> \_ -> do
-      srcs <-
-        getDirectoryFiles
-          ""
-          [package </> "src//*.hs", package </> "test//*.hs"]
-      need ((build' </> ".build") : srcs)
-      cmd_
-        (Cwd package)
-        (Traced "cabal build")
-        "cabal build"
-        ["test:" <> suite]
-        "--builddir"
-        [root </> build']
+  for_ tests $ \case
+    Test { testDirectory, suite } -> do
+      build' </> "build" </> suite </> suite %> \_ -> do
+        srcs <-
+          getDirectoryFiles
+            ""
+            [ package </> sourceDirectory <//> "*.hs"
+            , package </> testDirectory </> suite <//> "*.hs"
+            ]
+        need ((build' </> ".build") : srcs)
+        cmd_
+          (Cwd package)
+          (Traced "cabal build")
+          "cabal build"
+          ["test:" <> suite]
+          "--builddir"
+          [root </> build']
 
-    build' </> "build" </> suite </> suite <.> "out" %> \out -> do
-      need [dropExtension out]
-      cmd_
-        (Cwd package)
-        (FileStdout out)
-        (Traced $ name <> " " <> suite)
-        [((root </>) . dropExtension) out]
+      build' </> "build" </> suite </> suite <.> "out" %> \out -> do
+        need [dropExtension out]
+        cmd_
+          (Cwd package)
+          (FileStdout out)
+          (Traced $ name <> " " <> suite)
+          [((root </>) . dropExtension) out]
 
   build' </> name <-> version %> \out -> do
     (Exit x, Stdout result) <-
@@ -247,7 +261,7 @@ haskell manifest name tests version = do
       ExitSuccess -> writeFile' out result
 
   build' </> name <-> version <.> "tar.gz" %> \_ -> do
-    srcs <- getDirectoryFiles "" [package </> "src//*.hs"]
+    srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
     need ((build' </> ".check") : (build' </> ".configure") : srcs)
     cmd_
       (Cwd package)
@@ -275,8 +289,15 @@ test :: Package -> [FilePath]
 test = \case
   Haskell { name, tests } -> fmap go tests
     where
-    go suite =
-      buildDir </> packageDir </> name </> "build" </> suite </> suite <.> "out"
+    go = \case
+      Test { suite } ->
+        buildDir
+          </> packageDir
+          </> name
+          </> "build"
+          </> suite
+          </> suite
+          <.> "out"
 
 uploadToHackage :: Package -> FilePath
 uploadToHackage = \case
