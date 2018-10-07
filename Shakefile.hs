@@ -8,7 +8,6 @@ module Main where
 import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
-import "base" Data.List                     (isInfixOf)
 import "text" Data.Text                     (pack, unpack)
 import "text" Data.Text.Encoding            (decodeUtf8With)
 import "text" Data.Text.Encoding.Error      (lenientDecode)
@@ -16,6 +15,7 @@ import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
     , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
+    , FilePattern
     , Rules
     , ShakeOptions(shakeChange, shakeFiles, shakeThreads, shakeVersion)
     , Stdout(Stdout)
@@ -130,9 +130,7 @@ main = do
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
     ".circleci/cache" %> \out -> do
-      need ciNeeds
-      artifacts' <- getDirectoryFiles "" [buildDir <//> "*"]
-      let artifacts = filter (not . (".shake" `isInfixOf`)) artifacts'
+      artifacts <- getDirectoryFiles "" (foldMap inputs packages)
       need artifacts
       newHash <- liftIO (getHashedShakeVersion artifacts)
       oldHash <- liftIO (Data.ByteString.readFile out)
@@ -276,6 +274,19 @@ haskell manifest name sourceDirectory tests version = do
       package </> name <.> "cabal" %> \out -> do
         need [replaceFileName out "package.yaml"]
         cmd_ (Cwd package) (Traced "hpack") "hpack"
+
+inputs :: Package -> [FilePattern]
+inputs = \case
+  Haskell { manifest, name, sourceDirectory, tests } ->
+    manifestInput manifest : sourceInput : fmap testInput tests
+    where
+    manifestInput = \case
+      Cabal -> "packages" </> name </> name <.> "cabal"
+      Hpack -> "packages" </> name </> "package.yaml"
+    sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
+    testInput = \case
+      Test { suite, testDirectory } ->
+        "packages" </> name </> testDirectory </> suite <//> "*.hs"
 
 packageDir :: FilePath
 packageDir = "packages"
