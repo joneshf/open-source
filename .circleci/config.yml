@@ -15,7 +15,7 @@ jobs:
           name: Setup nix environment
       - save_cache:
           key: v1-nix-{{ checksum "default.nix" }}
-          name: Saving cache
+          name: Saving nix cache
           paths:
             - /nix
 
@@ -29,12 +29,12 @@ jobs:
           name: Build
       - save_cache:
           key: v1-build-{{ checksum ".circleci/cache" }}
-          name: Saving cache
+          name: Saving build cache
           paths:
             - _build
       - run:
           command: nix-shell --run 'shake .circleci/cache'
-          name: Checking cache is updated
+          name: Checking build cache is updated
 
 version: 2
 
