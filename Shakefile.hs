@@ -88,24 +88,30 @@ main = do
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
-  let options = shakeOptions
+  let buildNeeds = fmap build packages
+      ciNeeds = buildNeeds <> sdistNeeds <> testNeeds
+      options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
         , shakeThreads = 0
         , shakeVersion
         }
+      sdistNeeds = fmap sdist packages
+      testNeeds = foldMap test packages
   shakeArgs options $ do
     want ["build"]
 
-    phony "build" (need $ fmap build packages)
+    phony "build" (need buildNeeds)
+
+    phony "ci" (need ciNeeds)
 
     phony "clean" (removeFilesAfter "" [buildDir])
 
-    phony "sdist" (need $ fmap sdist packages)
+    phony "sdist" (need sdistNeeds)
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
-    phony "test" (need $ foldMap test packages)
+    phony "test" (need testNeeds)
 
     phony "upload-to-hackage" (need $ fmap uploadToHackage packages)
 
@@ -113,6 +119,7 @@ main = do
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
     ".circleci/cache" %> \out -> do
+      need ciNeeds
       artifacts' <- getDirectoryFiles "" [buildDir <//> "*"]
       let artifacts = filter (not . (".shake" `isInfixOf`)) artifacts'
       need artifacts
@@ -128,7 +135,8 @@ main = do
           )
 
     for_ packages $ \case
-      Haskell manifest name tests version -> haskell manifest name tests version
+      Haskell manifest name tests' version ->
+        haskell manifest name tests' version
 
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y

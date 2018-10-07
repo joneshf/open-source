@@ -25,7 +25,7 @@ jobs:
             - v1-build-
           name: Restoring build cache
       - run:
-          command: nix-shell --run 'shake build sdist test'
+          command: nix-shell --run 'shake ci'
           name: Build
       - save_cache:
           key: v1-build-{{ checksum ".circleci/cache" }}
