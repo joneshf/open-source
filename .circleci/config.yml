@@ -11,7 +11,7 @@ jobs:
             - v1-
           name: Restoring cache
       - run:
-          command: nix-shell --run 'shake --digest-and-input build'
+          command: nix-shell --run 'shake --digest-and build'
           name: Build
       - run:
           command: nix-shell --run 'shake test'
