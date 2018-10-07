@@ -278,8 +278,9 @@ haskell manifest name sourceDirectory tests version = do
 inputs :: Package -> [FilePattern]
 inputs = \case
   Haskell { manifest, name, sourceDirectory, tests } ->
-    manifestInput manifest : sourceInput : fmap testInput tests
+    config : manifestInput manifest : sourceInput : fmap testInput tests
     where
+    config = "packages" </> name </> "shake.dhall"
     manifestInput = \case
       Cabal -> "packages" </> name </> name <.> "cabal"
       Hpack -> "packages" </> name </> "package.yaml"
