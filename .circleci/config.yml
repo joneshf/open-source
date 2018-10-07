@@ -4,24 +4,37 @@ jobs:
       - image: nixorg/nix:circleci
     steps:
       - checkout
+
       - restore_cache:
           keys:
-            - v1-{{ checksum "Shakefile.hs" }}-{{ checksum "default.nix" }}
-            - v1-{{ checksum "Shakefile.hs" }}-
-            - v1-
-          name: Restoring cache
+            - v1-nix-{{ checksum "default.nix" }}
+            - v1-nix-
+          name: Restoring nix cache
       - run:
-          command: nix-shell --run 'shake build'
-          name: Build
-      - run:
-          command: nix-shell --run 'shake test'
-          name: Test
+          command: nix-shell --run 'exit'
+          name: Setup nix environment
       - save_cache:
-          key: v1-{{ checksum "Shakefile.hs" }}-{{ checksum "default.nix" }}
-          name: Saving cache
+          key: v1-nix-{{ checksum "default.nix" }}
+          name: Saving nix cache
           paths:
             - /nix
+
+      - restore_cache:
+          keys:
+            - v1-build-{{ checksum ".circleci/cache" }}
+            - v1-build-
+          name: Restoring build cache
+      - run:
+          command: nix-shell --run 'shake ci'
+          name: Build
+      - save_cache:
+          key: v1-build-{{ checksum ".circleci/cache" }}
+          name: Saving build cache
+          paths:
             - _build
+      - run:
+          command: nix-shell --run 'shake .circleci/cache'
+          name: Checking build cache is updated
 
 version: 2
 

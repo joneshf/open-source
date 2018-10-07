@@ -5,13 +5,17 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
+import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
 import "text" Data.Text                     (pack, unpack)
+import "text" Data.Text.Encoding            (decodeUtf8With)
+import "text" Data.Text.Encoding.Error      (lenientDecode)
 import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
     , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
+    , FilePattern
     , Rules
     , ShakeOptions(shakeChange, shakeFiles, shakeThreads, shakeVersion)
     , Stdout(Stdout)
@@ -30,6 +34,7 @@ import "shake" Development.Shake
     , writeFile'
     , writeFileChanged
     , (%>)
+    , (<//>)
     )
 import "shake" Development.Shake.FilePath
     ( dropExtension
@@ -56,16 +61,7 @@ import "typed-process" System.Process.Typed
     , shell
     )
 
-data Package
-  = Haskell
-    { manifest :: Manifest
-    , name     :: String
-    , tests    :: [String]
-    , version  :: String
-    }
-  deriving (Generic)
-
-instance Interpret Package
+import qualified "bytestring" Data.ByteString
 
 data Manifest
   = Cabal
@@ -74,39 +70,82 @@ data Manifest
 
 instance Interpret Manifest
 
+data Package
+  = Haskell
+    { manifest        :: Manifest
+    , name            :: String
+    , sourceDirectory :: FilePath
+    , tests           :: [Test]
+    , version         :: String
+    }
+  deriving (Generic)
+
+instance Interpret Package
+
+data Test
+  = Test
+    { suite         :: String
+    , testDirectory :: FilePath
+    }
+  deriving (Generic)
+
+instance Interpret Test
+
 main :: IO ()
 main = do
   writeFileChanged "Manifest.dhall" (unpack $ pretty $ expected $ auto @Manifest)
   writeFileChanged "Package.dhall" (unpack $ pretty $ expected $ auto @Package)
+  writeFileChanged "Test.dhall" (unpack $ pretty $ expected $ auto @Test)
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
-  let options = shakeOptions
+  let buildNeeds = fmap build packages
+      ciNeeds = buildNeeds <> sdistNeeds <> testNeeds
+      options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
         , shakeThreads = 0
         , shakeVersion
         }
+      sdistNeeds = fmap sdist packages
+      testNeeds = foldMap test packages
   shakeArgs options $ do
     want ["build"]
 
-    phony "build" (need $ fmap build packages)
+    phony "build" (need buildNeeds)
+
+    phony "ci" (need ciNeeds)
 
     phony "clean" (removeFilesAfter "" [buildDir])
 
-    phony "sdist" (need $ fmap sdist packages)
+    phony "sdist" (need sdistNeeds)
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
-    phony "test" (need $ foldMap test packages)
+    phony "test" (need testNeeds)
 
     phony "upload-to-hackage" (need $ fmap uploadToHackage packages)
 
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
+    ".circleci/cache" %> \out -> do
+      artifacts <- getDirectoryFiles "" (foldMap inputs packages)
+      need artifacts
+      newHash <- liftIO (getHashedShakeVersion artifacts)
+      oldHash <- liftIO (Data.ByteString.readFile out)
+      writeFile' out newHash
+      when (decodeUtf8With lenientDecode oldHash /= pack newHash) $
+        fail
+          ( unlines
+            [ "The cache has changed."
+            , "Please run `shake " <> out <> "` and commit the changes."
+            ]
+          )
+
     for_ packages $ \case
-      Haskell manifest name tests version -> haskell manifest name tests version
+      Haskell manifest name sourceDirectory tests' version ->
+        haskell manifest name sourceDirectory tests' version
 
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
@@ -128,8 +167,8 @@ ghciFlags =
   , "-v1"
   ]
 
-haskell :: Manifest -> String -> [String] -> String -> Rules ()
-haskell manifest name tests version = do
+haskell :: Manifest -> String -> FilePath -> [Test] -> String -> Rules ()
+haskell manifest name sourceDirectory tests version = do
   root <- liftIO getCurrentDirectory
   let build' = buildDir </> package
       package = packageDir </> name
@@ -153,7 +192,7 @@ haskell manifest name tests version = do
       )
 
   build' </> ".build" %> \out -> do
-    srcs <- getDirectoryFiles "" [package </> "src//*.hs"]
+    srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
     need ((build' </> ".configure") : srcs)
     cmd
       (Cwd package)
@@ -183,28 +222,31 @@ haskell manifest name tests version = do
       [root </> build']
       ("--enable-tests" <$ tests)
 
-  for_ tests $ \suite -> do
-    build' </> "build" </> suite </> suite %> \_ -> do
-      srcs <-
-        getDirectoryFiles
-          ""
-          [package </> "src//*.hs", package </> "test//*.hs"]
-      need ((build' </> ".build") : srcs)
-      cmd_
-        (Cwd package)
-        (Traced "cabal build")
-        "cabal build"
-        ["test:" <> suite]
-        "--builddir"
-        [root </> build']
+  for_ tests $ \case
+    Test { testDirectory, suite } -> do
+      build' </> "build" </> suite </> suite %> \_ -> do
+        srcs <-
+          getDirectoryFiles
+            ""
+            [ package </> sourceDirectory <//> "*.hs"
+            , package </> testDirectory </> suite <//> "*.hs"
+            ]
+        need ((build' </> ".build") : srcs)
+        cmd_
+          (Cwd package)
+          (Traced "cabal build")
+          "cabal build"
+          ["test:" <> suite]
+          "--builddir"
+          [root </> build']
 
-    build' </> "build" </> suite </> suite <.> "out" %> \out -> do
-      need [dropExtension out]
-      cmd_
-        (Cwd package)
-        (FileStdout out)
-        (Traced $ name <> " " <> suite)
-        [((root </>) . dropExtension) out]
+      build' </> "build" </> suite </> suite <.> "out" %> \out -> do
+        need [dropExtension out]
+        cmd_
+          (Cwd package)
+          (FileStdout out)
+          (Traced $ name <> " " <> suite)
+          [((root </>) . dropExtension) out]
 
   build' </> name <-> version %> \out -> do
     (Exit x, Stdout result) <-
@@ -217,7 +259,7 @@ haskell manifest name tests version = do
       ExitSuccess -> writeFile' out result
 
   build' </> name <-> version <.> "tar.gz" %> \_ -> do
-    srcs <- getDirectoryFiles "" [package </> "src//*.hs"]
+    srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
     need ((build' </> ".check") : (build' </> ".configure") : srcs)
     cmd_
       (Cwd package)
@@ -233,6 +275,20 @@ haskell manifest name tests version = do
         need [replaceFileName out "package.yaml"]
         cmd_ (Cwd package) (Traced "hpack") "hpack"
 
+inputs :: Package -> [FilePattern]
+inputs = \case
+  Haskell { manifest, name, sourceDirectory, tests } ->
+    config : manifestInput manifest : sourceInput : fmap testInput tests
+    where
+    config = "packages" </> name </> "shake.dhall"
+    manifestInput = \case
+      Cabal -> "packages" </> name </> name <.> "cabal"
+      Hpack -> "packages" </> name </> "package.yaml"
+    sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
+    testInput = \case
+      Test { suite, testDirectory } ->
+        "packages" </> name </> testDirectory </> suite <//> "*.hs"
+
 packageDir :: FilePath
 packageDir = "packages"
 
@@ -245,8 +301,15 @@ test :: Package -> [FilePath]
 test = \case
   Haskell { name, tests } -> fmap go tests
     where
-    go suite =
-      buildDir </> packageDir </> name </> "build" </> suite </> suite <.> "out"
+    go = \case
+      Test { suite } ->
+        buildDir
+          </> packageDir
+          </> name
+          </> "build"
+          </> suite
+          </> suite
+          <.> "out"
 
 uploadToHackage :: Package -> FilePath
 uploadToHackage = \case
