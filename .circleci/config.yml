@@ -1,0 +1,33 @@
+jobs:
+  base:
+    docker:
+      - image: nixorg/nix:circleci
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-{{ checksum "Shakefile.hs" }}-{{ checksum "default.nix" }}
+            - v1-{{ checksum "Shakefile.hs" }}-
+            - v1-
+          name: Restoring cache
+      - run:
+          command: nix-shell --run 'shake build'
+          name: Build
+      - run:
+          command: nix-shell --run 'shake test'
+          name: Test
+      - save_cache:
+          key: v1-{{ checksum "Shakefile.hs" }}-{{ checksum "default.nix" }}
+          name: Saving cache
+          paths:
+            - /nix
+            - _build
+
+version: 2
+
+workflows:
+  base:
+    jobs:
+      - base
+
+  version: 2
