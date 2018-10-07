@@ -9,10 +9,11 @@ import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
 import "text" Data.Text                     (pack, unpack)
 import "shake" Development.Shake
-    ( CmdOption(Cwd, EchoStdout, FileStdout, Traced)
+    ( Change(ChangeModtimeAndDigest)
+    , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
     , Rules
-    , ShakeOptions(shakeFiles, shakeThreads, shakeVersion)
+    , ShakeOptions(shakeChange, shakeFiles, shakeThreads, shakeVersion)
     , Stdout(Stdout)
     , cmd
     , cmd_
@@ -80,9 +81,12 @@ main = do
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
-  let options = shakeOptions { shakeFiles, shakeThreads, shakeVersion }
-      shakeFiles = buildDir
-      shakeThreads = 0
+  let options = shakeOptions
+        { shakeChange = ChangeModtimeAndDigest
+        , shakeFiles = buildDir
+        , shakeThreads = 0
+        , shakeVersion
+        }
   shakeArgs options $ do
     want ["build"]
 
