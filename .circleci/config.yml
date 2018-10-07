@@ -19,13 +19,8 @@ jobs:
           paths:
             - /nix
 
-      # - restore_cache:
-      #     keys:
-      #       - v1-build-{{ checksum ".circleci/cache" }}
-      #       - v1-build-
-      #     name: Restoring build cache
       - run:
-          command: nix-shell --run 'shake --jobs=4 ci'
+          command: nix-shell --run 'shake ci'
           name: Build
       - save_cache:
           key: v1-build-{{ checksum ".circleci/cache" }}
@@ -33,7 +28,7 @@ jobs:
           paths:
             - _build
       - run:
-          command: nix-shell --run 'shake --jobs=4 .circleci/cache'
+          command: nix-shell --run 'shake .circleci/cache'
           name: Checking cache is updated
 
 version: 2
