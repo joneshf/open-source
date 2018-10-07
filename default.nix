@@ -49,6 +49,7 @@ let
 
   haskell-packages-shake = p: [
     p.base
+    p.bytestring
     p.dhall_1_17_0
     p.directory
     p.shake

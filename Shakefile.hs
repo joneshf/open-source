@@ -5,9 +5,13 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
+import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
+import "base" Data.List                     (isInfixOf)
 import "text" Data.Text                     (pack, unpack)
+import "text" Data.Text.Encoding            (decodeUtf8With)
+import "text" Data.Text.Encoding.Error      (lenientDecode)
 import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
     , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
@@ -30,6 +34,7 @@ import "shake" Development.Shake
     , writeFile'
     , writeFileChanged
     , (%>)
+    , (<//>)
     )
 import "shake" Development.Shake.FilePath
     ( dropExtension
@@ -55,6 +60,8 @@ import "typed-process" System.Process.Typed
     , setWorkingDir
     , shell
     )
+
+import qualified "bytestring" Data.ByteString
 
 data Package
   = Haskell
@@ -104,6 +111,21 @@ main = do
 
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
+
+    ".circleci/cache" %> \out -> do
+      artifacts' <- getDirectoryFiles "" [buildDir <//> "*"]
+      let artifacts = filter (not . (".shake" `isInfixOf`)) artifacts'
+      need artifacts
+      newHash <- liftIO (getHashedShakeVersion artifacts)
+      oldHash <- liftIO (Data.ByteString.readFile out)
+      writeFile' out newHash
+      when (decodeUtf8With lenientDecode oldHash /= pack newHash) $
+        fail
+          ( unlines
+            [ "The cache has changed."
+            , "Please run `shake " <> out <> "` and commit the changes."
+            ]
+          )
 
     for_ packages $ \case
       Haskell manifest name tests version -> haskell manifest name tests version
