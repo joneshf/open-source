@@ -42,6 +42,7 @@ import "shake" Development.Shake.FilePath
     ( dropDirectory1
     , dropExtension
     , replaceFileName
+    , takeDirectory
     , takeFileName
     , (<.>)
     , (</>)
@@ -125,6 +126,10 @@ main = do
       needs <- getDirectoryFiles "" (foldMap inputs packages)
       need (fmap (\x -> buildDir </> x <.> "format") ("Shakefile.hs" : needs))
 
+    phony "lint" $ do
+      needs <- getDirectoryFiles "" (foldMap inputs packages)
+      need (fmap (\x -> buildDir </> x <.> "lint") ("Shakefile.hs" : needs))
+
     phony "sdist" (need sdistNeeds)
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
@@ -144,9 +149,25 @@ main = do
       -- Once that's fixed, use it.
       copyFileChanged ((dropDirectory1 . dropExtension) out) out
 
+    buildDir <//> "*.cabal.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [input']
+      cmd_
+        (Cwd $ takeDirectory input')
+        (EchoStdout True)
+        (FileStdout out)
+        (Traced "cabal check")
+        "cabal check"
+
     buildDir <//> "*.dhall.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
       cmd_ (Traced "dhall format") "dhall format" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
+
+    buildDir <//> "*.dhall.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      cmd_ (Traced "dhall lint") "dhall lint" "--inplace" [input']
       copyFileChanged input' out
       needed [input']
 
@@ -156,12 +177,24 @@ main = do
       copyFileChanged input' out
       needed [input']
 
+    buildDir <//> "*.hs.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [input']
+      cmd_ (Traced "hlint") "hlint" [input']
+      copyFileChanged input' out
+
     buildDir <//> "*.yaml.format" %> \out ->
       -- Skip over formatting YAML files.
       -- The current set of formatters that exist drop comments.
       -- There might be another formatter out there that preserves comments.
       -- If so, use that.
       copyFileChanged ((dropDirectory1 . dropExtension) out) out
+
+    buildDir <//> "*.yaml.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [input']
+      cmd_ (Traced "yamllint") "yamllint" "--strict" [input']
+      copyFileChanged input' out
 
     ".circleci/cache" %> \out -> do
       artifacts <- getDirectoryFiles "" (foldMap inputs packages)
@@ -236,15 +269,6 @@ haskell manifest name sourceDirectory tests version = do
       "--builddir"
       [root </> build']
 
-  build' </> ".check" %> \out -> do
-    need [package </> name <.> "cabal"]
-    cmd
-      (Cwd package)
-      (EchoStdout True)
-      (FileStdout out)
-      (Traced "cabal check")
-      "cabal check"
-
   build' </> ".configure" %> \out -> do
     need [buildDir </> ".update", package </> name <.> "cabal"]
     cmd
@@ -294,7 +318,7 @@ haskell manifest name sourceDirectory tests version = do
 
   build' </> name <-> version <.> "tar.gz" %> \_ -> do
     srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
-    need ((build' </> ".check") : (build' </> ".configure") : srcs)
+    need ((build' </> name <.> "cabal.lint") : (build' </> ".configure") : srcs)
     cmd_
       (Cwd package)
       (Traced "cabal sdist")

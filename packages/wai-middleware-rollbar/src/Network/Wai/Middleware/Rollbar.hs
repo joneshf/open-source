@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -139,15 +138,12 @@ send settings req res = do
     where
     Status{statusCode, statusMessage} = NW.responseStatus res
     messageBody = RI.MessageBody <$> myDecodeUtf8 statusMessage
-    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
-    range = myDecodeUtf8 =<< NW.requestHeaderRange req
-    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
     payload = Payload.RequestPayload
-        { Payload.range
-        , Payload.referer
+        { Payload.range = myDecodeUtf8 =<< NW.requestHeaderRange req
+        , Payload.referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
         , Payload.statusCode
         , Payload.statusMessage = myDecodeUtf8' statusMessage
-        , Payload.userAgent
+        , Payload.userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
         }
 
 handleHttpException :: HttpException -> IO ()
@@ -179,14 +175,11 @@ handleSomeException settings req e = do
             , myDecodeUtf8' $ NW.requestMethod req
             , T.intercalate "/" $ NW.pathInfo req
             ]
-    referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
-    range = myDecodeUtf8 =<< NW.requestHeaderRange req
-    userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
     payload = Payload.ExceptionPayload
       { Payload.exception
-      , Payload.referer
-      , Payload.range
-      , Payload.userAgent
+      , Payload.referer = myDecodeUtf8 =<< NW.requestHeaderReferer req
+      , Payload.range = myDecodeUtf8 =<< NW.requestHeaderRange req
+      , Payload.userAgent = myDecodeUtf8 =<< NW.requestHeaderUserAgent req
       }
 
 mkRollbarRequest

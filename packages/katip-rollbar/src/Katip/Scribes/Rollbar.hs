@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PackageImports #-}
@@ -89,9 +88,9 @@ mkRollbarScribe ::
 mkRollbarScribe proxy accessToken branch codeVersion manager severity verbosity = do
   queue <- newTBMQueueIO queueSize
   workers <- replicateM workerSize (async $ mkWorker proxy manager queue)
-  let liPush item = when (permitItem severity item) $
-        atomically (writeTBMQueue queue $ rollbarItem' item)
-      rollbarItem' item = rollbarItem proxy accessToken branch codeVersion verbosity item
+  let liPush item' = when (permitItem severity item') $ do
+        let item = rollbarItem proxy accessToken branch codeVersion verbosity item'
+        atomically (writeTBMQueue queue item)
       scribeFinalizer = do
         atomically (closeTBMQueue queue)
         for_ workers waitCatch
