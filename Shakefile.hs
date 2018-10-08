@@ -103,8 +103,13 @@ main = do
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
-  let buildNeeds = fmap build packages
-      ciNeeds = buildNeeds <> sdistNeeds <> testNeeds
+  inputFiles <- getDirectoryFilesIO "" (foldMap inputs packages)
+  let allFiles = "Shakefile.hs" : inputFiles
+      buildNeeds = fmap build packages
+      ciNeeds =
+        buildNeeds <> formatNeeds <> lintNeeds <> sdistNeeds <> testNeeds
+      formatNeeds = fmap (\x -> buildDir </> x <.> "format") allFiles
+      lintNeeds = fmap (\x -> buildDir </> x <.> "lint") allFiles
       options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
@@ -122,13 +127,9 @@ main = do
 
     phony "clean" (removeFilesAfter "" [buildDir])
 
-    phony "format" $ do
-      needs <- getDirectoryFiles "" (foldMap inputs packages)
-      need (fmap (\x -> buildDir </> x <.> "format") ("Shakefile.hs" : needs))
+    phony "format" (need formatNeeds)
 
-    phony "lint" $ do
-      needs <- getDirectoryFiles "" (foldMap inputs packages)
-      need (fmap (\x -> buildDir </> x <.> "lint") ("Shakefile.hs" : needs))
+    phony "lint" (need lintNeeds)
 
     phony "sdist" (need sdistNeeds)
 
