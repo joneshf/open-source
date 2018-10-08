@@ -137,6 +137,12 @@ main = do
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
+    buildDir <//> "*.dhall.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      cmd_ (Traced "dhall format") "dhall format" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
+
     buildDir <//> "*.hs.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
       cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input']
@@ -175,8 +181,9 @@ format :: Package -> Action [FilePath]
 format = \case
   Haskell { name, sourceDirectory, tests } -> do
     inputs' <- getDirectoryFiles "" (sourceInput : fmap testInput tests)
-    pure (fmap formatted inputs')
+    pure (fmap formatted (config : inputs'))
     where
+    config = "packages" </> name </> "shake.dhall"
     formatted input' = buildDir </> input' <.> "format"
     sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
     testInput = \case
