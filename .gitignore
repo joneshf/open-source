@@ -6,7 +6,7 @@
 /Test.dhall
 /_build
 
-# Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,sublimetext,visualstudiocode
+# Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,haskell,sublimetext,visualstudiocode
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
@@ -54,6 +54,30 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+### Haskell ###
+dist
+dist-*
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+*.eventlog
+.stack-work/
+cabal.project.local
+cabal.project.local~
+.HTF/
+.ghc.environment.*
 
 ### Linux ###
 
@@ -191,4 +215,4 @@ $RECYCLE.BIN/
 *.lnk
 
 
-# End of https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,sublimetext,visualstudiocode
+# End of https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,haskell,sublimetext,visualstudiocode
