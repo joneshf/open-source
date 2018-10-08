@@ -1,0 +1,6 @@
+# -*- mode: yaml; -*-
+
+overrides:
+  - files: "*.yaml"
+    options:
+      proseWrap: always

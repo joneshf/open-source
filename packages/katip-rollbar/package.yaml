@@ -1,4 +1,3 @@
----
 author: Hardy Jones
 category: Logging
 copyright: 2018 Hardy Jones
@@ -28,4 +27,4 @@ license: BSD3
 maintainer: jones3.hardy@gmail.com
 name: katip-rollbar
 synopsis: Katip scribe that logs to Rollbar
-version: '0.3.0.0'
+version: 0.3.0.0

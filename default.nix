@@ -98,6 +98,7 @@ let
 
   tools-formatting = [
     nixpkgs.haskellPackages.stylish-haskell
+    nixpkgs.nodePackages.prettier
   ];
 
   tools-static-analyzing = [

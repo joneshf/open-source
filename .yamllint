@@ -1,0 +1,7 @@
+# -*- mode: yaml; -*-
+
+extends: default
+
+rules:
+  document-start:
+    present: false

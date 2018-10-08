@@ -185,12 +185,11 @@ main = do
       cmd_ (Traced "hlint") "hlint" [input']
       copyFileChanged input' out
 
-    buildDir <//> "*.yaml.format" %> \out ->
-      -- Skip over formatting YAML files.
-      -- The current set of formatters that exist drop comments.
-      -- There might be another formatter out there that preserves comments.
-      -- If so, use that.
-      copyFileChanged ((dropDirectory1 . dropExtension) out) out
+    buildDir <//> "*.yaml.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      cmd_ (Traced "prettier") "prettier" "--write" [input']
+      copyFileChanged input' out
+      needed [input']
 
     buildDir <//> "*.yaml.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
