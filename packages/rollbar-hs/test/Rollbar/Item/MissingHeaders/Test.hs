@@ -1,23 +1,22 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE TypeOperators #-}
 module Rollbar.Item.MissingHeaders.Test where
 
-import           Data.Aeson                  (Value (Object), decode', encode,
-                                              toJSON)
-import           Data.Functor                (void)
-import           Data.HashSet                (HashSet)
-import           Data.Text                   (Text)
+import Data.Aeson   (Value(Object), decode', encode, toJSON)
+import Data.Functor (void)
+import Data.HashSet (HashSet)
+import Data.Text    (Text)
 
-import           Prelude                     hiding (error)
+import Prelude hiding (error)
 
-import           Rollbar.Item.MissingHeaders (MissingHeaders (..))
-import           Rollbar.QuickCheck          ()
+import Rollbar.Item.MissingHeaders (MissingHeaders(..))
+import Rollbar.QuickCheck          ()
 
-import           Test.QuickCheck             (conjoin, quickCheck)
+import Test.QuickCheck (conjoin, quickCheck)
 
 import qualified Data.HashSet
 

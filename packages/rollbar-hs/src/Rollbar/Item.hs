@@ -122,7 +122,7 @@ import Rollbar.Item.Internal.Platform
 
 import System.Info (os)
 
-import qualified Data.Text                    as T
+import qualified Data.Text        as T
 import qualified Paths_rollbar_hs
 
 -- | Creates 'Data' with the level set to 'Debug'.

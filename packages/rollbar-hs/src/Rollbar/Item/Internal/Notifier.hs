@@ -18,7 +18,12 @@ module Rollbar.Item.Internal.Notifier
     ) where
 
 import Data.Aeson
-    (FromJSON, ToJSON, defaultOptions, genericToEncoding, toEncoding)
+    ( FromJSON
+    , ToJSON
+    , defaultOptions
+    , genericToEncoding
+    , toEncoding
+    )
 import Data.Version (Version)
 
 import GHC.Generics (Generic)

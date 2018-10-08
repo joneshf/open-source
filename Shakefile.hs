@@ -5,14 +5,15 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import "base" Control.Monad                 (when)
+import "base" Control.Monad                 (join, when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
 import "text" Data.Text                     (pack, unpack)
 import "text" Data.Text.Encoding            (decodeUtf8With)
 import "text" Data.Text.Encoding.Error      (lenientDecode)
 import "shake" Development.Shake
-    ( Change(ChangeModtimeAndDigest)
+    ( Action
+    , Change(ChangeModtimeAndDigest)
     , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
     , FilePattern
@@ -21,10 +22,12 @@ import "shake" Development.Shake
     , Stdout(Stdout)
     , cmd
     , cmd_
+    , copyFileChanged
     , getDirectoryFiles
     , getDirectoryFilesIO
     , getHashedShakeVersion
     , need
+    , needed
     , phony
     , removeFilesAfter
     , runAfter
@@ -37,7 +40,8 @@ import "shake" Development.Shake
     , (<//>)
     )
 import "shake" Development.Shake.FilePath
-    ( dropExtension
+    ( dropDirectory1
+    , dropExtension
     , replaceFileName
     , takeFileName
     , (<.>)
@@ -118,6 +122,10 @@ main = do
 
     phony "clean" (removeFilesAfter "" [buildDir])
 
+    phony "format" $ do
+      needs <- traverse format packages
+      need ((buildDir </> "Shakefile.hs.format") : join needs)
+
     phony "sdist" (need sdistNeeds)
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
@@ -128,6 +136,12 @@ main = do
 
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
+
+    buildDir <//> "*.hs.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
 
     ".circleci/cache" %> \out -> do
       artifacts <- getDirectoryFiles "" (foldMap inputs packages)
@@ -156,6 +170,18 @@ build = \case
 
 buildDir :: FilePath
 buildDir = "_build"
+
+format :: Package -> Action [FilePath]
+format = \case
+  Haskell { name, sourceDirectory, tests } -> do
+    inputs' <- getDirectoryFiles "" (sourceInput : fmap testInput tests)
+    pure (fmap formatted inputs')
+    where
+    formatted input' = buildDir </> input' <.> "format"
+    sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
+    testInput = \case
+      Test { testDirectory } ->
+        "packages" </> name </> testDirectory <//> "*.hs"
 
 ghciFlags :: [String]
 ghciFlags =
@@ -286,8 +312,8 @@ inputs = \case
       Hpack -> "packages" </> name </> "package.yaml"
     sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
     testInput = \case
-      Test { suite, testDirectory } ->
-        "packages" </> name </> testDirectory </> suite <//> "*.hs"
+      Test { testDirectory } ->
+        "packages" </> name </> testDirectory <//> "*.hs"
 
 packageDir :: FilePath
 packageDir = "packages"

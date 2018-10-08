@@ -23,7 +23,12 @@ module Network.Wai.Middleware.Rollbar (Settings(..), exceptions, requests) where
 
 import Control.Concurrent (forkIO)
 import Control.Exception
-    (Handler(Handler), SomeException, catches, displayException, throwIO)
+    ( Handler(Handler)
+    , SomeException
+    , catches
+    , displayException
+    , throwIO
+    )
 import Control.Monad      (when)
 
 import Data.Aeson   (ToJSON)
@@ -50,7 +55,11 @@ import Network.HTTP.Simple
     , setRequestSecure
     )
 import Network.HTTP.Types.Status
-    (Status(Status), statusCode, statusIsServerError, statusMessage)
+    ( Status(Status)
+    , statusCode
+    , statusIsServerError
+    , statusMessage
+    )
 import Network.Wai                            (Middleware, ResponseReceived)
 import Network.Wai.Middleware.Rollbar.Payload (Payload)
 

@@ -1,25 +1,25 @@
-{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE TypeOperators #-}
 module Rollbar.Item.Request.Test where
 
-import           Data.Aeson           (Value (Object), decode', encode, toJSON)
-import           Data.CaseInsensitive (original)
-import           Data.Foldable        (fold)
-import           Data.Functor         (void)
-import           Data.HashSet         (HashSet)
-import           Data.Text            (Text)
+import Data.Aeson           (Value(Object), decode', encode, toJSON)
+import Data.CaseInsensitive (original)
+import Data.Foldable        (fold)
+import Data.Functor         (void)
+import Data.HashSet         (HashSet)
+import Data.Text            (Text)
 
-import           Prelude              hiding (error)
+import Prelude hiding (error)
 
-import           Rollbar.Item.Request (MissingHeaders (..))
-import           Rollbar.QuickCheck   ()
+import Rollbar.Item.Request (MissingHeaders(..))
+import Rollbar.QuickCheck   ()
 
-import           Test.QuickCheck      (conjoin, quickCheck)
+import Test.QuickCheck (conjoin, quickCheck)
 
-import qualified Data.Text.Encoding   as TE
+import qualified Data.Text.Encoding as TE
 
 import qualified Data.HashSet
 
