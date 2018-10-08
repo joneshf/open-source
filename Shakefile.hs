@@ -5,15 +5,14 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import "base" Control.Monad                 (join, when)
+import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
 import "text" Data.Text                     (pack, unpack)
 import "text" Data.Text.Encoding            (decodeUtf8With)
 import "text" Data.Text.Encoding.Error      (lenientDecode)
 import "shake" Development.Shake
-    ( Action
-    , Change(ChangeModtimeAndDigest)
+    ( Change(ChangeModtimeAndDigest)
     , CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Exit(Exit)
     , FilePattern
@@ -123,8 +122,8 @@ main = do
     phony "clean" (removeFilesAfter "" [buildDir])
 
     phony "format" $ do
-      needs <- traverse format packages
-      need ((buildDir </> "Shakefile.hs.format") : join needs)
+      needs <- getDirectoryFiles "" (foldMap inputs packages)
+      need (fmap (\x -> buildDir </> x <.> "format") ("Shakefile.hs" : needs))
 
     phony "sdist" (need sdistNeeds)
 
@@ -137,6 +136,14 @@ main = do
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
 
+    buildDir <//> "*.cabal.format" %> \out ->
+      -- Skip over formatting cabal files.
+      -- Although `cabal format` does what it says it will,
+      -- it's riddled with bugs.
+      -- Most annoyingly, it drops comments.
+      -- Once that's fixed, use it.
+      copyFileChanged ((dropDirectory1 . dropExtension) out) out
+
     buildDir <//> "*.dhall.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
       cmd_ (Traced "dhall format") "dhall format" "--inplace" [input']
@@ -148,6 +155,13 @@ main = do
       cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input']
       copyFileChanged input' out
       needed [input']
+
+    buildDir <//> "*.yaml.format" %> \out ->
+      -- Skip over formatting YAML files.
+      -- The current set of formatters that exist drop comments.
+      -- There might be another formatter out there that preserves comments.
+      -- If so, use that.
+      copyFileChanged ((dropDirectory1 . dropExtension) out) out
 
     ".circleci/cache" %> \out -> do
       artifacts <- getDirectoryFiles "" (foldMap inputs packages)
@@ -176,19 +190,6 @@ build = \case
 
 buildDir :: FilePath
 buildDir = "_build"
-
-format :: Package -> Action [FilePath]
-format = \case
-  Haskell { name, sourceDirectory, tests } -> do
-    inputs' <- getDirectoryFiles "" (sourceInput : fmap testInput tests)
-    pure (fmap formatted (config : inputs'))
-    where
-    config = "packages" </> name </> "shake.dhall"
-    formatted input' = buildDir </> input' <.> "format"
-    sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
-    testInput = \case
-      Test { testDirectory } ->
-        "packages" </> name </> testDirectory <//> "*.hs"
 
 ghciFlags :: [String]
 ghciFlags =
