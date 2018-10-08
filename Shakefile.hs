@@ -177,25 +177,27 @@ main = do
 
     buildDir <//> "*.hs.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
+      need [".stylish-haskell.yaml"]
       cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input']
       copyFileChanged input' out
       needed [input']
 
     buildDir <//> "*.hs.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
-      need [input', out -<.> "format"]
+      need [".hlint.yaml", input', out -<.> "format"]
       cmd_ (Traced "hlint") "hlint" [input']
       copyFileChanged input' out
 
     buildDir <//> "*.yaml.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
+      need [".prettierrc"]
       cmd_ (Traced "prettier") "prettier" "--write" [input']
       copyFileChanged input' out
       needed [input']
 
     buildDir <//> "*.yaml.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
-      need [input', out -<.> "format"]
+      need [".yamllint", input', out -<.> "format"]
       cmd_ (Traced "yamllint") "yamllint" "--strict" [input']
       copyFileChanged input' out
 
