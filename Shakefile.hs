@@ -202,8 +202,7 @@ main = do
       copyFileChanged input' out
 
     ".circleci/cache" %> \out -> do
-      artifacts <-
-        getDirectoryFiles "" ("Shakefile.hs" : foldMap inputs packages)
+      artifacts <- getDirectoryFiles "" (foldMap inputs packages)
       need artifacts
       newHash <- liftIO (getHashedShakeVersion artifacts)
       oldHash <- liftIO (Data.ByteString.readFile out)
