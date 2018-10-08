@@ -21,14 +21,15 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-build-{{ checksum ".circleci/cache" }}
+            - v1-build-{{ checksum "Shakefile.hs" }}-{{ checksum ".circleci/cache" }}
+            - v1-build-{{ checksum "Shakefile.hs" }}-
             - v1-build-
           name: Restoring build cache
       - run:
           command: nix-shell --run 'shake ci'
           name: Build
       - save_cache:
-          key: v1-build-{{ checksum ".circleci/cache" }}
+          key: v1-build-{{ checksum "Shakefile.hs" }}-{{ checksum ".circleci/cache" }}
           name: Saving build cache
           paths:
             - _build
