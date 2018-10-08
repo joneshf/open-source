@@ -8,6 +8,7 @@ module Main where
 import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
+import "base" Data.List.NonEmpty            (nonEmpty)
 import "text" Data.Text                     (pack, unpack)
 import "text" Data.Text.Encoding            (decodeUtf8With)
 import "text" Data.Text.Encoding.Error      (lenientDecode)
@@ -198,7 +199,8 @@ main = do
       copyFileChanged input' out
 
     ".circleci/cache" %> \out -> do
-      artifacts <- getDirectoryFiles "" (foldMap inputs packages)
+      artifacts <-
+        getDirectoryFiles "" ("Shakefile.hs" : foldMap inputs packages)
       need artifacts
       newHash <- liftIO (getHashedShakeVersion artifacts)
       oldHash <- liftIO (Data.ByteString.readFile out)
@@ -279,7 +281,7 @@ haskell manifest name sourceDirectory tests version = do
       "cabal configure"
       "--builddir"
       [root </> build']
-      ("--enable-tests" <$ tests)
+      ("--enable-tests" <$ nonEmpty tests)
 
   for_ tests $ \case
     Test { testDirectory, suite } -> do
