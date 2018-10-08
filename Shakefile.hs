@@ -45,6 +45,7 @@ import "shake" Development.Shake.FilePath
     , replaceFileName
     , takeDirectory
     , takeFileName
+    , (-<.>)
     , (<.>)
     , (</>)
     )
@@ -153,7 +154,7 @@ main = do
 
     buildDir <//> "*.cabal.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
-      need [input']
+      need [input', out -<.> "format"]
       cmd_
         (Cwd $ takeDirectory input')
         (EchoStdout True)
@@ -163,6 +164,7 @@ main = do
 
     buildDir <//> "*.dhall.format" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
+      need [out -<.> "lint"]
       cmd_ (Traced "dhall format") "dhall format" "--inplace" [input']
       copyFileChanged input' out
       needed [input']
@@ -181,7 +183,7 @@ main = do
 
     buildDir <//> "*.hs.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
-      need [input']
+      need [input', out -<.> "format"]
       cmd_ (Traced "hlint") "hlint" [input']
       copyFileChanged input' out
 
@@ -193,7 +195,7 @@ main = do
 
     buildDir <//> "*.yaml.lint" %> \out -> do
       let input' = (dropDirectory1 . dropExtension) out
-      need [input']
+      need [input', out -<.> "format"]
       cmd_ (Traced "yamllint") "yamllint" "--strict" [input']
       copyFileChanged input' out
 
