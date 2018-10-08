@@ -1,7 +1,0 @@
-flags: {}
-extra-package-dbs: []
-packages:
-- .
-extra-deps:
-- rollbar-hs-0.1.0.1
-resolver: nightly-2017-11-25

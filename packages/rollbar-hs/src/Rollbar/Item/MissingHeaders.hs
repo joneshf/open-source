@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
@@ -19,7 +18,14 @@ module Rollbar.Item.MissingHeaders
     ) where
 
 import Data.Aeson
-    (FromJSON, KeyValue, ToJSON, object, parseJSON, toJSON, (.=))
+    ( FromJSON
+    , KeyValue
+    , ToJSON
+    , object
+    , parseJSON
+    , toJSON
+    , (.=)
+    )
 import Data.Bifunctor       (bimap)
 import Data.CaseInsensitive (mk, original)
 import Data.Maybe           (catMaybes)

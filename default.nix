@@ -98,10 +98,12 @@ let
 
   tools-formatting = [
     nixpkgs.haskellPackages.stylish-haskell
+    nixpkgs.nodePackages.prettier
   ];
 
   tools-static-analyzing = [
     nixpkgs.haskellPackages.hlint
+    nixpkgs.pythonPackages.yamllint
   ];
 
   url = "https://github.com/NixOS/nixpkgs/archive/${revision}.tar.gz";

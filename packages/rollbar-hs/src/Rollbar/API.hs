@@ -43,7 +43,7 @@ import Data.Aeson.Types
     , genericParseJSON
     , sumEncoding
     )
-import Data.Text  (Text)
+import Data.Text        (Text)
 
 import GHC.Generics (Generic)
 

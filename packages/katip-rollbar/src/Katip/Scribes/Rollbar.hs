@@ -1,10 +1,9 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE NamedFieldPuns      #-}
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE PackageImports      #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
+{-# LANGUAGE TypeOperators #-}
 
 module Katip.Scribes.Rollbar
   ( mkRollbarScribe
@@ -12,10 +11,10 @@ module Katip.Scribes.Rollbar
 
 import Prelude hiding (error)
 
-import "base" Control.Monad           (replicateM, when)
-import "base" Data.Foldable           (for_)
-import "base" Data.Functor            (void)
-import "base" GHC.Conc                (atomically)
+import "base" Control.Monad (replicateM, when)
+import "base" Data.Foldable (for_)
+import "base" Data.Functor  (void)
+import "base" GHC.Conc      (atomically)
 
 import "async" Control.Concurrent.Async            (async, waitCatch)
 import "stm-chans" Control.Concurrent.STM.TBMQueue
@@ -89,9 +88,9 @@ mkRollbarScribe ::
 mkRollbarScribe proxy accessToken branch codeVersion manager severity verbosity = do
   queue <- newTBMQueueIO queueSize
   workers <- replicateM workerSize (async $ mkWorker proxy manager queue)
-  let liPush item = when (permitItem severity item) $
-        atomically (writeTBMQueue queue $ rollbarItem' item)
-      rollbarItem' item = rollbarItem proxy accessToken branch codeVersion verbosity item
+  let liPush item' = when (permitItem severity item') $ do
+        let item = rollbarItem proxy accessToken branch codeVersion verbosity item'
+        atomically (writeTBMQueue queue item)
       scribeFinalizer = do
         atomically (closeTBMQueue queue)
         for_ workers waitCatch

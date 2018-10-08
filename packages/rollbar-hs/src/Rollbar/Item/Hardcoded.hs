@@ -19,7 +19,13 @@ module Rollbar.Item.Hardcoded
     ) where
 
 import Data.Aeson
-    (FromJSON, ToJSON, Value(String), parseJSON, toEncoding, toJSON)
+    ( FromJSON
+    , ToJSON
+    , Value(String)
+    , parseJSON
+    , toEncoding
+    , toJSON
+    )
 import Data.Aeson.Types (typeMismatch)
 import Data.Text        (pack)
 

@@ -39,7 +39,11 @@ import Data.Aeson
     , toJSON
     )
 import Data.Aeson.Types
-    (Options, fieldLabelModifier, omitNothingFields, typeMismatch)
+    ( Options
+    , fieldLabelModifier
+    , omitNothingFields
+    , typeMismatch
+    )
 import Data.String      (IsString)
 import Data.Time        (UTCTime)
 import Data.UUID        (UUID, fromText, toText)

@@ -8,6 +8,7 @@ module Main where
 import "base" Control.Monad                 (when)
 import "base" Control.Monad.IO.Class        (liftIO)
 import "base" Data.Foldable                 (for_)
+import "base" Data.List.NonEmpty            (nonEmpty)
 import "text" Data.Text                     (pack, unpack)
 import "text" Data.Text.Encoding            (decodeUtf8With)
 import "text" Data.Text.Encoding.Error      (lenientDecode)
@@ -21,10 +22,12 @@ import "shake" Development.Shake
     , Stdout(Stdout)
     , cmd
     , cmd_
+    , copyFileChanged
     , getDirectoryFiles
     , getDirectoryFilesIO
     , getHashedShakeVersion
     , need
+    , needed
     , phony
     , removeFilesAfter
     , runAfter
@@ -37,9 +40,12 @@ import "shake" Development.Shake
     , (<//>)
     )
 import "shake" Development.Shake.FilePath
-    ( dropExtension
+    ( dropDirectory1
+    , dropExtension
     , replaceFileName
+    , takeDirectory
     , takeFileName
+    , (-<.>)
     , (<.>)
     , (</>)
     )
@@ -99,8 +105,13 @@ main = do
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
   shakeVersion <- getHashedShakeVersion ["Shakefile.hs"]
-  let buildNeeds = fmap build packages
-      ciNeeds = buildNeeds <> sdistNeeds <> testNeeds
+  inputFiles <- getDirectoryFilesIO "" (foldMap inputs packages)
+  let allFiles = "Shakefile.hs" : inputFiles
+      buildNeeds = fmap build packages
+      ciNeeds =
+        buildNeeds <> formatNeeds <> lintNeeds <> sdistNeeds <> testNeeds
+      formatNeeds = fmap (\x -> buildDir </> x <.> "format") allFiles
+      lintNeeds = fmap (\x -> buildDir </> x <.> "lint") allFiles
       options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
@@ -118,6 +129,10 @@ main = do
 
     phony "clean" (removeFilesAfter "" [buildDir])
 
+    phony "format" (need formatNeeds)
+
+    phony "lint" (need lintNeeds)
+
     phony "sdist" (need sdistNeeds)
 
     phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
@@ -128,6 +143,63 @@ main = do
 
     buildDir </> ".update" %> \out ->
       cmd (FileStdout out) (Traced "cabal update") "cabal update"
+
+    buildDir <//> "*.cabal.format" %> \out ->
+      -- Skip over formatting cabal files.
+      -- Although `cabal format` does what it says it will,
+      -- it's riddled with bugs.
+      -- Most annoyingly, it drops comments.
+      -- Once that's fixed, use it.
+      copyFileChanged ((dropDirectory1 . dropExtension) out) out
+
+    buildDir <//> "*.cabal.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [input', out -<.> "format"]
+      cmd_
+        (Cwd $ takeDirectory input')
+        (EchoStdout True)
+        (FileStdout out)
+        (Traced "cabal check")
+        "cabal check"
+
+    buildDir <//> "*.dhall.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [out -<.> "lint"]
+      cmd_ (Traced "dhall format") "dhall format" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
+
+    buildDir <//> "*.dhall.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      cmd_ (Traced "dhall lint") "dhall lint" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
+
+    buildDir <//> "*.hs.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [".stylish-haskell.yaml"]
+      cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input']
+      copyFileChanged input' out
+      needed [input']
+
+    buildDir <//> "*.hs.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [".hlint.yaml", input', out -<.> "format"]
+      cmd_ (Traced "hlint") "hlint" [input']
+      copyFileChanged input' out
+
+    buildDir <//> "*.yaml.format" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [".prettierrc"]
+      cmd_ (Traced "prettier") "prettier" "--write" [input']
+      copyFileChanged input' out
+      needed [input']
+
+    buildDir <//> "*.yaml.lint" %> \out -> do
+      let input' = (dropDirectory1 . dropExtension) out
+      need [".yamllint", input', out -<.> "format"]
+      cmd_ (Traced "yamllint") "yamllint" "--strict" [input']
+      copyFileChanged input' out
 
     ".circleci/cache" %> \out -> do
       artifacts <- getDirectoryFiles "" (foldMap inputs packages)
@@ -202,15 +274,6 @@ haskell manifest name sourceDirectory tests version = do
       "--builddir"
       [root </> build']
 
-  build' </> ".check" %> \out -> do
-    need [package </> name <.> "cabal"]
-    cmd
-      (Cwd package)
-      (EchoStdout True)
-      (FileStdout out)
-      (Traced "cabal check")
-      "cabal check"
-
   build' </> ".configure" %> \out -> do
     need [buildDir </> ".update", package </> name <.> "cabal"]
     cmd
@@ -220,7 +283,7 @@ haskell manifest name sourceDirectory tests version = do
       "cabal configure"
       "--builddir"
       [root </> build']
-      ("--enable-tests" <$ tests)
+      ("--enable-tests" <$ nonEmpty tests)
 
   for_ tests $ \case
     Test { testDirectory, suite } -> do
@@ -260,7 +323,7 @@ haskell manifest name sourceDirectory tests version = do
 
   build' </> name <-> version <.> "tar.gz" %> \_ -> do
     srcs <- getDirectoryFiles "" [package </> sourceDirectory <//> "*.hs"]
-    need ((build' </> ".check") : (build' </> ".configure") : srcs)
+    need ((build' </> name <.> "cabal.lint") : (build' </> ".configure") : srcs)
     cmd_
       (Cwd package)
       (Traced "cabal sdist")
@@ -286,8 +349,8 @@ inputs = \case
       Hpack -> "packages" </> name </> "package.yaml"
     sourceInput = "packages" </> name </> sourceDirectory <//> "*.hs"
     testInput = \case
-      Test { suite, testDirectory } ->
-        "packages" </> name </> testDirectory </> suite <//> "*.hs"
+      Test { testDirectory } ->
+        "packages" </> name </> testDirectory <//> "*.hs"
 
 packageDir :: FilePath
 packageDir = "packages"

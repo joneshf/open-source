@@ -43,4 +43,4 @@ tests:
       - unordered-containers >= 0.2
     main: Main.hs
     source-dirs: test
-version: '0.3.1.0'
+version: 0.3.1.0
