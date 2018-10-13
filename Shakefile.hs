@@ -1,6 +1,8 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
 module Main (main) where
 
+import "mtl" Control.Monad.Reader           (lift, runReaderT)
 import "text" Data.Text                     (pack)
 import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
@@ -13,6 +15,7 @@ import "shake" Development.Shake
     , shakeOptions
     )
 import "dhall" Dhall                        (auto, detailed, input)
+import "this" Shake.Package                 (Package)
 import "typed-process" System.Process.Typed (runProcess_, shell)
 
 import qualified "this" Shake.Cabal
@@ -22,35 +25,38 @@ import qualified "this" Shake.Haskell
 import qualified "this" Shake.Package
 import qualified "this" Shake.Yaml
 
+data Env
+  = Env
+    { buildDir   :: FilePath
+    , packageDir :: FilePath
+    , packages   :: [Package]
+    }
+
 main :: IO ()
 main = do
   Shake.Package.writeDhall
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
-  let options = shakeOptions
+  let buildDir = "_build"
+      env = Env { buildDir, packageDir = "packages", packages}
+      options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
         , shakeThreads = 0
         }
-  shakeArgs options $ do
-    phony "clean" (removeFilesAfter "" [buildDir])
+  shakeArgs options $ flip runReaderT env $ do
+    lift $ phony "clean" (removeFilesAfter "" [buildDir])
 
-    phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
+    lift $ phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
-    Shake.Cabal.rules buildDir
+    Shake.Cabal.rules
 
-    Shake.Circleci.rules packageDir packages
+    Shake.Circleci.rules
 
-    Shake.Dhall.rules buildDir
+    Shake.Dhall.rules
 
-    Shake.Haskell.rules buildDir packageDir packages
+    Shake.Haskell.rules
 
-    Shake.Package.rules buildDir packageDir packages
+    Shake.Package.rules
 
-    Shake.Yaml.rules buildDir
-
-buildDir :: FilePath
-buildDir = "_build"
-
-packageDir :: FilePath
-packageDir = "packages"
+    Shake.Yaml.rules

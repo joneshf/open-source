@@ -1,4 +1,6 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
@@ -13,6 +15,7 @@ module Shake.Package
   ) where
 
 import "base" Control.Monad.IO.Class      (liftIO)
+import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
 import "text" Data.Text                   (unpack)
 import "shake" Development.Shake
     ( FilePattern
@@ -28,6 +31,7 @@ import "shake" Development.Shake.FilePath ((<.>), (</>))
 import "dhall" Dhall                      (Interpret, Type(expected), auto)
 import "dhall" Dhall.Core                 (pretty)
 import "base" GHC.Generics                (Generic)
+import "base" GHC.Records                 (HasField(getField))
 
 data Manifest
   = Cabal
@@ -78,8 +82,16 @@ inputs packageDir = \case
       Test { testDirectory } ->
         packageDir </> name </> testDirectory <//> "*.hs"
 
-rules :: FilePath -> FilePath -> [Package] -> Rules ()
-rules buildDir packageDir packages = do
+rules ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , HasField "packages" e [Package]
+  ) =>
+  ReaderT e Rules ()
+rules = do
+  buildDir <- asks (getField @"buildDir")
+  packageDir <- asks (getField @"packageDir")
+  packages <- asks (getField @"packages")
   allFiles <-
     liftIO
       ( getDirectoryFilesIO
@@ -95,21 +107,21 @@ rules buildDir packageDir packages = do
       testNeeds = foldMap (test buildDir packageDir) packages
       uploadToHackageNeeds = fmap (uploadToHackage buildDir packageDir) packages
 
-  want ["build"]
+  lift $ want ["build"]
 
-  phony "build" (need buildNeeds)
+  lift $ phony "build" (need buildNeeds)
 
-  phony "ci" (need ciNeeds)
+  lift $ phony "ci" (need ciNeeds)
 
-  phony "format" (need formatNeeds)
+  lift $ phony "format" (need formatNeeds)
 
-  phony "lint" (need lintNeeds)
+  lift $ phony "lint" (need lintNeeds)
 
-  phony "sdist" (need sdistNeeds)
+  lift $ phony "sdist" (need sdistNeeds)
 
-  phony "test" (need testNeeds)
+  lift $ phony "test" (need testNeeds)
 
-  phony "upload-to-hackage" (need uploadToHackageNeeds)
+  lift $ phony "upload-to-hackage" (need uploadToHackageNeeds)
 
 sdist :: FilePath -> FilePath -> Package -> FilePath
 sdist buildDir packageDir = \case

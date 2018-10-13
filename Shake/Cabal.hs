@@ -1,6 +1,10 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PackageImports #-}
+{-# LANGUAGE TypeApplications #-}
 module Shake.Cabal (rules) where
 
+import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
 import "shake" Development.Shake
     ( CmdOption(Cwd, EchoStdout, FileStdout, Traced)
     , Rules
@@ -17,14 +21,16 @@ import "shake" Development.Shake.FilePath
     , (-<.>)
     , (</>)
     )
+import "base" GHC.Records                 (HasField(getField))
 
-rules :: FilePath -> Rules ()
-rules buildDir = do
-  buildDir </> ".update" %> \out -> do
+rules :: (HasField "buildDir" e FilePath) => ReaderT e Rules ()
+rules = do
+  buildDir <- asks (getField @"buildDir")
+  lift $ buildDir </> ".update" %> \out -> do
     need ["Shake/Cabal.hs"]
     cmd_ (FileStdout out) (Traced "cabal update") "cabal update"
 
-  buildDir <//> "*.cabal.format" %> \out -> do
+  lift $ buildDir <//> "*.cabal.format" %> \out -> do
     need ["Shake/Cabal.hs"]
     -- Skip over formatting cabal files.
     -- Although `cabal format` does what it says it will,
@@ -33,7 +39,7 @@ rules buildDir = do
     -- Once that's fixed, use it.
     copyFileChanged ((dropDirectory1 . dropExtension) out) out
 
-  buildDir <//> "*.cabal.lint" %> \out -> do
+  lift $ buildDir <//> "*.cabal.lint" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
     need ["Shake/Cabal.hs", input, out -<.> "format"]
     cmd_
