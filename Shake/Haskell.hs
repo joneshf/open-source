@@ -1,9 +1,13 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
+{-# LANGUAGE TypeApplications #-}
 module Shake.Haskell (rules) where
 
 import "base" Control.Monad.IO.Class        (liftIO)
+import "mtl" Control.Monad.Reader           (ReaderT, asks, lift)
 import "base" Data.Foldable                 (for_)
 import "base" Data.List.NonEmpty            (nonEmpty)
 import "shake" Development.Shake
@@ -32,6 +36,7 @@ import "shake" Development.Shake.FilePath
     , (<.>)
     , (</>)
     )
+import "base" GHC.Records                   (HasField(getField))
 import "this" Shake.Package
     ( Manifest(Cabal, Hpack)
     , Package(Haskell)
@@ -55,20 +60,24 @@ ghciFlags =
   ]
 
 package ::
-  FilePath ->
-  FilePath ->
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , HasField "packages" e [Package]
+  ) =>
   Manifest ->
   String ->
   FilePath ->
   [Test] ->
   String ->
-  Rules ()
-package buildDir packageDir manifest name sourceDirectory tests version = do
+  ReaderT e Rules ()
+package manifest name sourceDirectory tests version = do
+  buildDir <- asks (getField @"buildDir")
+  packageDir <- asks (getField @"packageDir")
   root <- liftIO getCurrentDirectory
   let build' = buildDir </> package'
       package' = packageDir </> name
 
-  phony ("watch-" <> name) $ do
+  lift $ phony ("watch-" <> name) $ do
     need ["Shake/Haskell.hs", build' </> ".configure"]
     runAfter
       ( runProcess_
@@ -86,7 +95,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
         ]
       )
 
-  build' </> ".build" %> \out -> do
+  lift $ build' </> ".build" %> \out -> do
     srcs <- getDirectoryFiles "" [package' </> sourceDirectory <//> "*.hs"]
     need ("Shake/Haskell.hs" : (build' </> ".configure") : srcs)
     cmd
@@ -97,7 +106,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
       "--builddir"
       [root </> build']
 
-  build' </> ".configure" %> \out -> do
+  lift $ build' </> ".configure" %> \out -> do
     need
       [ "Shake/Haskell.hs"
       , buildDir </> ".update"
@@ -114,7 +123,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
 
   for_ tests $ \case
     Test { testDirectory, suite } -> do
-      build' </> "build" </> suite </> suite %> \_ -> do
+      lift $ build' </> "build" </> suite </> suite %> \_ -> do
         srcs <-
           getDirectoryFiles
             ""
@@ -130,7 +139,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
           "--builddir"
           [root </> build']
 
-      build' </> "build" </> suite </> suite <.> "out" %> \out -> do
+      lift $ build' </> "build" </> suite </> suite <.> "out" %> \out -> do
         need ["Shake/Haskell.hs", dropExtension out]
         cmd_
           (Cwd package')
@@ -138,7 +147,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
           (Traced $ name <> " " <> suite)
           [((root </>) . dropExtension) out]
 
-  build' </> name <-> version %> \out -> do
+  lift $ build' </> name <-> version %> \out -> do
     (Exit x, Stdout result) <-
       cmd (Traced "cabal info") "cabal info" [takeFileName out]
     case x of
@@ -148,7 +157,7 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
         writeFile' out ""
       ExitSuccess -> writeFile' out result
 
-  build' </> name <-> version <.> "tar.gz" %> \_ -> do
+  lift $ build' </> name <-> version <.> "tar.gz" %> \_ -> do
     srcs <- getDirectoryFiles "" [package' </> sourceDirectory <//> "*.hs"]
     need
       ( "Shake/Haskell.hs"
@@ -164,27 +173,36 @@ package buildDir packageDir manifest name sourceDirectory tests version = do
       [root </> build']
 
   case manifest of
-    Cabal -> mempty
+    Cabal -> lift mempty
     Hpack ->
-      package' </> name <.> "cabal" %> \out -> do
+      lift $ package' </> name <.> "cabal" %> \out -> do
         need ["Shake/Haskell.hs", replaceFileName out "package.yaml"]
         cmd_ (Cwd package') (Traced "hpack") "hpack"
 
-rules :: FilePath -> FilePath -> [Package] -> Rules ()
-rules buildDir packageDir packages = do
-  buildDir <//> "*.hs.format" %> \out -> do
+rules ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , HasField "packages" e [Package]
+  ) =>
+  ReaderT e Rules ()
+rules = do
+  buildDir <- asks (getField @"buildDir")
+  packages <- asks (getField @"packages")
+  lift $ buildDir <//> "*.hs.format" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    need [".stylish-haskell.yaml", "Shake/Haskell.hs"]
+    shakeFiles <- getDirectoryFiles "" ["Shake//*.hs"]
+    need [".stylish-haskell.yaml"]
     cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input]
     copyFileChanged input out
-    needed ["Shake/Haskell.hs", input]
+    needed ("Shakefile.hs" : input : shakeFiles)
 
-  buildDir <//> "*.hs.lint" %> \out -> do
+  lift $ buildDir <//> "*.hs.lint" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    need [".hlint.yaml", "Shake/Haskell.hs", input, out -<.> "format"]
+    shakeFiles <- getDirectoryFiles "" ["Shake//*.hs"]
+    need (".hlint.yaml" : input : (out -<.> "format") : shakeFiles)
     cmd_ (Traced "hlint") "hlint" [input]
     copyFileChanged input out
 
   for_ packages $ \case
     Haskell manifest name sourceDirectory tests' version ->
-      package buildDir packageDir manifest name sourceDirectory tests' version
+      package manifest name sourceDirectory tests' version
