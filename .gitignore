@@ -6,7 +6,10 @@
 /Test.dhall
 /_build
 
-# Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,haskell,sublimetext,visualstudiocode
+# Created by https://www.gitignore.io/api/vim,osx,emacs,linux,macos,windows,haskell,sublimetext,visualstudiocode,bazel
+
+### Bazel ###
+/bazel-*
 
 ### Emacs ###
 # -*- mode: gitignore; -*-

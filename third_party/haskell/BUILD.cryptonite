@@ -1,0 +1,69 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@ai_formation_hazel//:hazel.bzl",
+    "hazel_library",
+)
+
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_cc_import",
+    "haskell_library",
+)
+
+cc_library(
+    copts = [
+        "-Icbits",
+        "-Icbits/argon2",
+        "-Icbits/decaf/include",
+        "-Icbits/decaf/include/arch_ref64",
+        "-Icbits/decaf/p448",
+        "-Icbits/decaf/p448/arch_ref64",
+        "-Icbits/ed25519",
+    ],
+    hdrs = glob(
+        [
+            "cbits/*.h",
+            "cbits/aes/*.h",
+            "cbits/argon2/*.h",
+            "cbits/blake2/ref/*.h",
+            "cbits/blake2/sse/*.h",
+            "cbits/decaf/include/*.h",
+            "cbits/decaf/include/arch_32/*.h",
+            "cbits/decaf/include/arch_ref64/*.h",
+            "cbits/decaf/include/decaf/*.h",
+            "cbits/decaf/p448/*.h",
+            "cbits/decaf/p448/arch_32/*.h",
+            "cbits/decaf/p448/arch_ref64/*.h",
+            "cbits/ed25519/*.h",
+            "cbits/p256/*.h",
+        ],
+    ),
+    name = "cbits",
+    srcs = glob(
+        [
+            "cbits/argon2/*.c",
+            "cbits/aes/x86ni_impl.c",
+            "cbits/decaf/ed448goldilocks/decaf_tables.c",
+            "cbits/decaf/ed448goldilocks/decaf.c",
+        ],
+    ),
+    strip_include_prefix = "cbits",
+)
+
+haskell_library(
+    deps = [
+        ":cbits",
+        hazel_library("base"),
+        hazel_library("basement"),
+        hazel_library("bytestring"),
+        hazel_library("ghc-prim"),
+        hazel_library("memory"),
+    ],
+    name = "cryptonite",
+    srcs = glob([
+        "Crypto/**/*.hs",
+    ]),
+)

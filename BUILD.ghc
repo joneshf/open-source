@@ -1,0 +1,93 @@
+# Mostly copied from
+# https://raw.githubusercontent.com/FormationAI/hazel/925293994f88799ba550fd5cf3995104d1f2972c/BUILD.ghc
+package(
+    default_visibility = ["//visibility:public"]
+)
+
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain"
+)
+
+filegroup(
+    name = "bin",
+    srcs = glob(
+        [
+            "bin/*",
+        ],
+    ),
+)
+
+exports_files(
+    [
+        "bin/ghc",
+    ],
+)
+
+filegroup(
+  name = "lib",
+  srcs = glob(
+      [
+          "lib/**/*.a",
+          "lib/**/*.so*",
+      ],
+  ),
+)
+
+filegroup(
+  name = "include",
+  srcs = glob(
+      [
+          "include/*.h",
+      ],
+  ),
+)
+
+cc_library(
+  hdrs = glob(
+      [
+          "lib/ghc-*/include/**/*.h",
+      ],
+  ),
+  name = "threaded-rts",
+  srcs = glob(
+      [
+          "lib/ghc-*/rts/libHSrts_thr-ghc*.dylib",
+          "lib/ghc-*/rts/libHSrts_thr-ghc*.so",
+      ],
+  ),
+  strip_include_prefix = glob(
+      [
+          "lib/ghc-*/include",
+      ],
+      exclude_directories = 0,
+  )[0],
+)
+
+cc_library(
+  hdrs = glob(
+      [
+          "lib/ghc-*/unix-*/include/*.h",
+      ],
+  ),
+  name = "unix-includes",
+  strip_include_prefix = glob(
+      [
+          "lib/ghc-*/unix-*/include",
+      ],
+      exclude_directories = 0,
+  )[0],
+)
+
+haskell_toolchain(
+    c2hs = "@c2hs//:bin",
+    locale_archive = select(
+        {
+            "@bazel_tools//src/conditions:darwin": None,
+            "//conditions:default": "@glib_locales//:locale-archive",
+        },
+    ),
+    name = "ghc",
+    tools = ":bin",
+    version = "8.4.3",
+)

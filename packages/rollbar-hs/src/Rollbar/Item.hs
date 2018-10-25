@@ -100,6 +100,7 @@ import Data.Aeson
     )
 import Data.Aeson.Types (typeMismatch)
 import Data.Maybe       (fromMaybe)
+import Data.Version (makeVersion)
 
 import GHC.Generics (Generic)
 
@@ -123,7 +124,6 @@ import Rollbar.Item.Internal.Platform
 import System.Info (os)
 
 import qualified Data.Text        as T
-import qualified Paths_rollbar_hs
 
 -- | Creates 'Data' with the level set to 'Debug'.
 debug
@@ -142,7 +142,7 @@ debug environment messageBody payload =
         , framework = Nothing
         , language = Hardcoded
         , level = Debug
-        , notifier = Notifier Hardcoded Paths_rollbar_hs.version
+        , notifier = Notifier Hardcoded (makeVersion [0, 3, 1, 0])
         , person = Nothing
         , platform = Platform $ T.pack os
         , request = Nothing
