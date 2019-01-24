@@ -13,6 +13,7 @@ jobs:
       - run:
           command: nix-shell --run 'exit'
           name: Setup nix environment
+          no_output_timeout: 30m
       - save_cache:
           key: v1-nix-{{ checksum "default.nix" }}
           name: Saving nix cache
