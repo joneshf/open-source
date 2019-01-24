@@ -1,13 +1,19 @@
 author: Hardy Jones
 build-type: Simple
 cabal-version: >=1.10
+category: Compiler
 copyright: 2018 Hardy Jones
+description:
+  Generates a JavaScript expression from a Dhall expression.
+  .
+  Currently supports different forms of JavaScript expressions.
 extra-source-files: CHANGELOG.md
                   , README.md
 license-file: LICENSE
 license: BSD3
 maintainer: jones3.hardy@gmail.com
 name: dhall-javascript
+synopsis: Compiles Dhall to JavaScript
 version: 0.1.0.0
 
 executable dhall-javascript
@@ -91,7 +97,6 @@ library
   ghc-options:
     -Wall
     -Wcompat
-    -Werror
     -Widentities
     -Wincomplete-record-updates
     -Wincomplete-uni-patterns
