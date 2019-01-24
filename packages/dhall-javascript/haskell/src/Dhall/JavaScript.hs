@@ -33,7 +33,7 @@ main = do
   Options explain'' input' output' verbosity' <-
     Options.Applicative.execParser info
   let explain' = case explain'' of
-        DoExplain -> Dhall.detailed
+        DoExplain    -> Dhall.detailed
         DoNotExplain -> id
       logger :: Logger IO
       logger = case verbosity' of
