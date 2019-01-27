@@ -38,7 +38,8 @@ import "shake" Development.Shake.FilePath
     )
 import "base" GHC.Records                   (HasField(getField))
 import "this" Shake.Package
-    ( Manifest(Cabal, Hpack)
+    ( Executable(Executable, executableDirectory, executableName)
+    , Manifest(Cabal, Hpack)
     , Package(Haskell)
     , Test(Test, suite, testDirectory)
     )
@@ -64,13 +65,14 @@ package ::
   , HasField "packageDir" e FilePath
   , HasField "packages" e [Package]
   ) =>
+  [Executable] ->
   Manifest ->
   String ->
   FilePath ->
   [Test] ->
   String ->
   ReaderT e Rules ()
-package manifest name sourceDirectory tests version = do
+package exes manifest name sourceDirectory tests version = do
   buildDir <- asks (getField @"buildDir")
   packageDir <- asks (getField @"packageDir")
   root <- liftIO getCurrentDirectory
@@ -120,6 +122,24 @@ package manifest name sourceDirectory tests version = do
       "--builddir"
       [root </> build']
       ("--enable-tests" <$ nonEmpty tests)
+
+  for_ exes $ \case
+    Executable { executableDirectory, executableName } ->
+      lift $ build' </> "build" </> executableName </> executableName %> \_ -> do
+        srcs <-
+          getDirectoryFiles
+            ""
+            [ package' </> sourceDirectory <//> "*.hs"
+            , package' </> executableDirectory <//> "*.hs"
+            ]
+        need ("Shake/Haskell.hs" : (build' </> ".build") : srcs)
+        cmd_
+          (Cwd package')
+          (Traced "cabal build")
+          "cabal build"
+          ["exe:" <> executableName]
+          "--builddir"
+          [root </> build']
 
   for_ tests $ \case
     Test { testDirectory, suite } -> do
@@ -204,5 +224,5 @@ rules = do
     copyFileChanged input out
 
   for_ packages $ \case
-    Haskell manifest name sourceDirectory tests' version ->
-      package manifest name sourceDirectory tests' version
+    Haskell exes manifest name sourceDirectory tests' version ->
+      package exes manifest name sourceDirectory tests' version

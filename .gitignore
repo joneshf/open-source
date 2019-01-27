@@ -1,6 +1,7 @@
 ### Project specific ###
 
 /.direnv.cache
+/Executable.dhall
 /Manifest.dhall
 /Package.dhall
 /Test.dhall

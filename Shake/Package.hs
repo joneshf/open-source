@@ -6,8 +6,9 @@
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE TypeApplications #-}
 module Shake.Package
-  ( Package(..)
+  ( Executable(..)
   , Manifest(..)
+  , Package(..)
   , Test(..)
   , inputs
   , rules
@@ -27,11 +28,20 @@ import "shake" Development.Shake
     , writeFileChanged
     , (<//>)
     )
-import "shake" Development.Shake.FilePath ((<.>), (</>))
+import "shake" Development.Shake.FilePath (exe, (<.>), (</>))
 import "dhall" Dhall                      (Interpret, Type(expected), auto)
 import "dhall" Dhall.Core                 (pretty)
 import "base" GHC.Generics                (Generic)
 import "base" GHC.Records                 (HasField(getField))
+
+data Executable
+  = Executable
+    { executableName      :: String
+    , executableDirectory :: FilePath
+    }
+  deriving (Generic)
+
+instance Interpret Executable
 
 data Manifest
   = Cabal
@@ -42,7 +52,8 @@ instance Interpret Manifest
 
 data Package
   = Haskell
-    { manifest        :: Manifest
+    { executables     :: [Executable]
+    , manifest        :: Manifest
     , name            :: String
     , sourceDirectory :: FilePath
     , tests           :: [Test]
@@ -67,6 +78,20 @@ x <-> y = x <> "-" <> y
 build :: FilePath -> FilePath -> Package ->  FilePath
 build buildDir packageDir = \case
   Haskell { name } -> buildDir </> packageDir </> name </> ".build"
+
+executable :: FilePath -> FilePath -> Package -> [FilePath]
+executable buildDir packageDir = \case
+  Haskell { executables, name } -> fmap go executables
+    where
+    go = \case
+      Executable { executableName } ->
+        buildDir
+          </> packageDir
+          </> name
+          </> "build"
+          </> executableName
+          </> executableName
+          <.> exe
 
 inputs :: FilePath -> Package -> [FilePattern]
 inputs packageDir = \case
@@ -100,7 +125,13 @@ rules = do
       )
   let buildNeeds = fmap (build buildDir packageDir) packages
       ciNeeds =
-        buildNeeds <> formatNeeds <> lintNeeds <> sdistNeeds <> testNeeds
+        buildNeeds
+          <> executableNeeds
+          <> formatNeeds
+          <> lintNeeds
+          <> sdistNeeds
+          <> testNeeds
+      executableNeeds = foldMap (executable buildDir packageDir) packages
       formatNeeds = fmap (\x -> buildDir </> x <.> "format") allFiles
       lintNeeds = fmap (\x -> buildDir </> x <.> "lint") allFiles
       sdistNeeds = fmap (sdist buildDir packageDir) packages
@@ -112,6 +143,8 @@ rules = do
   lift $ phony "build" (need buildNeeds)
 
   lift $ phony "ci" (need ciNeeds)
+
+  lift $ phony "executable" (need executableNeeds)
 
   lift $ phony "format" (need formatNeeds)
 
@@ -149,6 +182,7 @@ uploadToHackage buildDir packageDir = \case
 
 writeDhall :: IO ()
 writeDhall = do
+  writeFileChanged "Executable.dhall" (unpack $ pretty $ expected $ auto @Executable)
   writeFileChanged "Manifest.dhall" (unpack $ pretty $ expected $ auto @Manifest)
   writeFileChanged "Package.dhall" (unpack $ pretty $ expected $ auto @Package)
   writeFileChanged "Test.dhall" (unpack $ pretty $ expected $ auto @Test)

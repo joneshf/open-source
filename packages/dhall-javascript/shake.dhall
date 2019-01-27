@@ -4,7 +4,14 @@ in  let Package = ./../../Package.dhall
 
 in  let Test = ./../../Test.dhall
 
-in    { manifest =
+in    { executables =
+          [ { executableDirectory =
+                "haskell/app"
+            , executableName =
+                "dhall-javascript"
+            }
+          ]
+      , manifest =
           (constructors Manifest).Cabal {=}
       , name =
           "dhall-javascript"
