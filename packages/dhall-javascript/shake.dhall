@@ -1,22 +1,25 @@
-    let Executable = ./../../Executable.dhall
-
-in  let Manifest = ./../../Manifest.dhall
+    let Manifest = ./../../Manifest.dhall
 
 in  let Package = ./../../Package.dhall
 
 in  let Test = ./../../Test.dhall
 
 in    { executables =
-          [] : List Executable
+          [ { executableDirectory =
+                "haskell/app"
+            , executableName =
+                "dhall-javascript"
+            }
+          ]
       , manifest =
           (constructors Manifest).Cabal {=}
       , name =
-          "wai-middleware-rollbar"
+          "dhall-javascript"
       , sourceDirectory =
-          "src"
+          "haskell/src"
       , tests =
           [] : List Test
       , version =
-          "0.11.0"
+          "0.1.0.0"
       }
     : Package

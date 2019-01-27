@@ -1,8 +1,12 @@
-    let Manifest = ./../../Manifest.dhall
+    let Executable = ./../../Executable.dhall
+
+in  let Manifest = ./../../Manifest.dhall
 
 in  let Package = ./../../Package.dhall
 
-in    { manifest =
+in    { executables =
+          [] : List Executable
+      , manifest =
           (constructors Manifest).Hpack {=}
       , name =
           "rollbar-hs"

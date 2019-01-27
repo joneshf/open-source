@@ -1,0 +1,105 @@
+author: Hardy Jones
+build-type: Simple
+cabal-version: >=1.10
+category: Compiler
+copyright: 2018 Hardy Jones
+description:
+  Generates a JavaScript expression from a Dhall expression.
+  .
+  Currently supports different forms of JavaScript expressions.
+extra-source-files: CHANGELOG.md
+                  , README.md
+license-file: LICENSE
+license: BSD3
+maintainer: jones3.hardy@gmail.com
+name: dhall-javascript
+synopsis: Compiles Dhall to JavaScript
+version: 0.1.0.0
+
+executable dhall-javascript
+  build-depends: base >= 4.11 && < 4.12
+               , dhall-javascript
+  default-language: Haskell2010
+  ghc-options:
+    -rtsopts
+    -threaded
+  hs-source-dirs: haskell/app
+  main-is: Main.hs
+
+library
+  build-depends: ansi-wl-pprint >= 0.6 && < 0.7
+               , base >= 4.11 && < 4.12
+               , dhall >= 1.17 && < 1.18
+               , freer-simple >= 1.1 && < 1.2
+               , language-ecmascript >= 0.19 && < 0.20
+               , optparse-applicative >= 0.14 && < 0.15
+               , scientific >= 0.3 && < 0.4
+               , text >= 1.2 && < 1.3
+  default-extensions: AutoDeriveTypeable
+                    , BangPatterns
+                    , BinaryLiterals
+                    , ConstraintKinds
+                    , DataKinds
+                    , DefaultSignatures
+                    , DeriveAnyClass
+                    , DeriveDataTypeable
+                    , DeriveFoldable
+                    , DeriveFunctor
+                    , DeriveGeneric
+                    , DeriveTraversable
+                    , DerivingStrategies
+                    , DoAndIfThenElse
+                    , EmptyDataDecls
+                    , ExistentialQuantification
+                    , FlexibleContexts
+                    , FlexibleInstances
+                    , FunctionalDependencies
+                    , GADTs
+                    , GeneralizedNewtypeDeriving
+                    , InstanceSigs
+                    , KindSignatures
+                    , LambdaCase
+                    , MultiParamTypeClasses
+                    , MultiWayIf
+                    , NamedFieldPuns
+                    , OverloadedStrings
+                    , PackageImports
+                    , PartialTypeSignatures
+                    , PatternGuards
+                    , PolyKinds
+                    , RankNTypes
+                    , ScopedTypeVariables
+                    , StandaloneDeriving
+                    , StrictData
+                    , TupleSections
+                    , TypeFamilies
+                    , TypeOperators
+                    , TypeSynonymInstances
+                    , ViewPatterns
+  default-language: Haskell2010
+  exposed-modules: Dhall.JavaScript
+  other-modules: CodeGen
+               , Fresh
+               , Dhall.JavaScript.Bool
+               , Dhall.JavaScript.Core
+               , Dhall.JavaScript.Double
+               , Dhall.JavaScript.Integer
+               , Dhall.JavaScript.List
+               , Dhall.JavaScript.Natural
+               , Dhall.JavaScript.Optional
+               , Dhall.JavaScript.Record
+               , Dhall.JavaScript.Text
+               , Dhall.JavaScript.Union
+               , Exit
+               , Log
+               , Rename
+               , Render
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wmissing-methods
+    -Wredundant-constraints
+  hs-source-dirs: haskell/src
