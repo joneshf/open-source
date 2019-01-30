@@ -75,6 +75,13 @@ instance Interpret Test
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
 
+binaries :: FilePath -> Package -> [FilePath]
+binaries binDir = \case
+  Haskell { executables } -> fmap go executables
+    where
+    go = \case
+      Executable { executableName } -> binDir </> executableName
+
 build :: FilePath -> FilePath -> Package ->  FilePath
 build buildDir packageDir = \case
   Haskell { name } -> buildDir </> packageDir </> name </> ".build"
@@ -108,12 +115,14 @@ inputs packageDir = \case
         packageDir </> name </> testDirectory <//> "*.hs"
 
 rules ::
-  ( HasField "buildDir" e FilePath
+  ( HasField "binDir" e FilePath
+  , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
   , HasField "packages" e [Package]
   ) =>
   ReaderT e Rules ()
 rules = do
+  binDir <- asks (getField @"binDir")
   buildDir <- asks (getField @"buildDir")
   packageDir <- asks (getField @"packageDir")
   packages <- asks (getField @"packages")
@@ -123,7 +132,8 @@ rules = do
         ""
         ("Shakefile.hs" : "Shake//*.hs" : foldMap (inputs packageDir) packages)
       )
-  let buildNeeds = fmap (build buildDir packageDir) packages
+  let binariesNeeds = foldMap (binaries binDir) packages
+      buildNeeds = fmap (build buildDir packageDir) packages
       ciNeeds =
         buildNeeds
           <> executableNeeds
@@ -139,6 +149,8 @@ rules = do
       uploadToHackageNeeds = fmap (uploadToHackage buildDir packageDir) packages
 
   lift $ want ["build"]
+
+  lift $ phony "binaries" (need binariesNeeds)
 
   lift $ phony "build" (need buildNeeds)
 

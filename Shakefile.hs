@@ -27,7 +27,8 @@ import qualified "this" Shake.Yaml
 
 data Env
   = Env
-    { buildDir   :: FilePath
+    { binDir     :: FilePath
+    , buildDir   :: FilePath
     , packageDir :: FilePath
     , packages   :: [Package]
     }
@@ -37,15 +38,17 @@ main = do
   Shake.Package.writeDhall
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
   packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
-  let buildDir = "_build"
-      env = Env { buildDir, packageDir = "packages", packages}
+  let binDir = "bin"
+      buildDir = "_build"
+      env = Env { binDir, buildDir, packageDir, packages}
       options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
         , shakeThreads = 0
         }
+      packageDir = "packages"
   shakeArgs options $ flip runReaderT env $ do
-    lift $ phony "clean" (removeFilesAfter "" [buildDir])
+    lift $ phony "clean" (removeFilesAfter "" [binDir, buildDir])
 
     lift $ phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
