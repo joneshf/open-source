@@ -27,7 +27,7 @@ import qualified "this" Shake.Yaml
 
 data Env
   = Env
-    { binDir   :: FilePath
+    { binDir     :: FilePath
     , buildDir   :: FilePath
     , packageDir :: FilePath
     , packages   :: [Package]
