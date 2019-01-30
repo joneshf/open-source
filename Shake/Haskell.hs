@@ -61,7 +61,8 @@ ghciFlags =
   ]
 
 package ::
-  ( HasField "buildDir" e FilePath
+  ( HasField "binDir" e FilePath
+  , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
   , HasField "packages" e [Package]
   ) =>
@@ -73,6 +74,7 @@ package ::
   String ->
   ReaderT e Rules ()
 package exes manifest name sourceDirectory tests version = do
+  binDir <- asks (getField @"binDir")
   buildDir <- asks (getField @"buildDir")
   packageDir <- asks (getField @"packageDir")
   root <- liftIO getCurrentDirectory
@@ -124,7 +126,12 @@ package exes manifest name sourceDirectory tests version = do
       ("--enable-tests" <$ nonEmpty tests)
 
   for_ exes $ \case
-    Executable { executableDirectory, executableName } ->
+    Executable { executableDirectory, executableName } -> do
+      lift $ binDir </> executableName %> \out -> do
+        let binary = build' </> "build" </> executableName </> executableName
+        need ["Shake/Haskell.hs", binary]
+        copyFileChanged binary out
+
       lift $ build' </> "build" </> executableName </> executableName %> \_ -> do
         srcs <-
           getDirectoryFiles
@@ -200,7 +207,8 @@ package exes manifest name sourceDirectory tests version = do
         cmd_ (Cwd package') (Traced "hpack") "hpack"
 
 rules ::
-  ( HasField "buildDir" e FilePath
+  ( HasField "binDir" e FilePath
+  , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
   , HasField "packages" e [Package]
   ) =>
