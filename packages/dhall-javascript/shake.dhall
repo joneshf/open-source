@@ -8,7 +8,7 @@ in    { executables =
           [ { executableDirectory =
                 "haskell/app"
             , executableName =
-                "dhall-javascript"
+                "dhall-to-javascript"
             }
           ]
       , manifest =
