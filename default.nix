@@ -100,6 +100,7 @@ let
     tools-static-analyzing;
 
   tools-building = [
+    nixpkgs.go
     nixpkgs.haskellPackages.cabal-install
     nixpkgs.haskellPackages.hpack
   ];
