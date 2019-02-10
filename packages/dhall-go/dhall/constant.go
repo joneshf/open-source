@@ -28,6 +28,11 @@ func (*Kind) betaNormalize() Expression { return &Kind{} }
 
 func (*Kind) encode() cbor { return cbor{value: "Kind"} }
 
+func (*Kind) equivalent(e Expression) bool {
+	r, ok := e.betaNormalize().alphaNormalize().(*Kind)
+	return ok && Kind{} == *r
+}
+
 func (*Kind) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {
 	case *Kind:
@@ -61,6 +66,11 @@ func (*Sort) alphaNormalize() Expression { return &Sort{} }
 func (*Sort) betaNormalize() Expression { return &Sort{} }
 
 func (*Sort) encode() cbor { return cbor{value: "Sort"} }
+
+func (*Sort) equivalent(e Expression) bool {
+	r, ok := e.betaNormalize().alphaNormalize().(*Sort)
+	return ok && Sort{} == *r
+}
 
 func (*Sort) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {
@@ -97,6 +107,11 @@ func (*Type) alphaNormalize() Expression { return &Type{} }
 func (*Type) betaNormalize() Expression { return &Type{} }
 
 func (*Type) encode() cbor { return cbor{value: "Type"} }
+
+func (*Type) equivalent(e Expression) bool {
+	r, ok := e.betaNormalize().alphaNormalize().(*Type)
+	return ok && Type{} == *r
+}
 
 func (*Type) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {
