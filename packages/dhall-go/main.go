@@ -31,14 +31,7 @@ func (e *DecodeError) Error() string {
 	return fmt.Sprintf("%s. Raw value: %+v.", e.message, e.value)
 }
 
-// Decode attempts to convert a binary encoding to a Dhall expression.
-func Decode(handle *codec.CborHandle, in []byte) (Expression, error) {
-	var raw interface{}
-
-	decoder := codec.NewDecoderBytes(in, handle)
-	if err := decoder.Decode(&raw); err != nil {
-		return nil, err
-	}
+func hydrate(raw interface{}) (Expression, error) {
 
 	switch rawType := raw.(type) {
 	case bool:
@@ -54,9 +47,34 @@ func Decode(handle *codec.CborHandle, in []byte) (Expression, error) {
 		case "Type":
 			return &Type{}, nil
 		}
+	case []interface{}:
+		xs := raw.([]interface{})
+		if len(xs) == 4 && xs[0].(uint64) == 3 && xs[1].(uint64) == 2 {
+			left, err := hydrate(xs[2])
+			if err != nil {
+				return nil, err
+			}
+			right, err := hydrate(xs[3])
+			if err != nil {
+				return nil, err
+			}
+			return &BoolEqual{left: left, right: right}, nil
+		}
 	}
 
 	return nil, &DecodeError{message: "Unhandled case", value: raw}
+}
+
+// Decode attempts to convert a binary encoding to a Dhall expression.
+func Decode(handle *codec.CborHandle, in []byte) (Expression, error) {
+	var raw interface{}
+
+	decoder := codec.NewDecoderBytes(in, handle)
+	if err := decoder.Decode(&raw); err != nil {
+		return nil, err
+	}
+
+	return hydrate(raw)
 }
 
 // Encode attempts to convert an Expression to its binary encoding.
@@ -277,16 +295,84 @@ func (b *Bool) shift(int, string, int) Expression { return b }
 
 func (b *Bool) substitute(string, int, Expression) Expression { return b }
 
+// BoolEqual represents equality of Dhall Bools.
+type BoolEqual struct {
+	left  Expression
+	right Expression
+}
+
+func (be *BoolEqual) alphaNormalize() Expression {
+	return &BoolEqual{
+		left:  be.left.alphaNormalize(),
+		right: be.right.alphaNormalize(),
+	}
+}
+
+func (be *BoolEqual) betaNormalize() Expression {
+	l1 := be.left.betaNormalize()
+	if (l1 == &Bool{value: true}) {
+		return be.right.betaNormalize()
+	}
+	r1 := be.right.betaNormalize()
+	if (r1 == &Bool{value: true}) {
+		return l1
+	}
+	if Equivalent(l1, r1) {
+		return &Bool{value: true}
+	}
+	return &BoolEqual{left: l1, right: r1}
+}
+
+func (be *BoolEqual) encode() cbor {
+	l1 := be.left.encode()
+	r1 := be.right.encode()
+	return cbor{value: [](interface{}){3, 2, l1.value, r1.value}}
+}
+
+func (be *BoolEqual) infer(context Context) (Expression, error) {
+	l, err := Reduce(be.left, context)
+	if err != nil {
+		return nil, err
+	}
+	r, err := Reduce(be.right, context)
+	if err != nil {
+		return nil, err
+	}
+	if (l == &Bool{} && r == &Bool{}) {
+		return &Bool{}, nil
+	}
+	return nil, &TypeError{
+		context: context,
+		message: "Both arguments to `==` must have type `Bool`",
+	}
+}
+
+func (be *BoolEqual) shift(d int, x string, m int) Expression {
+	l1 := be.left.shift(d, x, m)
+	r1 := be.right.shift(d, x, m)
+
+	return &BoolEqual{left: l1, right: r1}
+}
+
+func (be *BoolEqual) substitute(x string, n int, e Expression) Expression {
+	l1 := be.left.substitute(x, n, e)
+	r1 := be.right.substitute(x, n, e)
+
+	return &BoolEqual{left: l1, right: r1}
+}
+
 func main() {
 	handle := &codec.CborHandle{}
-	expr := &Bool{value: true}
+	t := &Bool{value: true}
+	f := &Bool{value: false}
+	expr := &BoolEqual{left: t, right: f}
 
 	encoded, err := Encode(handle, expr)
 	if err != nil {
 		fmt.Printf("Failed to encode %+v: %+v\n", expr, err)
 		os.Exit(1)
 	}
-	fmt.Printf("Successfully encoded %+v: %+v\n", expr, encoded)
+	fmt.Printf("Successfully encoded %+v: %+X\n", expr, encoded)
 
 	decoded, err := Decode(handle, encoded)
 	if err != nil {
