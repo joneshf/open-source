@@ -1,31 +1,39 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/ugorji/go/codec"
 
 	"github.com/joneshf/open-source/packages/dhall-go/dhall"
 )
 
 func main() {
+	var log logrus.FieldLogger = &logrus.Logger{
+		Formatter: &logrus.TextFormatter{
+			DisableLevelTruncation: true,
+			FullTimestamp:          true,
+		},
+		Level: logrus.DebugLevel,
+		Out:   os.Stderr,
+	}
 	handle := &codec.CborHandle{}
-	t := &dhall.Bool{Value: true}
-	f := &dhall.Bool{Value: false}
-	expr := &dhall.BoolEqual{Left: t, Right: f}
+	expr, err := dhall.Parse(&log, "True == False")
+	if err != nil {
+		log.Fatalf("Failed to parse: %+v\n", err)
+	}
+	log.Debugf("Successfully parsed: %+v\n", expr)
 
 	encoded, err := dhall.Encode(handle, expr)
 	if err != nil {
-		fmt.Printf("Failed to encode %+v: %+v\n", expr, err)
-		os.Exit(1)
+		log.Fatalf("Failed to encode %+v: %+v\n", expr, err)
 	}
-	fmt.Printf("Successfully encoded %+v: %+X\n", expr, encoded)
+	log.Debugf("Successfully encoded %+v: %+X\n", expr, encoded)
 
 	decoded, err := dhall.Decode(handle, encoded)
 	if err != nil {
-		fmt.Printf("Failed to decode %+v: %+v\n", expr, err)
-		os.Exit(1)
+		log.Fatalf("Failed to decode %+v: %+v\n", expr, err)
 	}
-	fmt.Printf("Successfully decoded %+v: %+v\n", expr, decoded)
+	log.Debugf("Successfully decoded %+v: %+v\n", expr, decoded)
 }
