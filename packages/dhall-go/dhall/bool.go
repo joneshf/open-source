@@ -20,6 +20,8 @@ func (*BoolType) equivalent(e Expression) bool {
 
 func (*BoolType) infer(Context) (Expression, error) { return &Type{}, nil }
 
+func (*BoolType) render() string { return "Bool" }
+
 func (*BoolType) shift(int, string, int) Expression { return &BoolType{} }
 
 func (*BoolType) substitute(string, int, Expression) Expression {
@@ -43,6 +45,13 @@ func (b *Bool) equivalent(e Expression) bool {
 }
 
 func (*Bool) infer(Context) (Expression, error) { return &BoolType{}, nil }
+
+func (b *Bool) render() string {
+	if b.Value {
+		return "True"
+	}
+	return "False"
+}
 
 func (b *Bool) shift(int, string, int) Expression { return b }
 
@@ -118,6 +127,10 @@ func (be *BoolEqual) infer(context Context) (Expression, error) {
 			be.Right,
 		),
 	}
+}
+
+func (be *BoolEqual) render() string {
+	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
 }
 
 func (be *BoolEqual) shift(d int, x string, m int) Expression {

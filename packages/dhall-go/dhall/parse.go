@@ -14,8 +14,8 @@ import (
 )
 
 // Parse attempts to parse a string into a Dhall Expression.
-func Parse(log *logrus.FieldLogger, input string) (Expression, error) {
-	f := text.NewFile("<stdin>", []byte(input))
+func Parse(log *logrus.FieldLogger, input []byte) (Expression, error) {
+	f := text.NewFile("<stdin>", input)
 	fs := parsley.NewFileSet(f)
 	r := text.NewReader(f)
 	ctx := parsley.NewContext(fs, r)

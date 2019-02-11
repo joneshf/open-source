@@ -54,6 +54,8 @@ func (*Kind) functionCheck(c Constant) (Constant, error) {
 
 func (*Kind) infer(Context) (Expression, error) { return &Sort{}, nil }
 
+func (*Kind) render() string { return "Kind" }
+
 func (*Kind) shift(int, string, int) Expression { return &Kind{} }
 
 func (*Kind) substitute(string, int, Expression) Expression { return &Kind{} }
@@ -94,6 +96,8 @@ func (*Sort) infer(context Context) (Expression, error) {
 		message: "Cannot infer type of `Sort`",
 	}
 }
+
+func (*Sort) render() string { return "Sort" }
 
 func (*Sort) shift(int, string, int) Expression { return &Sort{} }
 
@@ -136,6 +140,8 @@ func (*Type) functionCheck(c Constant) (Constant, error) {
 }
 
 func (*Type) infer(Context) (Expression, error) { return &Kind{}, nil }
+
+func (*Type) render() string { return "Type" }
 
 func (*Type) shift(int, string, int) Expression { return &Type{} }
 

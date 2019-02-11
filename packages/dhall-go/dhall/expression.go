@@ -11,6 +11,7 @@ type Expression interface {
 	encode() cbor
 	equivalent(Expression) bool
 	infer(Context) (Expression, error)
+	render() string
 	shift(int, string, int) Expression
 	substitute(string, int, Expression) Expression
 }
