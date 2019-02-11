@@ -8,10 +8,10 @@ type cbor struct {
 type Expression interface {
 	alphaNormalize() Expression
 	betaNormalize() Expression
-	encode() cbor
 	equivalent(Expression) bool
 	infer(Context) (Expression, error)
 	render() string
+	renderCBOR() cbor
 	renderJSON() (string, error)
 	renderYAML() (string, error)
 	shift(int, string, int) Expression

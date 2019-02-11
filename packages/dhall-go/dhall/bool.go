@@ -11,8 +11,6 @@ func (*BoolType) alphaNormalize() Expression { return &BoolType{} }
 
 func (*BoolType) betaNormalize() Expression { return &BoolType{} }
 
-func (*BoolType) encode() cbor { return cbor{value: "Bool"} }
-
 func (*BoolType) equivalent(e Expression) bool {
 	r, ok := e.betaNormalize().alphaNormalize().(*BoolType)
 	return ok && BoolType{} == *r
@@ -21,6 +19,8 @@ func (*BoolType) equivalent(e Expression) bool {
 func (*BoolType) infer(Context) (Expression, error) { return &Type{}, nil }
 
 func (*BoolType) render() string { return "Bool" }
+
+func (*BoolType) renderCBOR() cbor { return cbor{value: "Bool"} }
 
 func (bt *BoolType) renderJSON() (string, error) {
 	return "", &JSONError{
@@ -51,8 +51,6 @@ func (b *Bool) alphaNormalize() Expression { return b }
 
 func (b *Bool) betaNormalize() Expression { return b }
 
-func (b *Bool) encode() cbor { return cbor{value: b.Value} }
-
 func (b *Bool) equivalent(e Expression) bool {
 	r, ok := e.betaNormalize().alphaNormalize().(*Bool)
 	return ok && *b == *r
@@ -66,6 +64,8 @@ func (b *Bool) render() string {
 	}
 	return "False"
 }
+
+func (b *Bool) renderCBOR() cbor { return cbor{value: b.Value} }
 
 func (b *Bool) renderJSON() (string, error) {
 	if b.Value {
@@ -119,12 +119,6 @@ func (be *BoolEqual) betaNormalize() Expression {
 	return &BoolEqual{Left: l1, Right: r1}
 }
 
-func (be *BoolEqual) encode() cbor {
-	l1 := be.Left.encode()
-	r1 := be.Right.encode()
-	return cbor{value: [](interface{}){3, 2, l1.value, r1.value}}
-}
-
 func (be *BoolEqual) equivalent(e Expression) bool {
 	l1 := be.betaNormalize().alphaNormalize()
 	r1 := e.betaNormalize().alphaNormalize()
@@ -159,6 +153,12 @@ func (be *BoolEqual) infer(context Context) (Expression, error) {
 
 func (be *BoolEqual) render() string {
 	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
+}
+
+func (be *BoolEqual) renderCBOR() cbor {
+	l1 := be.Left.renderCBOR()
+	r1 := be.Right.renderCBOR()
+	return cbor{value: [](interface{}){3, 2, l1.value, r1.value}}
 }
 
 func (be *BoolEqual) renderJSON() (string, error) {

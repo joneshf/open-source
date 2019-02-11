@@ -23,7 +23,7 @@ func TestBoolType(t *testing.T) {
 	})
 
 	t.Run("encode", func(t *testing.T) {
-		actual := (&BoolType{}).encode()
+		actual := (&BoolType{}).renderCBOR()
 		expected := cbor{value: "Bool"}
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
@@ -96,13 +96,13 @@ func TestBool(t *testing.T) {
 	})
 
 	t.Run("encode", func(t *testing.T) {
-		actual := (&Bool{Value: false}).encode()
+		actual := (&Bool{Value: false}).renderCBOR()
 		expected := cbor{value: false}
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 
-		actual = (&Bool{Value: true}).encode()
+		actual = (&Bool{Value: true}).renderCBOR()
 		expected = cbor{value: true}
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
@@ -245,28 +245,28 @@ func TestBoolEqual(t *testing.T) {
 
 	t.Run("encode", func(t *testing.T) {
 		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
-		actual := be.encode()
+		actual := be.renderCBOR()
 		expected := cbor{value: [](interface{}){3, 2, false, false}}
 		if !reflect.DeepEqual(expected.value, actual.value) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
 		}
 
 		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
-		actual = be.encode()
+		actual = be.renderCBOR()
 		expected = cbor{value: [](interface{}){3, 2, false, true}}
 		if !reflect.DeepEqual(expected.value, actual.value) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
 		}
 
 		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
-		actual = be.encode()
+		actual = be.renderCBOR()
 		expected = cbor{value: [](interface{}){3, 2, true, false}}
 		if !reflect.DeepEqual(expected.value, actual.value) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
 		}
 
 		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
-		actual = be.encode()
+		actual = be.renderCBOR()
 		expected = cbor{value: [](interface{}){3, 2, true, true}}
 		if !reflect.DeepEqual(expected.value, actual.value) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
