@@ -25,6 +25,8 @@ func main() {
 	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
+	outputs := []string{"dhall", "json", "yaml"}
+	verbosities := []string{"debug", "info", "warn", "error"}
 
 	app := kingpin.New(
 		"dhall",
@@ -65,13 +67,13 @@ func main() {
 
 	app.Flag(
 		"verbose",
-		"Log as much information as possible (verbosity `debug`).",
+		"Log as much information as possible (verbosity \"debug\").",
 	).Short('v').BoolVar(&verbose)
 
 	app.Flag(
 		"verbosity",
-		"Select the minimum level to log (`debug`, `info`, `warn`, or `error`).",
-	).Default("warn").EnumVar(&verbosity, "debug", "info", "warn", "error")
+		fmt.Sprintf("Select the minimum level to log %q.", verbosities),
+	).Default("warn").EnumVar(&verbosity, verbosities...)
 
 	decodeCommand := app.Command(
 		"decode",
@@ -83,8 +85,8 @@ func main() {
 	})
 	decodeCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
+		fmt.Sprintf("Render the expression in different formats %q", outputs),
+	).Default("dhall").EnumVar(&output, outputs...)
 
 	app.Command(
 		"encode",
@@ -105,8 +107,8 @@ func main() {
 	}).Default()
 	normalizeCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
+		fmt.Sprintf("Render the expression in different formats %q", outputs),
+	).Default("dhall").EnumVar(&output, outputs...)
 
 	app.Command(
 		"type",
@@ -127,8 +129,8 @@ func main() {
 	})
 	parseCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
+		fmt.Sprintf("Render the expression in different formats %q", outputs),
+	).Default("dhall").EnumVar(&output, outputs...)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
