@@ -56,6 +56,10 @@ func (*Kind) infer(Context) (Expression, error) { return &Sort{}, nil }
 
 func (*Kind) render() string { return "Kind" }
 
+func (k *Kind) renderYAML() (string, error) {
+	return "", &YAMLError{expression: k, message: "Cannot render `Kind` to YAML"}
+}
+
 func (*Kind) shift(int, string, int) Expression { return &Kind{} }
 
 func (*Kind) substitute(string, int, Expression) Expression { return &Kind{} }
@@ -98,6 +102,10 @@ func (*Sort) infer(context Context) (Expression, error) {
 }
 
 func (*Sort) render() string { return "Sort" }
+
+func (k *Sort) renderYAML() (string, error) {
+	return "", &YAMLError{expression: k, message: "Cannot render `Sort` to YAML"}
+}
 
 func (*Sort) shift(int, string, int) Expression { return &Sort{} }
 
@@ -142,6 +150,10 @@ func (*Type) functionCheck(c Constant) (Constant, error) {
 func (*Type) infer(Context) (Expression, error) { return &Kind{}, nil }
 
 func (*Type) render() string { return "Type" }
+
+func (k *Type) renderYAML() (string, error) {
+	return "", &YAMLError{expression: k, message: "Cannot render `Type` to YAML"}
+}
 
 func (*Type) shift(int, string, int) Expression { return &Type{} }
 

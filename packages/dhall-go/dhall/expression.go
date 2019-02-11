@@ -12,6 +12,7 @@ type Expression interface {
 	equivalent(Expression) bool
 	infer(Context) (Expression, error)
 	render() string
+	renderYAML() (string, error)
 	shift(int, string, int) Expression
 	substitute(string, int, Expression) Expression
 }

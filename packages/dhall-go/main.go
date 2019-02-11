@@ -21,6 +21,8 @@ func main() {
 		Level: logrus.DebugLevel,
 		Out:   os.Stderr,
 	}
+	var output string
+	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
 
@@ -47,6 +49,15 @@ func main() {
 
 		log = log.WithFields(logrus.Fields{"command": context})
 
+		switch output {
+		case "dhall":
+			render = renderDhall(&log)
+		case "yaml":
+			render = renderYAML(&log)
+		default:
+			render = renderDhall(&log)
+		}
+
 		return nil
 	})
 
@@ -58,16 +69,20 @@ func main() {
 	app.Flag(
 		"verbosity",
 		"Select the minimum level to log (`debug`, `info`, `warn`, or `error`).",
-	).EnumVar(&verbosity, "debug", "info", "warn", "error")
+	).Default("warn").EnumVar(&verbosity, "debug", "info", "warn", "error")
 
-	app.Command(
+	decodeCommand := app.Command(
 		"decode",
 		"Decode the given binary value to a Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		decoded := decode(&log)
-		fmt.Println(dhall.Render(decoded))
+		fmt.Println(render(decoded))
 		return nil
 	})
+	decodeCommand.Flag(
+		"output",
+		"Render the expression in different formats (`dhall`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "yaml")
 
 	app.Command(
 		"encode",
@@ -78,32 +93,40 @@ func main() {
 		return nil
 	})
 
-	app.Command(
+	normalizeCommand := app.Command(
 		"normalize",
 		"Normalize the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		normalized := normalize(&log)
-		fmt.Println(dhall.Render(normalized))
+		fmt.Println(render(normalized))
 		return nil
 	}).Default()
+	normalizeCommand.Flag(
+		"output",
+		"Render the expression in different formats (`dhall`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "yaml")
 
 	app.Command(
 		"type",
 		"Type check the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		typeChecked := typeCheck(&log)
-		fmt.Println(dhall.Render(typeChecked))
+		fmt.Println(render(typeChecked))
 		return nil
 	})
 
-	app.Command(
+	parseCommand := app.Command(
 		"parse",
 		"Parse the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		expression := parse(&log)
-		fmt.Println(dhall.Render(expression))
+		fmt.Println(render(expression))
 		return nil
 	})
+	parseCommand.Flag(
+		"output",
+		"Render the expression in different formats (`dhall`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "yaml")
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
@@ -181,6 +204,37 @@ func parse(log *logrus.FieldLogger) dhall.Expression {
 	(*log).Debugf("Successfully parsed input")
 
 	return expression
+}
+
+func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Rendering expression to Dhall")
+		rendered := dhall.Render(e)
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to Dhall")
+
+		return rendered
+	}
+}
+
+func renderYAML(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to YAML")
+		rendered, err := dhall.RenderYAML(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to YAML",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to YAML")
+
+		return rendered
+	}
 }
 
 func typeCheck(log *logrus.FieldLogger) dhall.Expression {

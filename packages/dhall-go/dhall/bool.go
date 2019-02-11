@@ -22,6 +22,13 @@ func (*BoolType) infer(Context) (Expression, error) { return &Type{}, nil }
 
 func (*BoolType) render() string { return "Bool" }
 
+func (bt *BoolType) renderYAML() (string, error) {
+	return "", &YAMLError{
+		expression: bt,
+		message:    "Cannot render type `Bool` to YAML",
+	}
+}
+
 func (*BoolType) shift(int, string, int) Expression { return &BoolType{} }
 
 func (*BoolType) substitute(string, int, Expression) Expression {
@@ -51,6 +58,13 @@ func (b *Bool) render() string {
 		return "True"
 	}
 	return "False"
+}
+
+func (b *Bool) renderYAML() (string, error) {
+	if b.Value {
+		return "true", nil
+	}
+	return "false", nil
 }
 
 func (b *Bool) shift(int, string, int) Expression { return b }
@@ -131,6 +145,13 @@ func (be *BoolEqual) infer(context Context) (Expression, error) {
 
 func (be *BoolEqual) render() string {
 	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
+}
+
+func (be *BoolEqual) renderYAML() (string, error) {
+	return "", &YAMLError{
+		expression: be,
+		message:    "Cannot render equality to YAML. Try normalizing first.",
+	}
 }
 
 func (be *BoolEqual) shift(d int, x string, m int) Expression {
