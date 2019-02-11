@@ -56,6 +56,10 @@ func (*Kind) infer(Context) (Expression, error) { return &Sort{}, nil }
 
 func (*Kind) render() string { return "Kind" }
 
+func (k *Kind) renderJSON() (string, error) {
+	return "", &JSONError{expression: k, message: "Cannot render `Kind` to JSON"}
+}
+
 func (k *Kind) renderYAML() (string, error) {
 	return "", &YAMLError{expression: k, message: "Cannot render `Kind` to YAML"}
 }
@@ -102,6 +106,10 @@ func (*Sort) infer(context Context) (Expression, error) {
 }
 
 func (*Sort) render() string { return "Sort" }
+
+func (k *Sort) renderJSON() (string, error) {
+	return "", &JSONError{expression: k, message: "Cannot render `Sort` to JSON"}
+}
 
 func (k *Sort) renderYAML() (string, error) {
 	return "", &YAMLError{expression: k, message: "Cannot render `Sort` to YAML"}
@@ -150,6 +158,10 @@ func (*Type) functionCheck(c Constant) (Constant, error) {
 func (*Type) infer(Context) (Expression, error) { return &Kind{}, nil }
 
 func (*Type) render() string { return "Type" }
+
+func (k *Type) renderJSON() (string, error) {
+	return "", &JSONError{expression: k, message: "Cannot render `Type` to JSON"}
+}
 
 func (k *Type) renderYAML() (string, error) {
 	return "", &YAMLError{expression: k, message: "Cannot render `Type` to YAML"}

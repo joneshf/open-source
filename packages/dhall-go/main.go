@@ -52,6 +52,8 @@ func main() {
 		switch output {
 		case "dhall":
 			render = renderDhall(&log)
+		case "json":
+			render = renderJSON(&log)
 		case "yaml":
 			render = renderYAML(&log)
 		default:
@@ -81,8 +83,8 @@ func main() {
 	})
 	decodeCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "yaml")
+		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
 
 	app.Command(
 		"encode",
@@ -103,8 +105,8 @@ func main() {
 	}).Default()
 	normalizeCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "yaml")
+		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
 
 	app.Command(
 		"type",
@@ -125,8 +127,8 @@ func main() {
 	})
 	parseCommand.Flag(
 		"output",
-		"Render the expression in different formats (`dhall`, `yaml`)",
-	).Default("dhall").EnumVar(&output, "dhall", "yaml")
+		"Render the expression in different formats (`dhall`, `json`, `yaml`)",
+	).Default("dhall").EnumVar(&output, "dhall", "json", "yaml")
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
@@ -214,6 +216,24 @@ func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
 		rendered := dhall.Render(e)
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to Dhall")
+
+		return rendered
+	}
+}
+
+func renderJSON(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to JSON")
+		rendered, err := dhall.RenderJSON(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to JSON",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to JSON")
 
 		return rendered
 	}

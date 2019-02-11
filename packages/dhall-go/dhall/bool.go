@@ -22,6 +22,13 @@ func (*BoolType) infer(Context) (Expression, error) { return &Type{}, nil }
 
 func (*BoolType) render() string { return "Bool" }
 
+func (bt *BoolType) renderJSON() (string, error) {
+	return "", &JSONError{
+		expression: bt,
+		message:    "Cannot render type `Bool` to JSON",
+	}
+}
+
 func (bt *BoolType) renderYAML() (string, error) {
 	return "", &YAMLError{
 		expression: bt,
@@ -58,6 +65,13 @@ func (b *Bool) render() string {
 		return "True"
 	}
 	return "False"
+}
+
+func (b *Bool) renderJSON() (string, error) {
+	if b.Value {
+		return "true", nil
+	}
+	return "false", nil
 }
 
 func (b *Bool) renderYAML() (string, error) {
@@ -145,6 +159,13 @@ func (be *BoolEqual) infer(context Context) (Expression, error) {
 
 func (be *BoolEqual) render() string {
 	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
+}
+
+func (be *BoolEqual) renderJSON() (string, error) {
+	return "", &JSONError{
+		expression: be,
+		message:    "Cannot render equality to JSON. Try normalizing first.",
+	}
 }
 
 func (be *BoolEqual) renderYAML() (string, error) {
