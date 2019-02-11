@@ -20,7 +20,9 @@ func (*BoolType) infer(Context) (Expression, error) { return &Type{}, nil }
 
 func (*BoolType) render() string { return "Bool" }
 
-func (*BoolType) renderCBOR() cbor { return cbor{value: "Bool"} }
+func (*BoolType) renderBinary() binary { return binary{value: "Bool"} }
+
+func (*BoolType) renderCBOR() string { return fmt.Sprintf("%q", "Bool") }
 
 func (bt *BoolType) renderJSON() (string, error) {
 	return "", &JSONError{
@@ -65,7 +67,9 @@ func (b *Bool) render() string {
 	return "False"
 }
 
-func (b *Bool) renderCBOR() cbor { return cbor{value: b.Value} }
+func (b *Bool) renderBinary() binary { return binary{value: b.Value} }
+
+func (b *Bool) renderCBOR() string { return fmt.Sprintf("%t", b.Value) }
 
 func (b *Bool) renderJSON() (string, error) {
 	if b.Value {
@@ -155,10 +159,18 @@ func (be *BoolEqual) render() string {
 	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
 }
 
-func (be *BoolEqual) renderCBOR() cbor {
+func (be *BoolEqual) renderBinary() binary {
+	l1 := be.Left.renderBinary()
+	r1 := be.Right.renderBinary()
+	return binary{
+		value: [](interface{}){3, 2, l1.value, r1.value},
+	}
+}
+
+func (be *BoolEqual) renderCBOR() string {
 	l1 := be.Left.renderCBOR()
 	r1 := be.Right.renderCBOR()
-	return cbor{value: [](interface{}){3, 2, l1.value, r1.value}}
+	return fmt.Sprintf("[3, 2, %s, %s]", l1, r1)
 }
 
 func (be *BoolEqual) renderJSON() (string, error) {

@@ -1,6 +1,6 @@
 package dhall
 
-type cbor struct {
+type binary struct {
 	value interface{}
 }
 
@@ -11,7 +11,8 @@ type Expression interface {
 	equivalent(Expression) bool
 	infer(Context) (Expression, error)
 	render() string
-	renderCBOR() cbor
+	renderBinary() binary
+	renderCBOR() string
 	renderJSON() (string, error)
 	renderYAML() (string, error)
 	shift(int, string, int) Expression

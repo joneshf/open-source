@@ -29,16 +29,19 @@ func (e *YAMLError) Error() string {
 // Render renders the given expression as Dhall source.
 func Render(expression Expression) string { return expression.render() }
 
-// RenderCBOR attempts to render the given Expression as CBOR.
-// The CBOR can then be rendered to the binary encoding.
-func RenderCBOR(handle *codec.CborHandle, expr Expression) ([]byte, error) {
+// RenderBinary attempts to render the given Expression as binary.
+func RenderBinary(handle *codec.CborHandle, expr Expression) ([]byte, error) {
 	out := make([]byte, 0)
 	encoder := codec.NewEncoderBytes(&out, handle)
-	if err := encoder.Encode(expr.renderCBOR().value); err != nil {
+	if err := encoder.Encode(expr.renderBinary().value); err != nil {
 		return nil, err
 	}
 	return out, nil
 }
+
+// RenderCBOR renders the given Expression as CBOR.
+// This rendering can be useful for humans to understand the binary rendering.
+func RenderCBOR(expr Expression) string { return expr.renderCBOR() }
 
 // RenderJSON attempts to render the given expression as JSON.
 func RenderJSON(expression Expression) (string, error) {

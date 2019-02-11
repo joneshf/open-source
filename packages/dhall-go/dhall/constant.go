@@ -54,7 +54,9 @@ func (*Kind) infer(Context) (Expression, error) { return &Sort{}, nil }
 
 func (*Kind) render() string { return "Kind" }
 
-func (*Kind) renderCBOR() cbor { return cbor{value: "Kind"} }
+func (*Kind) renderBinary() binary { return binary{value: "Kind"} }
+
+func (*Kind) renderCBOR() string { return fmt.Sprintf("%q", "Kind") }
 
 func (k *Kind) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Kind` to JSON"}
@@ -105,7 +107,9 @@ func (*Sort) infer(context Context) (Expression, error) {
 
 func (*Sort) render() string { return "Sort" }
 
-func (*Sort) renderCBOR() cbor { return cbor{value: "Sort"} }
+func (*Sort) renderBinary() binary { return binary{value: "Sort"} }
+
+func (*Sort) renderCBOR() string { return fmt.Sprintf("%q", "Sort") }
 
 func (k *Sort) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Sort` to JSON"}
@@ -157,7 +161,9 @@ func (*Type) infer(Context) (Expression, error) { return &Kind{}, nil }
 
 func (*Type) render() string { return "Type" }
 
-func (*Type) renderCBOR() cbor { return cbor{value: "Type"} }
+func (*Type) renderBinary() binary { return binary{value: "Type"} }
+
+func (*Type) renderCBOR() string { return fmt.Sprintf("%q", "Type") }
 
 func (k *Type) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Type` to JSON"}

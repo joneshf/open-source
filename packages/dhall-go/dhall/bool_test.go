@@ -22,14 +22,6 @@ func TestBoolType(t *testing.T) {
 		}
 	})
 
-	t.Run("encode", func(t *testing.T) {
-		actual := (&BoolType{}).renderCBOR()
-		expected := cbor{value: "Bool"}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-	})
-
 	t.Run("equivalent", func(t *testing.T) {
 		left := &BoolType{}
 		right := &BoolType{}
@@ -45,6 +37,14 @@ func TestBoolType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderBinary", func(t *testing.T) {
+		actual := (&BoolType{}).renderBinary()
+		expected := binary{value: "Bool"}
+		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 	})
@@ -95,20 +95,6 @@ func TestBool(t *testing.T) {
 		}
 	})
 
-	t.Run("encode", func(t *testing.T) {
-		actual := (&Bool{Value: false}).renderCBOR()
-		expected := cbor{value: false}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&Bool{Value: true}).renderCBOR()
-		expected = cbor{value: true}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-	})
-
 	t.Run("equivalent", func(t *testing.T) {
 		left := &Bool{Value: false}
 		right := &Bool{Value: false}
@@ -149,6 +135,20 @@ func TestBool(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderBinary", func(t *testing.T) {
+		actual := (&Bool{Value: false}).renderBinary()
+		expected := binary{value: false}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual = (&Bool{Value: true}).renderBinary()
+		expected = binary{value: true}
+		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 	})
@@ -243,36 +243,6 @@ func TestBoolEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("encode", func(t *testing.T) {
-		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
-		actual := be.renderCBOR()
-		expected := cbor{value: [](interface{}){3, 2, false, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
-		actual = be.renderCBOR()
-		expected = cbor{value: [](interface{}){3, 2, false, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
-		actual = be.renderCBOR()
-		expected = cbor{value: [](interface{}){3, 2, true, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
-		actual = be.renderCBOR()
-		expected = cbor{value: [](interface{}){3, 2, true, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-	})
-
 	t.Run("equivalent", func(t *testing.T) {
 		left := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
 		right := &Bool{Value: true}
@@ -335,6 +305,36 @@ func TestBoolEqual(t *testing.T) {
 		}
 		if !Equivalent(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderBinary", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual := be.renderBinary()
+		expected := binary{value: [](interface{}){3, 2, false, false}}
+		if !reflect.DeepEqual(expected.value, actual.value) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual = be.renderBinary()
+		expected = binary{value: [](interface{}){3, 2, false, true}}
+		if !reflect.DeepEqual(expected.value, actual.value) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual = be.renderBinary()
+		expected = binary{value: [](interface{}){3, 2, true, false}}
+		if !reflect.DeepEqual(expected.value, actual.value) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual = be.renderBinary()
+		expected = binary{value: [](interface{}){3, 2, true, true}}
+		if !reflect.DeepEqual(expected.value, actual.value) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
 		}
 	})
 
