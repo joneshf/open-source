@@ -25,7 +25,7 @@ func main() {
 	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
-	outputs := []string{"dhall", "json", "yaml"}
+	outputs := []string{"binary", "dhall", "json", "yaml"}
 	verbosities := []string{"debug", "info", "warn", "error"}
 
 	app := kingpin.New(
@@ -52,6 +52,8 @@ func main() {
 		log = log.WithFields(logrus.Fields{"command": context})
 
 		switch output {
+		case "binary":
+			render = renderBinary(&log)
 		case "dhall":
 			render = renderDhall(&log)
 		case "json":
@@ -80,7 +82,7 @@ func main() {
 		"Decode the given binary value to a Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		decoded := decode(&log)
-		fmt.Println(render(decoded))
+		fmt.Print(render(decoded))
 		return nil
 	})
 	decodeCommand.Flag(
@@ -88,21 +90,12 @@ func main() {
 		fmt.Sprintf("Render the expression in different formats %q", outputs),
 	).Default("dhall").EnumVar(&output, outputs...)
 
-	app.Command(
-		"encode",
-		"Encode the given Dhall expression to binary.",
-	).Action(func(*kingpin.ParseContext) error {
-		encoded := encode(&log)
-		os.Stdout.Write(encoded)
-		return nil
-	})
-
 	normalizeCommand := app.Command(
 		"normalize",
 		"Normalize the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		normalized := normalize(&log)
-		fmt.Println(render(normalized))
+		fmt.Print(render(normalized))
 		return nil
 	}).Default()
 	normalizeCommand.Flag(
@@ -115,7 +108,7 @@ func main() {
 		"Type check the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		typeChecked := typeCheck(&log)
-		fmt.Println(render(typeChecked))
+		fmt.Print(render(typeChecked))
 		return nil
 	})
 
@@ -124,7 +117,7 @@ func main() {
 		"Parse the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		expression := parse(&log)
-		fmt.Println(render(expression))
+		fmt.Print(render(expression))
 		return nil
 	})
 	parseCommand.Flag(
@@ -157,23 +150,6 @@ func decode(log *logrus.FieldLogger) dhall.Expression {
 	(*log).Debug("Successfully decoded binary")
 
 	return decoded
-}
-
-func encode(log *logrus.FieldLogger) []byte {
-	expression := parse(log)
-	(*log).Info("Encoding expression")
-	handle := &codec.CborHandle{}
-
-	encoded, err := dhall.Encode(handle, expression)
-	if err != nil {
-		(*log).WithFields(logrus.Fields{"err": err}).Fatal(
-			"Could not encode expression",
-		)
-	}
-	*log = (*log).WithFields(logrus.Fields{"encoded": encoded})
-	(*log).Debug("Successfully encoded expression")
-
-	return encoded
 }
 
 func normalize(log *logrus.FieldLogger) dhall.Expression {
@@ -210,6 +186,26 @@ func parse(log *logrus.FieldLogger) dhall.Expression {
 	return expression
 }
 
+func renderBinary(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render expression to binary")
+		handle := &codec.CborHandle{}
+
+		rendered, err := dhall.RenderBinary(handle, e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Could not render expression to binary",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to binary")
+
+		return string(rendered)
+	}
+}
+
 func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
 	return func(e dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"expression": e})
@@ -219,7 +215,7 @@ func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to Dhall")
 
-		return rendered
+		return fmt.Sprintf("%s\n", rendered)
 	}
 }
 
@@ -237,7 +233,7 @@ func renderJSON(log *logrus.FieldLogger) func(dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to JSON")
 
-		return rendered
+		return fmt.Sprintf("%s\n", rendered)
 	}
 }
 
@@ -255,7 +251,7 @@ func renderYAML(log *logrus.FieldLogger) func(dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to YAML")
 
-		return rendered
+		return fmt.Sprintf("%s\n", rendered)
 	}
 }
 
