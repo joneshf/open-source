@@ -105,7 +105,7 @@ func main() {
 		fmt.Sprintf("Render the expression in different formats %q", outputs),
 	).Default("dhall").EnumVar(&output, outputs...)
 
-	app.Command(
+	typeCommand := app.Command(
 		"type",
 		"Type check the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
@@ -113,6 +113,10 @@ func main() {
 		fmt.Print(render(typeChecked))
 		return nil
 	})
+	typeCommand.Flag(
+		"output",
+		fmt.Sprintf("Render the expression in different formats %q", outputs),
+	).Default("dhall").EnumVar(&output, outputs...)
 
 	parseCommand := app.Command(
 		"parse",
