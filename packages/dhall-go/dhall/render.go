@@ -16,6 +16,16 @@ func (e *JSONError) Error() string {
 	return fmt.Sprintf("%s. Expression: %#v", e.message, e.expression.render())
 }
 
+// JSONSchemaError represents errors attempting to render JSON.
+type JSONSchemaError struct {
+	expression Expression
+	message    string
+}
+
+func (e *JSONSchemaError) Error() string {
+	return fmt.Sprintf("%s. Expression: %#v", e.message, e.expression.render())
+}
+
 // YAMLError represents errors attempting to render YAML.
 type YAMLError struct {
 	expression Expression
@@ -46,6 +56,11 @@ func RenderCBOR(expr Expression) string { return expr.renderCBOR() }
 // RenderJSON attempts to render the given expression as JSON.
 func RenderJSON(expression Expression) (string, error) {
 	return expression.renderJSON()
+}
+
+// RenderJSONSchema attempts to render the given expression as JSON.
+func RenderJSONSchema(expression Expression) (string, error) {
+	return expression.renderJSONSchema()
 }
 
 // RenderYAML attempts to render the given expression as YAML.

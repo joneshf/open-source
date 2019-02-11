@@ -14,6 +14,7 @@ type Expression interface {
 	renderBinary() binary
 	renderCBOR() string
 	renderJSON() (string, error)
+	renderJSONSchema() (string, error)
 	renderYAML() (string, error)
 	shift(int, string, int) Expression
 	substitute(string, int, Expression) Expression

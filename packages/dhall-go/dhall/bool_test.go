@@ -72,6 +72,17 @@ func TestBoolType(t *testing.T) {
 		}
 	})
 
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		actual, err := (&BoolType{}).renderJSONSchema()
+		expected := "{\"type\": \"boolean\"}"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderYAML", func(t *testing.T) {
 		unexpected, err := (&BoolType{}).renderYAML()
 		if err == nil {
@@ -223,6 +234,28 @@ func TestBool(t *testing.T) {
 		}
 
 		actual, err = (&Bool{Value: true}).renderJSON()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderJSONSchema()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderJSONSchema()
 		expected = "true"
 		if err != nil {
 			t.Fatal(err)
@@ -505,6 +538,14 @@ func TestBoolEqual(t *testing.T) {
 		unexpected, err := be.renderJSON()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		unexpected, err := be.renderJSONSchema()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
 		}
 	})
 

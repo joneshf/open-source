@@ -62,6 +62,13 @@ func (k *Kind) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Kind` to JSON"}
 }
 
+func (k *Kind) renderJSONSchema() (string, error) {
+	return "", &JSONSchemaError{
+		expression: k,
+		message:    "Cannot render `Kind` to JSONSchema",
+	}
+}
+
 func (k *Kind) renderYAML() (string, error) {
 	return "", &YAMLError{expression: k, message: "Cannot render `Kind` to YAML"}
 }
@@ -113,6 +120,13 @@ func (*Sort) renderCBOR() string { return fmt.Sprintf("%q", "Sort") }
 
 func (k *Sort) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Sort` to JSON"}
+}
+
+func (k *Sort) renderJSONSchema() (string, error) {
+	return "", &JSONSchemaError{
+		expression: k,
+		message:    "Cannot render `Sort` to JSONSchema",
+	}
 }
 
 func (k *Sort) renderYAML() (string, error) {
@@ -167,6 +181,13 @@ func (*Type) renderCBOR() string { return fmt.Sprintf("%q", "Type") }
 
 func (k *Type) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Type` to JSON"}
+}
+
+func (k *Type) renderJSONSchema() (string, error) {
+	return "", &JSONSchemaError{
+		expression: k,
+		message:    "Cannot render `Type` to JSONSchema",
+	}
 }
 
 func (k *Type) renderYAML() (string, error) {

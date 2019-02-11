@@ -25,7 +25,7 @@ func main() {
 	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
-	outputs := []string{"binary", "cbor", "dhall", "json", "yaml"}
+	outputs := []string{"binary", "cbor", "dhall", "json", "json-schema", "yaml"}
 	verbosities := []string{"debug", "info", "warn", "error"}
 
 	app := kingpin.New(
@@ -60,6 +60,8 @@ func main() {
 			render = renderDhall(&log)
 		case "json":
 			render = renderJSON(&log)
+		case "json-schema":
+			render = renderJSONSchema(&log)
 		case "yaml":
 			render = renderYAML(&log)
 		default:
@@ -251,6 +253,24 @@ func renderJSON(log *logrus.FieldLogger) func(dhall.Expression) string {
 		}
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to JSON")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
+func renderJSONSchema(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to JSONSchema")
+		rendered, err := dhall.RenderJSONSchema(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to JSONSchema",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to JSONSchema")
 
 		return fmt.Sprintf("%s\n", rendered)
 	}

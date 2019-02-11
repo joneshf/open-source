@@ -31,6 +31,10 @@ func (bt *BoolType) renderJSON() (string, error) {
 	}
 }
 
+func (bt *BoolType) renderJSONSchema() (string, error) {
+	return fmt.Sprintf("{%q: %q}", "type", "boolean"), nil
+}
+
 func (bt *BoolType) renderYAML() (string, error) {
 	return "", &YAMLError{
 		expression: bt,
@@ -76,6 +80,10 @@ func (b *Bool) renderJSON() (string, error) {
 		return "true", nil
 	}
 	return "false", nil
+}
+
+func (b *Bool) renderJSONSchema() (string, error) {
+	return fmt.Sprintf("%t", b.Value), nil
 }
 
 func (b *Bool) renderYAML() (string, error) {
@@ -177,6 +185,13 @@ func (be *BoolEqual) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: be,
 		message:    "Cannot render equality to JSON. Try normalizing first.",
+	}
+}
+
+func (be *BoolEqual) renderJSONSchema() (string, error) {
+	return "", &JSONSchemaError{
+		expression: be,
+		message:    "Cannot render equality to JSONSchema. Try inferring the type.",
 	}
 }
 

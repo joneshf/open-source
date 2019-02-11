@@ -99,6 +99,13 @@ func TestKind(t *testing.T) {
 		}
 	})
 
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderJSONSchema()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
 	t.Run("renderYAML", func(t *testing.T) {
 		unexpected, err := (&Kind{}).renderYAML()
 		if err == nil {
@@ -216,6 +223,13 @@ func TestSort(t *testing.T) {
 		}
 	})
 
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderJSONSchema()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
 	t.Run("renderYAML", func(t *testing.T) {
 		unexpected, err := (&Sort{}).renderYAML()
 		if err == nil {
@@ -328,6 +342,13 @@ func TestType(t *testing.T) {
 		unexpected, err := (&Type{}).renderJSON()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJSONSchema", func(t *testing.T) {
+		unexpected, err := (&Type{}).renderJSONSchema()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
 		}
 	})
 
