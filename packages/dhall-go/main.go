@@ -88,6 +88,15 @@ func main() {
 	}).Default()
 
 	app.Command(
+		"type",
+		"Type check the given Dhall expression.",
+	).Action(func(*kingpin.ParseContext) error {
+		typeChecked := typeCheck(&log)
+		fmt.Println(dhall.Render(typeChecked))
+		return nil
+	})
+
+	app.Command(
 		"parse",
 		"Parse the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
@@ -172,4 +181,20 @@ func parse(log *logrus.FieldLogger) dhall.Expression {
 	(*log).Debugf("Successfully parsed input")
 
 	return expression
+}
+
+func typeCheck(log *logrus.FieldLogger) dhall.Expression {
+	expression := parse(log)
+
+	(*log).Infof("Type checking expression")
+	reduced, err := dhall.Reduce(expression)
+	if err != nil {
+		(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+			"Could not type check expression",
+		)
+	}
+	*log = (*log).WithFields(logrus.Fields{"type": reduced})
+	(*log).Debug("Successfully type checked expression")
+
+	return reduced
 }

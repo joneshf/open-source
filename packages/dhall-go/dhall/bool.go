@@ -106,11 +106,11 @@ func (be *BoolEqual) equivalent(e Expression) bool {
 }
 
 func (be *BoolEqual) infer(context Context) (Expression, error) {
-	l, err := Reduce(be.Left, context)
+	l, err := reduce(be.Left, context)
 	if err != nil {
 		return nil, err
 	}
-	r, err := Reduce(be.Right, context)
+	r, err := reduce(be.Right, context)
 	if err != nil {
 		return nil, err
 	}

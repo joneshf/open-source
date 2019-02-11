@@ -16,7 +16,11 @@ func (e *TypeError) Error() string {
 
 // Reduce is identical to Expression.infer
 // except that it returns the inferred type in normal form.
-func Reduce(a Expression, Γ Context) (Expression, error) {
+func Reduce(a Expression) (Expression, error) {
+	return reduce(a, Context{value: []annotatedExpression{}})
+}
+
+func reduce(a Expression, Γ Context) (Expression, error) {
 	A0, err := a.infer(Γ)
 	if err != nil {
 		return nil, err
