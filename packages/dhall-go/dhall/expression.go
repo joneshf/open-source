@@ -20,3 +20,8 @@ type Expression interface {
 func Equivalent(l Expression, r Expression) bool {
 	return l.equivalent(r)
 }
+
+// Normalize performs beta normalization followed by alpha normalization.
+func Normalize(e Expression) Expression {
+	return e.betaNormalize().alphaNormalize()
+}

@@ -79,13 +79,22 @@ func main() {
 	})
 
 	app.Command(
+		"normalize",
+		"Normalize the given Dhall expression.",
+	).Action(func(*kingpin.ParseContext) error {
+		normalized := normalize(&log)
+		fmt.Println(dhall.Render(normalized))
+		return nil
+	}).Default()
+
+	app.Command(
 		"parse",
 		"Parse the given Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
 		expression := parse(&log)
 		fmt.Println(dhall.Render(expression))
 		return nil
-	}).Default()
+	})
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
@@ -129,6 +138,17 @@ func encode(log *logrus.FieldLogger) []byte {
 	(*log).Debug("Successfully encoded expression")
 
 	return encoded
+}
+
+func normalize(log *logrus.FieldLogger) dhall.Expression {
+	expression := parse(log)
+
+	(*log).Infof("Normalizing expression")
+	normalized := dhall.Normalize(expression)
+	*log = (*log).WithFields(logrus.Fields{"normalized-expression": normalized})
+	(*log).Debug("Successfully normalized expression")
+
+	return normalized
 }
 
 func parse(log *logrus.FieldLogger) dhall.Expression {
