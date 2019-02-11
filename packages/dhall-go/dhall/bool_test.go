@@ -41,11 +41,41 @@ func TestBoolType(t *testing.T) {
 		}
 	})
 
+	t.Run("render", func(t *testing.T) {
+		actual := (&BoolType{}).render()
+		expected := "Bool"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderBinary", func(t *testing.T) {
 		actual := (&BoolType{}).renderBinary()
 		expected := binary{value: "Bool"}
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderCBOR", func(t *testing.T) {
+		actual := (&BoolType{}).renderCBOR()
+		expected := "\"Bool\""
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJSON", func(t *testing.T) {
+		unexpected, err := (&BoolType{}).renderJSON()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderYAML", func(t *testing.T) {
+		unexpected, err := (&BoolType{}).renderYAML()
+		if err == nil {
+			t.Fatalf("Did not expect to render to YAML: %#v", unexpected)
 		}
 	})
 
@@ -139,6 +169,20 @@ func TestBool(t *testing.T) {
 		}
 	})
 
+	t.Run("render", func(t *testing.T) {
+		actual := (&Bool{Value: false}).render()
+		expected := "False"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual = (&Bool{Value: true}).render()
+		expected = "True"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderBinary", func(t *testing.T) {
 		actual := (&Bool{Value: false}).renderBinary()
 		expected := binary{value: false}
@@ -148,6 +192,64 @@ func TestBool(t *testing.T) {
 
 		actual = (&Bool{Value: true}).renderBinary()
 		expected = binary{value: true}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderCBOR", func(t *testing.T) {
+		actual := (&Bool{Value: false}).renderCBOR()
+		expected := "false"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual = (&Bool{Value: true}).renderCBOR()
+		expected = "true"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJSON", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderJSON()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderJSON()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderYAML", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderYAML()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderYAML()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
@@ -308,6 +410,36 @@ func TestBoolEqual(t *testing.T) {
 		}
 	})
 
+	t.Run("render", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual := be.render()
+		expected := "False == False"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual = be.render()
+		expected = "False == True"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual = be.render()
+		expected = "True == False"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual = be.render()
+		expected = "True == True"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderBinary", func(t *testing.T) {
 		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
 		actual := be.renderBinary()
@@ -335,6 +467,52 @@ func TestBoolEqual(t *testing.T) {
 		expected = binary{value: [](interface{}){3, 2, true, true}}
 		if !reflect.DeepEqual(expected.value, actual.value) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
+		}
+	})
+
+	t.Run("renderCBOR", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual := be.renderCBOR()
+		expected := "[3, 2, false, false]"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual = be.renderCBOR()
+		expected = "[3, 2, false, true]"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual = be.renderCBOR()
+		expected = "[3, 2, true, false]"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual = be.renderCBOR()
+		expected = "[3, 2, true, true]"
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJSON", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		unexpected, err := be.renderJSON()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderYAML", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		unexpected, err := be.renderYAML()
+		if err == nil {
+			t.Fatalf("Did not expect to render to YAML: %#v", unexpected)
 		}
 	})
 
