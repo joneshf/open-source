@@ -94,7 +94,7 @@ var (
 
 	boolRaw = terminal.Word(
 		string([]rune{0x42, 0x6f, 0x6f, 0x6c}),
-		&BoolType{},
+		&Bool{},
 		"reserved",
 	)
 
@@ -181,7 +181,7 @@ var (
 
 	falseRaw = terminal.Word(
 		string([]rune{0x46, 0x61, 0x6c, 0x73, 0x65}),
-		&Bool{Value: false},
+		&BoolValue{Value: false},
 		"reserved",
 	)
 
@@ -502,7 +502,7 @@ var (
 
 	trueRaw = terminal.Word(
 		string([]rune{0x54, 0x72, 0x75, 0x65}),
-		&Bool{Value: true},
+		&BoolValue{Value: true},
 		"reserved",
 	)
 

@@ -157,7 +157,7 @@ func TestKind(t *testing.T) {
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		actual := (&Kind{}).substitute("", 0, &Bool{Value: true})
+		actual := (&Kind{}).substitute("", 0, &BoolValue{Value: true})
 		expected := &Kind{}
 		if !Equivalent(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
@@ -316,7 +316,7 @@ func TestSort(t *testing.T) {
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		actual := (&Sort{}).substitute("", 0, &Bool{Value: true})
+		actual := (&Sort{}).substitute("", 0, &BoolValue{Value: true})
 		expected := &Sort{}
 		if !Equivalent(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
@@ -481,7 +481,7 @@ func TestType(t *testing.T) {
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		actual := (&Type{}).substitute("", 0, &Bool{Value: true})
+		actual := (&Type{}).substitute("", 0, &BoolValue{Value: true})
 		expected := &Type{}
 		if !Equivalent(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)

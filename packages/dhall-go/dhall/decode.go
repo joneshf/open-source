@@ -19,11 +19,11 @@ func (e *DecodeError) Error() string {
 func hydrate(raw interface{}) (Expression, error) {
 	switch rawType := raw.(type) {
 	case bool:
-		return &Bool{Value: raw.(bool)}, nil
+		return &BoolValue{Value: raw.(bool)}, nil
 	case string:
 		switch rawType {
 		case "Bool":
-			return &BoolType{}, nil
+			return &Bool{}, nil
 		case "Kind":
 			return &Kind{}, nil
 		case "Sort":

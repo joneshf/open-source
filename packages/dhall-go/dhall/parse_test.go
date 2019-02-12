@@ -9,9 +9,9 @@ import (
 func TestParse(t *testing.T) {
 	var log logrus.FieldLogger = &logrus.Logger{}
 
-	t.Run("Bool", func(t *testing.T) {
+	t.Run("BoolValue", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False"))
-		expected := &Bool{Value: false}
+		expected := &BoolValue{Value: false}
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -20,7 +20,7 @@ func TestParse(t *testing.T) {
 		}
 
 		actual, err = Parse(&log, []byte("True"))
-		expected = &Bool{Value: true}
+		expected = &BoolValue{Value: true}
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -30,7 +30,7 @@ func TestParse(t *testing.T) {
 	})
 
 	t.Run("BoolEqual", func(t *testing.T) {
-		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
 		actual, err := Parse(&log, []byte("False == False"))
 		expected := be
 		if err != nil {
@@ -40,7 +40,7 @@ func TestParse(t *testing.T) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 
-		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
 		actual, err = Parse(&log, []byte("False == True"))
 		expected = be
 		if err != nil {
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 
-		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
 		actual, err = Parse(&log, []byte("True == False"))
 		expected = be
 		if err != nil {
@@ -60,7 +60,7 @@ func TestParse(t *testing.T) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 
-		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
 		actual, err = Parse(&log, []byte("True == True"))
 		expected = be
 		if err != nil {
@@ -71,9 +71,9 @@ func TestParse(t *testing.T) {
 		}
 	})
 
-	t.Run("BoolType", func(t *testing.T) {
+	t.Run("Bool", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Bool"))
-		expected := &BoolType{}
+		expected := &Bool{}
 		if err != nil {
 			t.Fatal(err)
 		}
