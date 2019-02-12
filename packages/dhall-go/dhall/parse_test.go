@@ -71,6 +71,60 @@ func TestParse(t *testing.T) {
 		}
 	})
 
+	t.Run("BoolNotEqual", func(t *testing.T) {
+		be := &BoolNotEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}
+		actual, err := Parse(&log, []byte("False != False"))
+		expected := be
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolNotEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}
+		actual, err = Parse(&log, []byte("False != True"))
+		expected = be
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolNotEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}
+		actual, err = Parse(&log, []byte("True != False"))
+		expected = be
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolNotEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}
+		actual, err = Parse(&log, []byte("True != True"))
+		expected = be
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !Equivalent(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("Bool", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Bool"))
 		expected := &Bool{}

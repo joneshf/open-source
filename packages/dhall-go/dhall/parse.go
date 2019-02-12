@@ -339,7 +339,9 @@ var (
 	).Bind(interpretBinaryExpression(
 		"not-equal-expression",
 		"application-expression",
-		constExpression,
+		func(left, right Expression) Expression {
+			return &BoolNotEqual{Left: left, Right: right}
+		},
 	))
 
 	openBrace = combinator.SeqOf(terminal.Op("{"), whitespace)

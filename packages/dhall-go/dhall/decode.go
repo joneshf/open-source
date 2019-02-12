@@ -33,16 +33,32 @@ func hydrate(raw interface{}) (Expression, error) {
 		}
 	case []interface{}:
 		xs := raw.([]interface{})
-		if len(xs) == 4 && xs[0].(uint64) == 3 && xs[1].(uint64) == 2 {
-			left, err := hydrate(xs[2])
-			if err != nil {
-				return nil, err
+		// Operators
+		if len(xs) == 4 {
+			// BoolEqual
+			if xs[0].(uint64) == 3 && xs[1].(uint64) == 2 {
+				left, err := hydrate(xs[2])
+				if err != nil {
+					return nil, err
+				}
+				right, err := hydrate(xs[3])
+				if err != nil {
+					return nil, err
+				}
+				return &BoolEqual{Left: left, Right: right}, nil
 			}
-			right, err := hydrate(xs[3])
-			if err != nil {
-				return nil, err
+			// BoolNotEqual
+			if xs[0].(uint64) == 3 && xs[1].(uint64) == 3 {
+				left, err := hydrate(xs[2])
+				if err != nil {
+					return nil, err
+				}
+				right, err := hydrate(xs[3])
+				if err != nil {
+					return nil, err
+				}
+				return &BoolNotEqual{Left: left, Right: right}, nil
 			}
-			return &BoolEqual{Left: left, Right: right}, nil
 		}
 	}
 
