@@ -25,7 +25,19 @@ func main() {
 	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
-	outputs := []string{"binary", "cbor", "dhall", "json", "json-schema", "yaml"}
+	outputs := []string{
+		"binary",
+		"cbor",
+		"dhall",
+		"elm",
+		"go",
+		"haskell",
+		"javascript",
+		"json",
+		"json-schema",
+		"purescript",
+		"yaml",
+	}
 	verbosities := []string{"debug", "info", "warn", "error"}
 
 	app := kingpin.New(
@@ -58,10 +70,20 @@ func main() {
 			render = renderCBOR(&log)
 		case "dhall":
 			render = renderDhall(&log)
+		case "elm":
+			render = renderElm(&log)
+		case "go":
+			render = renderGo(&log)
+		case "haskell":
+			render = renderHaskell(&log)
+		case "javascript":
+			render = renderJavaScript(&log)
 		case "json":
 			render = renderJSON(&log)
 		case "json-schema":
 			render = renderJSONSchema(&log)
+		case "purescript":
+			render = renderPureScript(&log)
 		case "yaml":
 			render = renderYAML(&log)
 		default:
@@ -240,6 +262,78 @@ func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
 	}
 }
 
+func renderElm(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to Elm")
+		rendered, err := dhall.RenderElm(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to Elm",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to Elm")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
+func renderGo(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to Go")
+		rendered, err := dhall.RenderGo(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to Go",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to Go")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
+func renderHaskell(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to Haskell")
+		rendered, err := dhall.RenderHaskell(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to Haskell",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to Haskell")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
+func renderJavaScript(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to JavaScript")
+		rendered, err := dhall.RenderJavaScript(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to JavaScript",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to JavaScript")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
 func renderJSON(log *logrus.FieldLogger) func(dhall.Expression) string {
 	return func(e dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"expression": e})
@@ -271,6 +365,24 @@ func renderJSONSchema(log *logrus.FieldLogger) func(dhall.Expression) string {
 		}
 		*log = (*log).WithFields(logrus.Fields{"output": rendered})
 		(*log).Debug("Successfully rendered expression to JSONSchema")
+
+		return fmt.Sprintf("%s\n", rendered)
+	}
+}
+
+func renderPureScript(log *logrus.FieldLogger) func(dhall.Expression) string {
+	return func(e dhall.Expression) string {
+		*log = (*log).WithFields(logrus.Fields{"expression": e})
+
+		(*log).Info("Attempting to render to PureScript")
+		rendered, err := dhall.RenderPureScript(e)
+		if err != nil {
+			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
+				"Cannot render expression to PureScript",
+			)
+		}
+		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		(*log).Debug("Successfully rendered expression to PureScript")
 
 		return fmt.Sprintf("%s\n", rendered)
 	}

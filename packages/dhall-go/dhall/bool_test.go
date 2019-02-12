@@ -65,6 +65,39 @@ func TestBoolType(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		actual, err := (&BoolType{}).renderElm()
+		expected := "Bool"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		actual, err := (&BoolType{}).renderGo()
+		expected := "bool"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		actual, err := (&BoolType{}).renderHaskell()
+		expected := "Bool"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		unexpected, err := (&BoolType{}).renderJSON()
 		if err == nil {
@@ -75,6 +108,24 @@ func TestBoolType(t *testing.T) {
 	t.Run("renderJSONSchema", func(t *testing.T) {
 		actual, err := (&BoolType{}).renderJSONSchema()
 		expected := "{\"type\": \"boolean\"}"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		unexpected, err := (&BoolType{}).renderJSON()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JavaScript: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		actual, err := (&BoolType{}).renderPureScript()
+		expected := "Boolean"
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -222,6 +273,66 @@ func TestBool(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderElm()
+		expected := "False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderElm()
+		expected = "True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderGo()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderGo()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderHaskell()
+		expected := "False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderHaskell()
+		expected = "True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		actual, err := (&Bool{Value: false}).renderJSON()
 		expected := "false"
@@ -261,6 +372,46 @@ func TestBool(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderJavaScript()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderJavaScript()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		actual, err := (&Bool{Value: false}).renderPureScript()
+		expected := "false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		actual, err = (&Bool{Value: true}).renderPureScript()
+		expected = "true"
+		if err != nil {
+			t.Fatal(err)
+		}
 		if !reflect.DeepEqual(expected, actual) {
 			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
@@ -533,6 +684,132 @@ func TestBoolEqual(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual, err := be.renderElm()
+		expected := "False == False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual, err = be.renderElm()
+		expected = "False == True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual, err = be.renderElm()
+		expected = "True == False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual, err = be.renderElm()
+		expected = "True == True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual, err := be.renderGo()
+		expected := "false == false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual, err = be.renderGo()
+		expected = "false == true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual, err = be.renderGo()
+		expected = "true == false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual, err = be.renderGo()
+		expected = "true == true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual, err := be.renderHaskell()
+		expected := "False == False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual, err = be.renderHaskell()
+		expected = "False == True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual, err = be.renderHaskell()
+		expected = "True == False"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual, err = be.renderHaskell()
+		expected = "True == True"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
 		unexpected, err := be.renderJSON()
@@ -546,6 +823,90 @@ func TestBoolEqual(t *testing.T) {
 		unexpected, err := be.renderJSONSchema()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual, err := be.renderJavaScript()
+		expected := "false === false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual, err = be.renderJavaScript()
+		expected = "false === true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual, err = be.renderJavaScript()
+		expected = "true === false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual, err = be.renderJavaScript()
+		expected = "true === true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		be := &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: false}}
+		actual, err := be.renderPureScript()
+		expected := "false == false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: false}, Right: &Bool{Value: true}}
+		actual, err = be.renderPureScript()
+		expected = "false == true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: false}}
+		actual, err = be.renderPureScript()
+		expected = "true == false"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+
+		be = &BoolEqual{Left: &Bool{Value: true}, Right: &Bool{Value: true}}
+		actual, err = be.renderPureScript()
+		expected = "true == true"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 	})
 

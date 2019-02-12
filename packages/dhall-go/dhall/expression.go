@@ -13,8 +13,13 @@ type Expression interface {
 	render() string
 	renderBinary() binary
 	renderCBOR() string
+	renderElm() (string, error)
+	renderGo() (string, error)
+	renderHaskell() (string, error)
 	renderJSON() (string, error)
 	renderJSONSchema() (string, error)
+	renderJavaScript() (string, error)
+	renderPureScript() (string, error)
 	renderYAML() (string, error)
 	shift(int, string, int) Expression
 	substitute(string, int, Expression) Expression

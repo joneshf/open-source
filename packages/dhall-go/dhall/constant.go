@@ -58,6 +58,21 @@ func (*Kind) renderBinary() binary { return binary{value: "Kind"} }
 
 func (*Kind) renderCBOR() string { return fmt.Sprintf("%q", "Kind") }
 
+func (k *Kind) renderElm() (string, error) {
+	return "", &ElmError{expression: k, message: "Cannot render `Kind` to Elm"}
+}
+
+func (k *Kind) renderGo() (string, error) {
+	return "", &GoError{expression: k, message: "Cannot render `Kind` to Go"}
+}
+
+func (k *Kind) renderHaskell() (string, error) {
+	return "", &HaskellError{
+		expression: k,
+		message:    "Cannot render `Kind` to Haskell",
+	}
+}
+
 func (k *Kind) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Kind` to JSON"}
 }
@@ -66,6 +81,20 @@ func (k *Kind) renderJSONSchema() (string, error) {
 	return "", &JSONSchemaError{
 		expression: k,
 		message:    "Cannot render `Kind` to JSONSchema",
+	}
+}
+
+func (k *Kind) renderJavaScript() (string, error) {
+	return "", &JavaScriptError{
+		expression: k,
+		message:    "Cannot render `Kind` to JavaScript",
+	}
+}
+
+func (k *Kind) renderPureScript() (string, error) {
+	return "", &PureScriptError{
+		expression: k,
+		message:    "Cannot render `Kind` to PureScript",
 	}
 }
 
@@ -118,6 +147,21 @@ func (*Sort) renderBinary() binary { return binary{value: "Sort"} }
 
 func (*Sort) renderCBOR() string { return fmt.Sprintf("%q", "Sort") }
 
+func (k *Sort) renderElm() (string, error) {
+	return "", &ElmError{expression: k, message: "Cannot render `Sort` to Elm"}
+}
+
+func (k *Sort) renderGo() (string, error) {
+	return "", &GoError{expression: k, message: "Cannot render `Sort` to Go"}
+}
+
+func (k *Sort) renderHaskell() (string, error) {
+	return "", &HaskellError{
+		expression: k,
+		message:    "Cannot render `Sort` to Haskell",
+	}
+}
+
 func (k *Sort) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Sort` to JSON"}
 }
@@ -126,6 +170,20 @@ func (k *Sort) renderJSONSchema() (string, error) {
 	return "", &JSONSchemaError{
 		expression: k,
 		message:    "Cannot render `Sort` to JSONSchema",
+	}
+}
+
+func (k *Sort) renderJavaScript() (string, error) {
+	return "", &JavaScriptError{
+		expression: k,
+		message:    "Cannot render `Sort` to JavaScript",
+	}
+}
+
+func (k *Sort) renderPureScript() (string, error) {
+	return "", &PureScriptError{
+		expression: k,
+		message:    "Cannot render `Sort` to PureScript",
 	}
 }
 
@@ -179,6 +237,16 @@ func (*Type) renderBinary() binary { return binary{value: "Type"} }
 
 func (*Type) renderCBOR() string { return fmt.Sprintf("%q", "Type") }
 
+func (k *Type) renderElm() (string, error) {
+	return "", &ElmError{expression: k, message: "Cannot render `Type` to Elm"}
+}
+
+func (k *Type) renderGo() (string, error) {
+	return "", &GoError{expression: k, message: "Cannot render `Type` to Go"}
+}
+
+func (k *Type) renderHaskell() (string, error) { return "Type", nil }
+
 func (k *Type) renderJSON() (string, error) {
 	return "", &JSONError{expression: k, message: "Cannot render `Type` to JSON"}
 }
@@ -189,6 +257,15 @@ func (k *Type) renderJSONSchema() (string, error) {
 		message:    "Cannot render `Type` to JSONSchema",
 	}
 }
+
+func (k *Type) renderJavaScript() (string, error) {
+	return "", &JavaScriptError{
+		expression: k,
+		message:    "Cannot render `Type` to JavaScript",
+	}
+}
+
+func (k *Type) renderPureScript() (string, error) { return "Type", nil }
 
 func (k *Type) renderYAML() (string, error) {
 	return "", &YAMLError{expression: k, message: "Cannot render `Type` to YAML"}

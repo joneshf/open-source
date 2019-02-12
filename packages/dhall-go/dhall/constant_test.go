@@ -92,6 +92,27 @@ func TestKind(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderElm()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Elm: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderGo()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Go: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderHaskell()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Haskell: %#v", unexpected)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		unexpected, err := (&Kind{}).renderJSON()
 		if err == nil {
@@ -103,6 +124,20 @@ func TestKind(t *testing.T) {
 		unexpected, err := (&Kind{}).renderJSONSchema()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderJavaScript()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JavaScript: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		unexpected, err := (&Kind{}).renderPureScript()
+		if err == nil {
+			t.Fatalf("Did not expect to render to PureScript: %#v", unexpected)
 		}
 	})
 
@@ -216,6 +251,27 @@ func TestSort(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderElm()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Elm: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderGo()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Go: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderHaskell()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Haskell: %#v", unexpected)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		unexpected, err := (&Sort{}).renderJSON()
 		if err == nil {
@@ -227,6 +283,20 @@ func TestSort(t *testing.T) {
 		unexpected, err := (&Sort{}).renderJSONSchema()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderJavaScript()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JavaScript: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		unexpected, err := (&Sort{}).renderPureScript()
+		if err == nil {
+			t.Fatalf("Did not expect to render to PureScript: %#v", unexpected)
 		}
 	})
 
@@ -338,6 +408,31 @@ func TestType(t *testing.T) {
 		}
 	})
 
+	t.Run("renderElm", func(t *testing.T) {
+		unexpected, err := (&Type{}).renderElm()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Elm: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderGo", func(t *testing.T) {
+		unexpected, err := (&Type{}).renderGo()
+		if err == nil {
+			t.Fatalf("Did not expect to render to Go: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderHaskell", func(t *testing.T) {
+		actual, err := (&Type{}).renderHaskell()
+		expected := "Type"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		}
+	})
+
 	t.Run("renderJSON", func(t *testing.T) {
 		unexpected, err := (&Type{}).renderJSON()
 		if err == nil {
@@ -349,6 +444,24 @@ func TestType(t *testing.T) {
 		unexpected, err := (&Type{}).renderJSONSchema()
 		if err == nil {
 			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderJavaScript", func(t *testing.T) {
+		unexpected, err := (&Type{}).renderJavaScript()
+		if err == nil {
+			t.Fatalf("Did not expect to render to JavaScript: %#v", unexpected)
+		}
+	})
+
+	t.Run("renderPureScript", func(t *testing.T) {
+		actual, err := (&Type{}).renderPureScript()
+		expected := "Type"
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
 		}
 	})
 

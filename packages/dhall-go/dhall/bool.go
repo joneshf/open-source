@@ -24,6 +24,12 @@ func (*BoolType) renderBinary() binary { return binary{value: "Bool"} }
 
 func (*BoolType) renderCBOR() string { return fmt.Sprintf("%q", "Bool") }
 
+func (bt *BoolType) renderElm() (string, error) { return "Bool", nil }
+
+func (bt *BoolType) renderGo() (string, error) { return "bool", nil }
+
+func (bt *BoolType) renderHaskell() (string, error) { return "Bool", nil }
+
 func (bt *BoolType) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: bt,
@@ -34,6 +40,15 @@ func (bt *BoolType) renderJSON() (string, error) {
 func (bt *BoolType) renderJSONSchema() (string, error) {
 	return fmt.Sprintf("{%q: %q}", "type", "boolean"), nil
 }
+
+func (bt *BoolType) renderJavaScript() (string, error) {
+	return "", &JavaScriptError{
+		expression: bt,
+		message:    "Cannot render type `Bool` to JavaScript",
+	}
+}
+
+func (bt *BoolType) renderPureScript() (string, error) { return "Boolean", nil }
 
 func (bt *BoolType) renderYAML() (string, error) {
 	return "", &YAMLError{
@@ -75,6 +90,27 @@ func (b *Bool) renderBinary() binary { return binary{value: b.Value} }
 
 func (b *Bool) renderCBOR() string { return fmt.Sprintf("%t", b.Value) }
 
+func (b *Bool) renderElm() (string, error) {
+	if b.Value {
+		return "True", nil
+	}
+	return "False", nil
+}
+
+func (b *Bool) renderGo() (string, error) {
+	if b.Value {
+		return "true", nil
+	}
+	return "false", nil
+}
+
+func (b *Bool) renderHaskell() (string, error) {
+	if b.Value {
+		return "True", nil
+	}
+	return "False", nil
+}
+
 func (b *Bool) renderJSON() (string, error) {
 	if b.Value {
 		return "true", nil
@@ -84,6 +120,20 @@ func (b *Bool) renderJSON() (string, error) {
 
 func (b *Bool) renderJSONSchema() (string, error) {
 	return fmt.Sprintf("%t", b.Value), nil
+}
+
+func (b *Bool) renderJavaScript() (string, error) {
+	if b.Value {
+		return "true", nil
+	}
+	return "false", nil
+}
+
+func (b *Bool) renderPureScript() (string, error) {
+	if b.Value {
+		return "true", nil
+	}
+	return "false", nil
 }
 
 func (b *Bool) renderYAML() (string, error) {
@@ -181,6 +231,42 @@ func (be *BoolEqual) renderCBOR() string {
 	return fmt.Sprintf("[3, 2, %s, %s]", l1, r1)
 }
 
+func (be *BoolEqual) renderElm() (string, error) {
+	left, errLeft := be.Left.renderElm()
+	if errLeft != nil {
+		return "", errLeft
+	}
+	right, errRight := be.Right.renderElm()
+	if errRight != nil {
+		return "", errRight
+	}
+	return fmt.Sprintf("%s == %s", left, right), nil
+}
+
+func (be *BoolEqual) renderGo() (string, error) {
+	left, errLeft := be.Left.renderGo()
+	if errLeft != nil {
+		return "", errLeft
+	}
+	right, errRight := be.Right.renderGo()
+	if errRight != nil {
+		return "", errRight
+	}
+	return fmt.Sprintf("%s == %s", left, right), nil
+}
+
+func (be *BoolEqual) renderHaskell() (string, error) {
+	left, errLeft := be.Left.renderHaskell()
+	if errLeft != nil {
+		return "", errLeft
+	}
+	right, errRight := be.Right.renderHaskell()
+	if errRight != nil {
+		return "", errRight
+	}
+	return fmt.Sprintf("%s == %s", left, right), nil
+}
+
 func (be *BoolEqual) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: be,
@@ -193,6 +279,30 @@ func (be *BoolEqual) renderJSONSchema() (string, error) {
 		expression: be,
 		message:    "Cannot render equality to JSONSchema. Try inferring the type.",
 	}
+}
+
+func (be *BoolEqual) renderJavaScript() (string, error) {
+	left, errLeft := be.Left.renderJavaScript()
+	if errLeft != nil {
+		return "", errLeft
+	}
+	right, errRight := be.Right.renderJavaScript()
+	if errRight != nil {
+		return "", errRight
+	}
+	return fmt.Sprintf("%s === %s", left, right), nil
+}
+
+func (be *BoolEqual) renderPureScript() (string, error) {
+	left, errLeft := be.Left.renderPureScript()
+	if errLeft != nil {
+		return "", errLeft
+	}
+	right, errRight := be.Right.renderPureScript()
+	if errRight != nil {
+		return "", errRight
+	}
+	return fmt.Sprintf("%s == %s", left, right), nil
 }
 
 func (be *BoolEqual) renderYAML() (string, error) {
