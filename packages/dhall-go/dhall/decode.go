@@ -66,7 +66,11 @@ func hydrate(raw interface{}) (Expression, error) {
 }
 
 // Decode attempts to convert a binary encoding to a Dhall expression.
-func Decode(handle *codec.CborHandle, in []byte) (Expression, error) {
+func Decode(
+	handle *codec.CborHandle,
+	in []byte,
+	currentVersion string,
+) (Expression, error) {
 	var raw interface{}
 
 	decoder := codec.NewDecoderBytes(in, handle)
@@ -74,5 +78,26 @@ func Decode(handle *codec.CborHandle, in []byte) (Expression, error) {
 		return nil, err
 	}
 
-	return hydrate(raw)
+	withVersion, ok := raw.([](interface{}))
+	if !ok || len(withVersion) != 2 {
+		return nil, &DecodeError{
+			message: "Expected version followed by expression",
+			value:   raw,
+		}
+	}
+
+	rawVersion, rawExpression := withVersion[0], withVersion[1]
+	version, ok := rawVersion.(string)
+	if rawVersion != currentVersion {
+		return nil, &DecodeError{
+			message: fmt.Sprintf(
+				"Cannot decode different version. Expected version to be %s, but it was %s.",
+				currentVersion,
+				version,
+			),
+			value: raw,
+		}
+	}
+
+	return hydrate(rawExpression)
 }

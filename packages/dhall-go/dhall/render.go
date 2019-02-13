@@ -90,10 +90,15 @@ func (e *YAMLError) Error() string {
 func Render(expression Expression) string { return expression.render() }
 
 // RenderBinary attempts to render the given Expression as binary.
-func RenderBinary(handle *codec.CborHandle, expr Expression) ([]byte, error) {
+func RenderBinary(
+	handle *codec.CborHandle,
+	expr Expression,
+	currentVersion string,
+) ([]byte, error) {
 	out := make([]byte, 0)
 	encoder := codec.NewEncoderBytes(&out, handle)
-	if err := encoder.Encode(expr.renderBinary().value); err != nil {
+	withVersion := [](interface{}){currentVersion, expr.renderBinary().value}
+	if err := encoder.Encode(withVersion); err != nil {
 		return nil, err
 	}
 	return out, nil

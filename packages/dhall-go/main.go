@@ -25,6 +25,7 @@ func main() {
 	var render func(dhall.Expression) string
 	var verbose bool
 	var verbosity string
+
 	outputs := []string{
 		"binary",
 		"cbor",
@@ -39,6 +40,8 @@ func main() {
 		"yaml",
 	}
 	verbosities := []string{"debug", "info", "warn", "error"}
+	versionCLI := "0.0.0"
+	versionStandard := "5.0.0"
 
 	app := kingpin.New(
 		"dhall",
@@ -65,7 +68,7 @@ func main() {
 
 		switch output {
 		case "binary":
-			render = renderBinary(&log)
+			render = renderBinary(&log, versionStandard)
 		case "cbor":
 			render = renderCBOR(&log)
 		case "dhall":
@@ -103,11 +106,19 @@ func main() {
 		fmt.Sprintf("Select the minimum level to log %q.", verbosities),
 	).Default("warn").EnumVar(&verbosity, verbosities...)
 
+	app.Version(
+		fmt.Sprintf(
+			"CLI version: %s\nStandard version: %s",
+			versionCLI,
+			versionStandard,
+		),
+	)
+
 	decodeCommand := app.Command(
 		"decode",
 		"Decode the given binary value to a Dhall expression.",
 	).Action(func(*kingpin.ParseContext) error {
-		decoded := decode(&log)
+		decoded := decode(&log, versionStandard)
 		fmt.Print(render(decoded))
 		return nil
 	})
@@ -158,7 +169,7 @@ func main() {
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
 
-func decode(log *logrus.FieldLogger) dhall.Expression {
+func decode(log *logrus.FieldLogger, version string) dhall.Expression {
 	(*log).Info("Decoding binary")
 	handle := &codec.CborHandle{}
 
@@ -170,7 +181,7 @@ func decode(log *logrus.FieldLogger) dhall.Expression {
 	}
 	*log = (*log).WithFields(logrus.Fields{"input": input})
 
-	decoded, err := dhall.Decode(handle, input)
+	decoded, err := dhall.Decode(handle, input, version)
 	if err != nil {
 		(*log).WithFields(logrus.Fields{"err": err}).Fatal(
 			"Could not decode binary",
@@ -216,14 +227,17 @@ func parse(log *logrus.FieldLogger) dhall.Expression {
 	return expression
 }
 
-func renderBinary(log *logrus.FieldLogger) func(dhall.Expression) string {
+func renderBinary(
+	log *logrus.FieldLogger,
+	version string,
+) func(dhall.Expression) string {
 	return func(e dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"expression": e})
 
 		(*log).Info("Attempting to render expression to binary")
 		handle := &codec.CborHandle{}
 
-		rendered, err := dhall.RenderBinary(handle, e)
+		rendered, err := dhall.RenderBinary(handle, e, version)
 		if err != nil {
 			(*log).WithFields(logrus.Fields{"err": err}).Fatal(
 				"Could not render expression to binary",
