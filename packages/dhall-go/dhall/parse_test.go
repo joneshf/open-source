@@ -4,168 +4,122 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParse(t *testing.T) {
 	var log logrus.FieldLogger = &logrus.Logger{}
 
+	assert := require.New(t)
+
 	t.Run("BoolValue", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False"))
-		expected := &BoolValue{Value: false}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal(&BoolValue{Value: false}, actual)
 		actual, err = Parse(&log, []byte("True"))
-		expected = &BoolValue{Value: true}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(&BoolValue{Value: true}, actual)
 	})
 
 	t.Run("BoolEqual", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
 		actual, err := Parse(&log, []byte("False == False"))
-		expected := be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("False == True"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("True == False"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("True == True"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			},
+			actual,
+		)
 	})
 
 	t.Run("BoolNotEqual", func(t *testing.T) {
-		be := &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: false},
-		}
 		actual, err := Parse(&log, []byte("False != False"))
-		expected := be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: true},
-		}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("False != True"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: false},
-		}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("True != False"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: true},
-		}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			},
+			actual,
+		)
 		actual, err = Parse(&log, []byte("True != True"))
-		expected = be
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			},
+			actual,
+		)
 	})
 
 	t.Run("Bool", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Bool"))
-		expected := &Bool{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
 	})
 
 	t.Run("Kind", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Kind"))
-		expected := &Kind{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(&Kind{}, actual)
 	})
 
 	t.Run("Sort", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Sort"))
-		expected := &Sort{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(&Sort{}, actual)
 	})
 
 	t.Run("Type", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Type"))
-		expected := &Type{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal(&Type{}, actual)
 	})
 }

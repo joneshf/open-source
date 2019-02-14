@@ -1,1025 +1,697 @@
 package dhall
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestBool(t *testing.T) {
+	assert := require.New(t)
+
 	t.Run("alphaNormalize", func(t *testing.T) {
-		actual := (&Bool{}).alphaNormalize()
-		expected := &Bool{}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(&Bool{}, (&Bool{}).alphaNormalize())
 	})
 
 	t.Run("betaNormalize", func(t *testing.T) {
-		actual := (&Bool{}).betaNormalize()
-		expected := &Bool{}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(&Bool{}, (&Bool{}).betaNormalize())
 	})
 
 	t.Run("equivalent", func(t *testing.T) {
-		left := &Bool{}
-		right := &Bool{}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
+		assert.True(Equivalent(&Bool{}, &Bool{}))
 	})
 
 	t.Run("infer", func(t *testing.T) {
-		actual, err := (&Bool{}).infer(Context{value: []annotatedExpression{}})
-		expected := &Type{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&Bool{}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Type{}, actual)
 	})
 
 	t.Run("render", func(t *testing.T) {
-		actual := (&Bool{}).render()
-		expected := "Bool"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal("Bool", (&Bool{}).render())
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
-		actual := (&Bool{}).renderBinary()
-		expected := binary{value: "Bool"}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(binary{value: "Bool"}, (&Bool{}).renderBinary())
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		actual := (&Bool{}).renderCBOR()
-		expected := "\"Bool\""
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal("\"Bool\"", (&Bool{}).renderCBOR())
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
 		actual, err := (&Bool{}).renderElm()
-		expected := "Bool"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("Bool", actual)
 	})
 
 	t.Run("renderGo", func(t *testing.T) {
 		actual, err := (&Bool{}).renderGo()
-		expected := "bool"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("bool", actual)
 	})
 
 	t.Run("renderHaskell", func(t *testing.T) {
 		actual, err := (&Bool{}).renderHaskell()
-		expected := "Bool"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("Bool", actual)
 	})
 
 	t.Run("renderJSON", func(t *testing.T) {
 		unexpected, err := (&Bool{}).renderJSON()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
-		}
+		assert.Error(err, "Did not expect to render to JSON: %s", unexpected)
 	})
 
 	t.Run("renderJSONSchema", func(t *testing.T) {
 		actual, err := (&Bool{}).renderJSONSchema()
-		expected := "{\"type\": \"boolean\"}"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("{\"type\": \"boolean\"}", actual)
 	})
 
 	t.Run("renderJavaScript", func(t *testing.T) {
-		unexpected, err := (&Bool{}).renderJSON()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JavaScript: %#v", unexpected)
-		}
+		unexpected, err := (&Bool{}).renderJavaScript()
+		assert.Error(
+			err,
+			"Did not expect to render to JavaScript: %s",
+			unexpected,
+		)
 	})
 
 	t.Run("renderPureScript", func(t *testing.T) {
 		actual, err := (&Bool{}).renderPureScript()
-		expected := "Boolean"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("Boolean", actual)
 	})
 
 	t.Run("renderYAML", func(t *testing.T) {
 		unexpected, err := (&Bool{}).renderYAML()
-		if err == nil {
-			t.Fatalf("Did not expect to render to YAML: %#v", unexpected)
-		}
+		assert.Error(err, "Did not expect to render to YAML: %s", unexpected)
 	})
 
 	t.Run("shift", func(t *testing.T) {
-		actual := (&Bool{}).shift(0, "", 0)
-		expected := &Bool{}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(&Bool{}, (&Bool{}).shift(0, "", 0))
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		actual := (&Bool{}).substitute("", 0, &BoolValue{Value: true})
-		expected := &Bool{}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&Bool{},
+			(&Bool{}).substitute("", 0, &BoolValue{Value: true}),
+		)
 	})
 }
 
 func TestBoolValue(t *testing.T) {
+	assert := require.New(t)
 	t.Run("alphaNormalize", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).alphaNormalize()
-		expected := &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: false},
+			(&BoolValue{Value: false}).alphaNormalize(),
+		)
 
-		actual = (&BoolValue{Value: true}).alphaNormalize()
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: true},
+			(&BoolValue{Value: true}).alphaNormalize(),
+		)
 	})
 
 	t.Run("betaNormalize", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).betaNormalize()
-		expected := &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: false},
+			(&BoolValue{Value: false}).betaNormalize(),
+		)
 
-		actual = (&BoolValue{Value: true}).betaNormalize()
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: true},
+			(&BoolValue{Value: true}).betaNormalize(),
+		)
 	})
 
 	t.Run("equivalent", func(t *testing.T) {
-		left := &BoolValue{Value: false}
-		right := &BoolValue{Value: false}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		right = &BoolValue{Value: true}
-		if Equivalent(left, right) {
-			t.Fatalf("Did not expect %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolValue{Value: true}
-		right = &BoolValue{Value: false}
-		if Equivalent(left, right) {
-			t.Fatalf("Did not expect %#v to be equivalent to %#v", left, right)
-		}
-
-		right = &BoolValue{Value: true}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
+		assert.Equal(&BoolValue{Value: false}, (&BoolValue{Value: false}))
+		assert.NotEqual(&BoolValue{Value: false}, (&BoolValue{Value: true}))
+		assert.NotEqual(&BoolValue{Value: true}, (&BoolValue{Value: false}))
+		assert.Equal(&BoolValue{Value: true}, (&BoolValue{Value: true}))
 	})
 
 	t.Run("infer", func(t *testing.T) {
-		actual, err := (&BoolValue{Value: false}).infer(Context{value: []annotatedExpression{}})
-		expected := &Bool{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual, err = (&BoolValue{Value: true}).infer(Context{value: []annotatedExpression{}})
-		expected = &Bool{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolValue{Value: false}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolValue{Value: true}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
 	})
 
 	t.Run("render", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).render()
-		expected := "False"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&BoolValue{Value: true}).render()
-		expected = "True"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal("False", (&BoolValue{Value: false}).render())
+		assert.Equal("True", (&BoolValue{Value: true}).render())
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).renderBinary()
-		expected := binary{value: false}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&BoolValue{Value: true}).renderBinary()
-		expected = binary{value: true}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			binary{value: false},
+			(&BoolValue{Value: false}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: true},
+			(&BoolValue{Value: true}).renderBinary(),
+		)
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).renderCBOR()
-		expected := "false"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&BoolValue{Value: true}).renderCBOR()
-		expected = "true"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal("false", (&BoolValue{Value: false}).renderCBOR())
+		assert.Equal("true", (&BoolValue{Value: true}).renderCBOR())
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderElm()
-		expected := "False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("False", actual)
 		actual, err = (&BoolValue{Value: true}).renderElm()
-		expected = "True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("True", actual)
 	})
 
 	t.Run("renderGo", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderGo()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderGo()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("renderHaskell", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderHaskell()
-		expected := "False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("False", actual)
 		actual, err = (&BoolValue{Value: true}).renderHaskell()
-		expected = "True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("True", actual)
 	})
 
 	t.Run("renderJSON", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderJSON()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderJSON()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("renderJSONSchema", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderJSONSchema()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderJSONSchema()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("renderJavaScript", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderJavaScript()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderJavaScript()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("renderPureScript", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderPureScript()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderPureScript()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("renderYAML", func(t *testing.T) {
 		actual, err := (&BoolValue{Value: false}).renderYAML()
-		expected := "false"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.NoError(err)
+		assert.Equal("false", actual)
 		actual, err = (&BoolValue{Value: true}).renderYAML()
-		expected = "true"
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.NoError(err)
+		assert.Equal("true", actual)
 	})
 
 	t.Run("shift", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).shift(0, "", 0)
-		expected := &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&BoolValue{Value: true}).shift(0, "", 0)
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: false},
+			(&BoolValue{Value: false}).shift(0, "", 0),
+		)
+		assert.Equal(
+			&BoolValue{Value: true},
+			(&BoolValue{Value: true}).shift(0, "", 0),
+		)
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		actual := (&BoolValue{Value: false}).substitute("", 0, &BoolValue{Value: true})
-		expected := &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		actual = (&BoolValue{Value: true}).substitute("", 0, &BoolValue{Value: true})
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			&BoolValue{Value: false},
+			(&BoolValue{Value: false}).substitute("", 0, &BoolValue{Value: true}),
+		)
+		assert.Equal(
+			&BoolValue{Value: true},
+			(&BoolValue{Value: true}).substitute("", 0, &BoolValue{Value: true}),
+		)
 	})
 }
 
 func TestBoolEqual(t *testing.T) {
+	assert := require.New(t)
+
 	t.Run("alphaNormalize", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.alphaNormalize()
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		be := &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.alphaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.alphaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.alphaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
 		}
+		assert.Equal(be, be.alphaNormalize())
 	})
 
 	t.Run("betaNormalize", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.betaNormalize()
-		expected := &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		be := &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(&BoolValue{Value: true}, be.betaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(&BoolValue{Value: false}, be.betaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(&BoolValue{Value: false}, be.betaNormalize())
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
 		}
+		assert.Equal(&BoolValue{Value: true}, be.betaNormalize())
 	})
 
 	t.Run("equivalent", func(t *testing.T) {
-		left := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		right := &BoolValue{Value: true}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		right = &BoolValue{Value: false}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		right = &BoolValue{Value: false}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		right = &BoolValue{Value: true}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
+		assert.True(Equivalent(
+			&BoolValue{Value: true},
+			&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: false},
+			&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: false},
+			&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: true},
+			&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			},
+		))
 	})
 
 	t.Run("infer", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.infer(Context{value: []annotatedExpression{}})
-		expected := &Bool{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
 	})
 
 	t.Run("render", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.render()
-		expected := "False == False"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.render()
-		expected = "False == True"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.render()
-		expected = "True == False"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.render()
-		expected = "True == True"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			"False == False",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).render(),
+		)
+		assert.Equal(
+			"False == True",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).render(),
+		)
+		assert.Equal(
+			"True == False",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).render(),
+		)
+		assert.Equal(
+			"True == True",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).render(),
+		)
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.renderBinary()
-		expected := binary{value: [](interface{}){3, 2, false, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 2, false, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 2, true, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 2, true, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
+		assert.Equal(
+			binary{value: [](interface{}){3, 2, false, false}},
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 2, false, true}},
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 2, true, false}},
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 2, true, true}},
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).renderBinary(),
+		)
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.renderCBOR()
-		expected := "[3, 2, false, false]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.renderCBOR()
-		expected = "[3, 2, false, true]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.renderCBOR()
-		expected = "[3, 2, true, false]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.renderCBOR()
-		expected = "[3, 2, true, true]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			"[3, 2, false, false]",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 2, false, true]",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 2, true, false]",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 2, true, true]",
+			(&BoolEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).renderCBOR(),
+		)
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.renderElm()
-		expected := "False == False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderElm()
-		expected = "False == True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.renderElm()
-		expected = "True == False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderElm()
-		expected = "True == True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("False == False", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("False == True", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("True == False", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("True == True", actual)
 	})
 
 	t.Run("renderGo", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.renderGo()
-		expected := "false == false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderGo()
-		expected = "false == true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.renderGo()
-		expected = "true == false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderGo()
-		expected = "true == true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("false == false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("false == true", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("true == false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("true == true", actual)
 	})
 
 	t.Run("renderHaskell", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.renderHaskell()
-		expected := "False == False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderHaskell()
-		expected = "False == True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.renderHaskell()
-		expected = "True == False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderHaskell()
-		expected = "True == True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("False == False", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("False == True", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("True == False", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("True == True", actual)
 	})
 
 	t.Run("renderJSON", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		unexpected, err := be.renderJSON()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
-		}
+		unexpected, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderJSON()
+		assert.Error(err, "Did not expect to render to JSON: %s", unexpected)
 	})
 
 	t.Run("renderJSONSchema", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		unexpected, err := be.renderJSONSchema()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
-		}
+		unexpected, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderJSONSchema()
+		assert.Error(
+			err,
+			"Did not expect to render to JSONSchema: %s",
+			unexpected,
+		)
 	})
 
 	t.Run("renderJavaScript", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.renderJavaScript()
-		expected := "false === false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderJavaScript()
-		expected = "false === true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.renderJavaScript()
-		expected = "true === false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderJavaScript()
-		expected = "true === true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("false === false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("false === true", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("true === false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("true === true", actual)
 	})
 
 	t.Run("renderPureScript", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual, err := be.renderPureScript()
-		expected := "false == false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderPureScript()
-		expected = "false == true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual, err = be.renderPureScript()
-		expected = "true == false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual, err = be.renderPureScript()
-		expected = "true == true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		actual, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("false == false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("false == true", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("true == false", actual)
+		actual, err = (&BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("true == true", actual)
 	})
 
 	t.Run("renderYAML", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		unexpected, err := be.renderYAML()
-		if err == nil {
-			t.Fatalf("Did not expect to render to YAML: %#v", unexpected)
-		}
+		unexpected, err := (&BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
+		}).renderYAML()
+		assert.Error(err, "Did not expect to render to YAML: %s", unexpected)
 	})
 
 	t.Run("shift", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.shift(0, "", 0)
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		be := &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.shift(0, "", 0))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.shift(0, "", 0))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.shift(0, "", 0))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
 		}
+		assert.Equal(be, be.shift(0, "", 0))
 	})
 
 	t.Run("substitute", func(t *testing.T) {
-		be := &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}}
-		actual := be.substitute("", 0, &BoolValue{Value: false})
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		be := &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: false},
+			Right: &BoolValue{Value: true},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: false},
 		}
-
-		be = &BoolEqual{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
+		be = &BoolEqual{
+			Left:  &BoolValue{Value: true},
+			Right: &BoolValue{Value: true},
 		}
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
 	})
 }
 
 func TestBoolNotEqual(t *testing.T) {
+	assert := require.New(t)
+
 	t.Run("alphaNormalize", func(t *testing.T) {
 		be := &BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
 		}
-		actual := be.alphaNormalize()
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.alphaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.alphaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
 		}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.alphaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.alphaNormalize()
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(be, be.alphaNormalize())
 	})
 
 	t.Run("betaNormalize", func(t *testing.T) {
@@ -1027,559 +699,336 @@ func TestBoolNotEqual(t *testing.T) {
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
 		}
-		actual := be.betaNormalize()
-		expected := &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(&BoolValue{Value: false}, be.betaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(&BoolValue{Value: true}, be.betaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
 		}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: true}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(&BoolValue{Value: true}, be.betaNormalize())
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.betaNormalize()
-		expected = &BoolValue{Value: false}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(&BoolValue{Value: false}, be.betaNormalize())
 	})
 
 	t.Run("equivalent", func(t *testing.T) {
-		left := &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: false},
-		}
-		right := &BoolValue{Value: false}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: true},
-		}
-		right = &BoolValue{Value: true}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: false},
-		}
-		right = &BoolValue{Value: true}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
-
-		left = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: true},
-		}
-		right = &BoolValue{Value: false}
-		if !Equivalent(left, right) {
-			t.Fatalf("Expected %#v to be equivalent to %#v", left, right)
-		}
+		assert.True(Equivalent(
+			&BoolValue{Value: false},
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: true},
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: true},
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			},
+		))
+		assert.True(Equivalent(
+			&BoolValue{Value: false},
+			&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			},
+		))
 	})
 
 	t.Run("infer", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.infer(Context{value: []annotatedExpression{}})
-		expected := &Bool{}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.infer(Context{value: []annotatedExpression{}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).infer(emptyContext)
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
 	})
 
 	t.Run("render", func(t *testing.T) {
-		be := &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: false},
-		}
-		actual := be.render()
-		expected := "False != False"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.render()
-		expected = "False != True"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: false},
-		}
-		actual = be.render()
-		expected = "True != False"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.render()
-		expected = "True != True"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			"False != False",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).render(),
+		)
+		assert.Equal(
+			"False != True",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).render(),
+		)
+		assert.Equal(
+			"True != False",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).render(),
+		)
+		assert.Equal(
+			"True != True",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).render(),
+		)
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
-		be := &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: false},
-		}
-		actual := be.renderBinary()
-		expected := binary{value: [](interface{}){3, 3, false, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 3, false, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: false},
-		}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 3, true, false}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.renderBinary()
-		expected = binary{value: [](interface{}){3, 3, true, true}}
-		if !reflect.DeepEqual(expected.value, actual.value) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected.value, actual.value)
-		}
+		assert.Equal(
+			binary{value: [](interface{}){3, 3, false, false}},
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 3, false, true}},
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 3, true, false}},
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).renderBinary(),
+		)
+		assert.Equal(
+			binary{value: [](interface{}){3, 3, true, true}},
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).renderBinary(),
+		)
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		be := &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: false},
-		}
-		actual := be.renderCBOR()
-		expected := "[3, 3, false, false]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: false},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.renderCBOR()
-		expected = "[3, 3, false, true]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: false},
-		}
-		actual = be.renderCBOR()
-		expected = "[3, 3, true, false]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
-			Left:  &BoolValue{Value: true},
-			Right: &BoolValue{Value: true},
-		}
-		actual = be.renderCBOR()
-		expected = "[3, 3, true, true]"
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(
+			"[3, 3, false, false]",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: false},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 3, false, true]",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: false},
+				Right: &BoolValue{Value: true},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 3, true, false]",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: false},
+			}).renderCBOR(),
+		)
+		assert.Equal(
+			"[3, 3, true, true]",
+			(&BoolNotEqual{
+				Left:  &BoolValue{Value: true},
+				Right: &BoolValue{Value: true},
+			}).renderCBOR(),
+		)
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.renderElm()
-		expected := "False /= False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("False /= False", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderElm()
-		expected = "False /= True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("False /= True", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.renderElm()
-		expected = "True /= False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("True /= False", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderElm()
-		expected = "True /= True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).renderElm()
+		assert.NoError(err)
+		assert.Equal("True /= True", actual)
 	})
 
 	t.Run("renderGo", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.renderGo()
-		expected := "false != false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("false != false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderGo()
-		expected = "false != true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("false != true", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.renderGo()
-		expected = "true != false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("true != false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderGo()
-		expected = "true != true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).renderGo()
+		assert.NoError(err)
+		assert.Equal("true != true", actual)
 	})
 
 	t.Run("renderHaskell", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.renderHaskell()
-		expected := "False /= False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("False /= False", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderHaskell()
-		expected = "False /= True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("False /= True", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.renderHaskell()
-		expected = "True /= False"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("True /= False", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderHaskell()
-		expected = "True /= True"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).renderHaskell()
+		assert.NoError(err)
+		assert.Equal("True /= True", actual)
 	})
 
 	t.Run("renderJSON", func(t *testing.T) {
-		be := &BoolNotEqual{
+		unexpected, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		unexpected, err := be.renderJSON()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JSON: %#v", unexpected)
-		}
+		}).renderJSON()
+		assert.Error(err, "Did not expect to render to JSON: %s", unexpected)
 	})
 
 	t.Run("renderJSONSchema", func(t *testing.T) {
-		be := &BoolNotEqual{
+		unexpected, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		unexpected, err := be.renderJSONSchema()
-		if err == nil {
-			t.Fatalf("Did not expect to render to JSONSchema: %#v", unexpected)
-		}
+		}).renderJSONSchema()
+		assert.Error(
+			err,
+			"Did not expect to render to JSONSchema: %s",
+			unexpected,
+		)
 	})
 
 	t.Run("renderJavaScript", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.renderJavaScript()
-		expected := "false !== false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("false !== false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderJavaScript()
-		expected = "false !== true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("false !== true", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.renderJavaScript()
-		expected = "true !== false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("true !== false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderJavaScript()
-		expected = "true !== true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).renderJavaScript()
+		assert.NoError(err)
+		assert.Equal("true !== true", actual)
 	})
 
 	t.Run("renderPureScript", func(t *testing.T) {
-		be := &BoolNotEqual{
+		actual, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err := be.renderPureScript()
-		expected := "false /= false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("false /= false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderPureScript()
-		expected = "false /= true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("false /= true", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
-		}
-		actual, err = be.renderPureScript()
-		expected = "true /= false"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
-		be = &BoolNotEqual{
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("true /= false", actual)
+		actual, err = (&BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
-		}
-		actual, err = be.renderPureScript()
-		expected = "true /= true"
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		}).renderPureScript()
+		assert.NoError(err)
+		assert.Equal("true /= true", actual)
 	})
 
 	t.Run("renderYAML", func(t *testing.T) {
-		be := &BoolNotEqual{
+		unexpected, err := (&BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
-		}
-		unexpected, err := be.renderYAML()
-		if err == nil {
-			t.Fatalf("Did not expect to render to YAML: %#v", unexpected)
-		}
+		}).renderYAML()
+		assert.Error(err, "Did not expect to render to YAML: %s", unexpected)
 	})
 
 	t.Run("shift", func(t *testing.T) {
@@ -1587,41 +1036,22 @@ func TestBoolNotEqual(t *testing.T) {
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
 		}
-		actual := be.shift(0, "", 0)
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.shift(0, "", 0))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.shift(0, "", 0))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
 		}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.shift(0, "", 0))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.shift(0, "", 0)
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(be, be.shift(0, "", 0))
 	})
 
 	t.Run("substitute", func(t *testing.T) {
@@ -1629,40 +1059,21 @@ func TestBoolNotEqual(t *testing.T) {
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: false},
 		}
-		actual := be.substitute("", 0, &BoolValue{Value: false})
-		expected := be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: false},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: false},
 		}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
-
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
 		be = &BoolNotEqual{
 			Left:  &BoolValue{Value: true},
 			Right: &BoolValue{Value: true},
 		}
-		actual = be.substitute("", 0, &BoolValue{Value: false})
-		expected = be
-		if !Equivalent(expected, actual) {
-			t.Fatalf("Expected: %#v, Actual: %#v", expected, actual)
-		}
+		assert.Equal(be, be.substitute("", 0, &BoolValue{Value: false}))
 	})
 }

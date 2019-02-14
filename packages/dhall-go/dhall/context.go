@@ -1,5 +1,7 @@
 package dhall
 
+var emptyContext = Context{value: []annotatedExpression{}}
+
 type annotatedExpression struct {
 	variable   string
 	annotation Expression
