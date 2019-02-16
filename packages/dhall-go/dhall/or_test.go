@@ -33,7 +33,7 @@ func TestOr(t *testing.T) {
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(
-		func(left Expression, right Expression) bool {
+		func(left, right Expression) bool {
 			expression := &Or{Left: left, Right: right}
 			betaLeft := left.betaNormalize()
 			betaRight := right.betaNormalize()
@@ -53,7 +53,7 @@ func TestOr(t *testing.T) {
 			if Equivalent(left, right) {
 				return assert.Equal(left, actual)
 			}
-			return assert.Equal(expression, actual)
+			return assert.Equal(&Or{Left: betaLeft, Right: betaRight}, actual)
 		},
 		genExpression(),
 		genExpression(),

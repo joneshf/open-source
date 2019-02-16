@@ -33,32 +33,21 @@ func TestEqual(t *testing.T) {
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(
-		func(left Expression, right Expression) bool {
-			if Equivalent(&BoolValue{Value: true}, left.betaNormalize()) {
-				return assert.Equal(
-					right.betaNormalize(),
-					(&Equal{Left: left, Right: right}).betaNormalize(),
-				)
+		func(left, right Expression) bool {
+			expression := &Equal{Left: left, Right: right}
+			betaLeft := left.betaNormalize()
+			betaRight := right.betaNormalize()
+			actual := expression.betaNormalize()
+			if reflect.DeepEqual(&BoolValue{Value: true}, betaLeft) {
+				return assert.Equal(betaRight, actual)
 			}
-			if Equivalent(&BoolValue{Value: true}, right.betaNormalize()) {
-				return assert.Equal(
-					left.betaNormalize(),
-					(&Equal{Left: left, Right: right}).betaNormalize(),
-				)
+			if reflect.DeepEqual(&BoolValue{Value: true}, betaRight) {
+				return assert.Equal(betaLeft, actual)
 			}
 			if Equivalent(left, right) {
-				return assert.Equal(
-					&BoolValue{Value: true},
-					(&Equal{Left: left, Right: right}).betaNormalize(),
-				)
+				return assert.Equal(&BoolValue{Value: true}, actual)
 			}
-			return assert.Equal(
-				&Equal{
-					Left:  left.betaNormalize(),
-					Right: right.betaNormalize(),
-				},
-				(&Equal{Left: left, Right: right}).betaNormalize(),
-			)
+			return assert.Equal(&Equal{Left: betaLeft, Right: betaRight}, actual)
 		},
 		genExpression(),
 		genExpression(),
