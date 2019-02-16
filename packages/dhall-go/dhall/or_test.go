@@ -12,29 +12,29 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genBoolOr() gopter.Gen {
+func genOr() gopter.Gen {
 	return genExpression().FlatMap(func(left interface{}) gopter.Gen {
-		return genExpression().Map(func(right Expression) BoolOr {
-			return BoolOr{Left: left.(Expression), Right: right}
+		return genExpression().Map(func(right Expression) Or {
+			return Or{Left: left.(Expression), Right: right}
 		})
-	}, reflect.TypeOf(BoolOr{}))
+	}, reflect.TypeOf(Or{}))
 }
 
-func TestBoolOr(t *testing.T) {
+func TestOr(t *testing.T) {
 	assert := testifyAssert.New(t)
 	properties := gopter.NewProperties(nil)
 	require := testifyRequire.New(t)
 
 	properties.Property("α-normalization has no effect", prop.ForAll(
-		func(expression BoolOr) bool {
+		func(expression Or) bool {
 			return assert.Equal(&expression, expression.alphaNormalize())
 		},
-		genBoolOr(),
+		genOr(),
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(
 		func(left Expression, right Expression) bool {
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			betaLeft := left.betaNormalize()
 			betaRight := right.betaNormalize()
 			actual := expression.betaNormalize()
@@ -62,28 +62,28 @@ func TestBoolOr(t *testing.T) {
 	t.Run("equivalent", func(t *testing.T) {
 		require.True(Equivalent(
 			&BoolValue{Value: false},
-			&BoolOr{
+			&Or{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: false},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: true},
-			&BoolOr{
+			&Or{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: true},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: true},
-			&BoolOr{
+			&Or{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: false},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: true},
-			&BoolOr{
+			&Or{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: true},
 			},
@@ -92,7 +92,7 @@ func TestBoolOr(t *testing.T) {
 
 	properties.Property("Inference works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			actual, err := (&BoolOr{Left: left, Right: right}).infer(
+			actual, err := (&Or{Left: left, Right: right}).infer(
 				emptyContext,
 			)
 			assert.NoError(err)
@@ -113,7 +113,7 @@ func TestBoolOr(t *testing.T) {
 			out := fmt.Sprintf("%s || %s", left.render(), right.render())
 			return assert.Equal(
 				out,
-				(&BoolOr{Left: left, Right: right}).render(),
+				(&Or{Left: left, Right: right}).render(),
 			)
 		},
 		genExpression(),
@@ -127,7 +127,7 @@ func TestBoolOr(t *testing.T) {
 			out := binary{value: [](interface{}){3, 0, outLeft, outRight}}
 			return assert.Equal(
 				out,
-				(&BoolOr{Left: left, Right: right}).renderBinary(),
+				(&Or{Left: left, Right: right}).renderBinary(),
 			)
 		},
 		genExpression(),
@@ -143,7 +143,7 @@ func TestBoolOr(t *testing.T) {
 			)
 			return assert.Equal(
 				out,
-				(&BoolOr{Left: left, Right: right}).renderCBOR(),
+				(&Or{Left: left, Right: right}).renderCBOR(),
 			)
 		},
 		genExpression(),
@@ -156,7 +156,7 @@ func TestBoolOr(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderElm()
 			require.NoError(err)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			expected, err := expression.renderElm()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s || %s", outLeft, outRight)
@@ -178,7 +178,7 @@ func TestBoolOr(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderGo()
 			require.NoError(err)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			expected, err := expression.renderGo()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s || %s", outLeft, outRight)
@@ -200,7 +200,7 @@ func TestBoolOr(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderHaskell()
 			require.NoError(err)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			expected, err := expression.renderHaskell()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s || %s", outLeft, outRight)
@@ -218,7 +218,7 @@ func TestBoolOr(t *testing.T) {
 
 	properties.Property("renderJSON works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			unexpected, err := expression.renderJSON()
 			return assert.Error(
 				err,
@@ -232,7 +232,7 @@ func TestBoolOr(t *testing.T) {
 
 	properties.Property("renderJSONSchema works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			unexpected, err := expression.renderJSONSchema()
 			return assert.Error(
 				err,
@@ -250,7 +250,7 @@ func TestBoolOr(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderJavaScript()
 			require.NoError(err)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			expected, err := expression.renderJavaScript()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s || %s", outLeft, outRight)
@@ -272,7 +272,7 @@ func TestBoolOr(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderPureScript()
 			require.NoError(err)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			expected, err := expression.renderPureScript()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s || %s", outLeft, outRight)
@@ -290,7 +290,7 @@ func TestBoolOr(t *testing.T) {
 
 	properties.Property("renderYAML works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			unexpected, err := expression.renderYAML()
 			return assert.Error(
 				err,
@@ -306,9 +306,9 @@ func TestBoolOr(t *testing.T) {
 		func(left, right Expression, add int, variable string, index int) bool {
 			shiftLeft := left.shift(add, variable, index)
 			shiftRight := right.shift(add, variable, index)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			return assert.Equal(
-				&BoolOr{Left: shiftLeft, Right: shiftRight},
+				&Or{Left: shiftLeft, Right: shiftRight},
 				expression.shift(add, variable, index),
 			)
 		},
@@ -323,9 +323,9 @@ func TestBoolOr(t *testing.T) {
 		func(left, right Expression, variable string, index int, e Expression) bool {
 			substituteLeft := left.substitute(variable, index, e)
 			substituteRight := right.substitute(variable, index, e)
-			expression := &BoolOr{Left: left, Right: right}
+			expression := &Or{Left: left, Right: right}
 			return assert.Equal(
-				&BoolOr{Left: substituteLeft, Right: substituteRight},
+				&Or{Left: substituteLeft, Right: substituteRight},
 				expression.substitute(variable, index, e),
 			)
 		},

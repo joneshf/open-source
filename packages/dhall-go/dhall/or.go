@@ -4,20 +4,17 @@ import (
 	"fmt"
 )
 
-// BoolOr represents equality of Dhall Bools.
-type BoolOr struct {
+// Or represents equality of Dhall Bools.
+type Or struct {
 	Left  Expression
 	Right Expression
 }
 
-func (be *BoolOr) alphaNormalize() Expression {
-	return &BoolOr{
-		Left:  be.Left.alphaNormalize(),
-		Right: be.Right.alphaNormalize(),
-	}
+func (be *Or) alphaNormalize() Expression {
+	return &Or{Left: be.Left.alphaNormalize(), Right: be.Right.alphaNormalize()}
 }
 
-func (be *BoolOr) betaNormalize() Expression {
+func (be *Or) betaNormalize() Expression {
 	l1 := be.Left.betaNormalize()
 	l1Expression, ok := l1.(*BoolValue)
 	if ok && (*l1Expression == BoolValue{Value: false}) {
@@ -37,18 +34,18 @@ func (be *BoolOr) betaNormalize() Expression {
 	if l1.equivalent(r1) {
 		return l1
 	}
-	return &BoolOr{Left: l1, Right: r1}
+	return &Or{Left: l1, Right: r1}
 }
 
-func (be *BoolOr) equivalent(e Expression) bool {
+func (be *Or) equivalent(e Expression) bool {
 	l1 := be.betaNormalize().alphaNormalize()
 	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*BoolOr)
-	r, rOk := r1.(*BoolOr)
+	l, lOk := l1.(*Or)
+	r, rOk := r1.(*Or)
 	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
-func (be *BoolOr) infer(context Context) (Expression, error) {
+func (be *Or) infer(context Context) (Expression, error) {
 	l, err := reduce(be.Left, context)
 	if err != nil {
 		return nil, err
@@ -72,25 +69,23 @@ func (be *BoolOr) infer(context Context) (Expression, error) {
 	}
 }
 
-func (be *BoolOr) render() string {
+func (be *Or) render() string {
 	return fmt.Sprintf("%s || %s", be.Left.render(), be.Right.render())
 }
 
-func (be *BoolOr) renderBinary() binary {
+func (be *Or) renderBinary() binary {
 	l1 := be.Left.renderBinary()
 	r1 := be.Right.renderBinary()
-	return binary{
-		value: [](interface{}){3, 0, l1.value, r1.value},
-	}
+	return binary{value: [](interface{}){3, 0, l1.value, r1.value}}
 }
 
-func (be *BoolOr) renderCBOR() string {
+func (be *Or) renderCBOR() string {
 	l1 := be.Left.renderCBOR()
 	r1 := be.Right.renderCBOR()
 	return fmt.Sprintf("[3, 0, %s, %s]", l1, r1)
 }
 
-func (be *BoolOr) renderElm() (string, error) {
+func (be *Or) renderElm() (string, error) {
 	left, errLeft := be.Left.renderElm()
 	if errLeft != nil {
 		return "", errLeft
@@ -102,7 +97,7 @@ func (be *BoolOr) renderElm() (string, error) {
 	return fmt.Sprintf("%s || %s", left, right), nil
 }
 
-func (be *BoolOr) renderGo() (string, error) {
+func (be *Or) renderGo() (string, error) {
 	left, errLeft := be.Left.renderGo()
 	if errLeft != nil {
 		return "", errLeft
@@ -114,7 +109,7 @@ func (be *BoolOr) renderGo() (string, error) {
 	return fmt.Sprintf("%s || %s", left, right), nil
 }
 
-func (be *BoolOr) renderHaskell() (string, error) {
+func (be *Or) renderHaskell() (string, error) {
 	left, errLeft := be.Left.renderHaskell()
 	if errLeft != nil {
 		return "", errLeft
@@ -126,21 +121,21 @@ func (be *BoolOr) renderHaskell() (string, error) {
 	return fmt.Sprintf("%s || %s", left, right), nil
 }
 
-func (be *BoolOr) renderJSON() (string, error) {
+func (be *Or) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: be,
 		message:    "Cannot render `||` to JSON. Try normalizing first.",
 	}
 }
 
-func (be *BoolOr) renderJSONSchema() (string, error) {
+func (be *Or) renderJSONSchema() (string, error) {
 	return "", &JSONSchemaError{
 		expression: be,
 		message:    "Cannot render `||` to JSONSchema. Try inferring the type.",
 	}
 }
 
-func (be *BoolOr) renderJavaScript() (string, error) {
+func (be *Or) renderJavaScript() (string, error) {
 	left, errLeft := be.Left.renderJavaScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -152,7 +147,7 @@ func (be *BoolOr) renderJavaScript() (string, error) {
 	return fmt.Sprintf("%s || %s", left, right), nil
 }
 
-func (be *BoolOr) renderPureScript() (string, error) {
+func (be *Or) renderPureScript() (string, error) {
 	left, errLeft := be.Left.renderPureScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -164,23 +159,20 @@ func (be *BoolOr) renderPureScript() (string, error) {
 	return fmt.Sprintf("%s || %s", left, right), nil
 }
 
-func (be *BoolOr) renderYAML() (string, error) {
+func (be *Or) renderYAML() (string, error) {
 	return "", &YAMLError{
 		expression: be,
 		message:    "Cannot render `||` to YAML. Try normalizing first.",
 	}
 }
 
-func (be *BoolOr) shift(d int, x string, m int) Expression {
-	l1 := be.Left.shift(d, x, m)
-	r1 := be.Right.shift(d, x, m)
-
-	return &BoolOr{Left: l1, Right: r1}
+func (be *Or) shift(d int, x string, m int) Expression {
+	return &Or{Left: be.Left.shift(d, x, m), Right: be.Right.shift(d, x, m)}
 }
 
-func (be *BoolOr) substitute(x string, n int, e Expression) Expression {
+func (be *Or) substitute(x string, n int, e Expression) Expression {
 	l1 := be.Left.substitute(x, n, e)
 	r1 := be.Right.substitute(x, n, e)
 
-	return &BoolOr{Left: l1, Right: r1}
+	return &Or{Left: l1, Right: r1}
 }

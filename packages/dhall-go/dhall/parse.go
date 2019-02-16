@@ -175,7 +175,7 @@ var (
 		"equal-expression",
 		"not-equal-expression",
 		func(left, right Expression) Expression {
-			return &BoolEqual{Left: left, Right: right}
+			return &Equal{Left: left, Right: right}
 		},
 	))
 
@@ -340,7 +340,7 @@ var (
 		"not-equal-expression",
 		"application-expression",
 		func(left, right Expression) Expression {
-			return &BoolNotEqual{Left: left, Right: right}
+			return &NotEqual{Left: left, Right: right}
 		},
 	))
 
@@ -359,7 +359,7 @@ var (
 		"or-expression",
 		"plus-expression",
 		func(left, right Expression) Expression {
-			return &BoolOr{Left: left, Right: right}
+			return &Or{Left: left, Right: right}
 		},
 	))
 

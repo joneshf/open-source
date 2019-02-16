@@ -4,20 +4,20 @@ import (
 	"fmt"
 )
 
-// BoolNotEqual represents equality of Dhall Bools.
-type BoolNotEqual struct {
+// NotEqual represents equality of Dhall Bools.
+type NotEqual struct {
 	Left  Expression
 	Right Expression
 }
 
-func (be *BoolNotEqual) alphaNormalize() Expression {
-	return &BoolNotEqual{
+func (be *NotEqual) alphaNormalize() Expression {
+	return &NotEqual{
 		Left:  be.Left.alphaNormalize(),
 		Right: be.Right.alphaNormalize(),
 	}
 }
 
-func (be *BoolNotEqual) betaNormalize() Expression {
+func (be *NotEqual) betaNormalize() Expression {
 	l1 := be.Left.betaNormalize()
 	switch expression := l1.(type) {
 	case *BoolValue:
@@ -35,18 +35,18 @@ func (be *BoolNotEqual) betaNormalize() Expression {
 	if l1.equivalent(r1) {
 		return &BoolValue{Value: false}
 	}
-	return &BoolNotEqual{Left: l1, Right: r1}
+	return &NotEqual{Left: l1, Right: r1}
 }
 
-func (be *BoolNotEqual) equivalent(e Expression) bool {
+func (be *NotEqual) equivalent(e Expression) bool {
 	l1 := be.betaNormalize().alphaNormalize()
 	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*BoolNotEqual)
-	r, rOk := r1.(*BoolNotEqual)
+	l, lOk := l1.(*NotEqual)
+	r, rOk := r1.(*NotEqual)
 	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
-func (be *BoolNotEqual) infer(context Context) (Expression, error) {
+func (be *NotEqual) infer(context Context) (Expression, error) {
 	l, err := reduce(be.Left, context)
 	if err != nil {
 		return nil, err
@@ -70,11 +70,11 @@ func (be *BoolNotEqual) infer(context Context) (Expression, error) {
 	}
 }
 
-func (be *BoolNotEqual) render() string {
+func (be *NotEqual) render() string {
 	return fmt.Sprintf("%s != %s", be.Left.render(), be.Right.render())
 }
 
-func (be *BoolNotEqual) renderBinary() binary {
+func (be *NotEqual) renderBinary() binary {
 	l1 := be.Left.renderBinary()
 	r1 := be.Right.renderBinary()
 	return binary{
@@ -82,13 +82,13 @@ func (be *BoolNotEqual) renderBinary() binary {
 	}
 }
 
-func (be *BoolNotEqual) renderCBOR() string {
+func (be *NotEqual) renderCBOR() string {
 	l1 := be.Left.renderCBOR()
 	r1 := be.Right.renderCBOR()
 	return fmt.Sprintf("[3, 3, %s, %s]", l1, r1)
 }
 
-func (be *BoolNotEqual) renderElm() (string, error) {
+func (be *NotEqual) renderElm() (string, error) {
 	left, errLeft := be.Left.renderElm()
 	if errLeft != nil {
 		return "", errLeft
@@ -100,7 +100,7 @@ func (be *BoolNotEqual) renderElm() (string, error) {
 	return fmt.Sprintf("%s /= %s", left, right), nil
 }
 
-func (be *BoolNotEqual) renderGo() (string, error) {
+func (be *NotEqual) renderGo() (string, error) {
 	left, errLeft := be.Left.renderGo()
 	if errLeft != nil {
 		return "", errLeft
@@ -112,7 +112,7 @@ func (be *BoolNotEqual) renderGo() (string, error) {
 	return fmt.Sprintf("%s != %s", left, right), nil
 }
 
-func (be *BoolNotEqual) renderHaskell() (string, error) {
+func (be *NotEqual) renderHaskell() (string, error) {
 	left, errLeft := be.Left.renderHaskell()
 	if errLeft != nil {
 		return "", errLeft
@@ -124,21 +124,21 @@ func (be *BoolNotEqual) renderHaskell() (string, error) {
 	return fmt.Sprintf("%s /= %s", left, right), nil
 }
 
-func (be *BoolNotEqual) renderJSON() (string, error) {
+func (be *NotEqual) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: be,
 		message:    "Cannot render `!=` to JSON. Try normalizing first.",
 	}
 }
 
-func (be *BoolNotEqual) renderJSONSchema() (string, error) {
+func (be *NotEqual) renderJSONSchema() (string, error) {
 	return "", &JSONSchemaError{
 		expression: be,
 		message:    "Cannot render `!=` to JSONSchema. Try inferring the type.",
 	}
 }
 
-func (be *BoolNotEqual) renderJavaScript() (string, error) {
+func (be *NotEqual) renderJavaScript() (string, error) {
 	left, errLeft := be.Left.renderJavaScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -150,7 +150,7 @@ func (be *BoolNotEqual) renderJavaScript() (string, error) {
 	return fmt.Sprintf("%s !== %s", left, right), nil
 }
 
-func (be *BoolNotEqual) renderPureScript() (string, error) {
+func (be *NotEqual) renderPureScript() (string, error) {
 	left, errLeft := be.Left.renderPureScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -162,23 +162,23 @@ func (be *BoolNotEqual) renderPureScript() (string, error) {
 	return fmt.Sprintf("%s /= %s", left, right), nil
 }
 
-func (be *BoolNotEqual) renderYAML() (string, error) {
+func (be *NotEqual) renderYAML() (string, error) {
 	return "", &YAMLError{
 		expression: be,
 		message:    "Cannot render `!=` to YAML. Try normalizing first.",
 	}
 }
 
-func (be *BoolNotEqual) shift(d int, x string, m int) Expression {
+func (be *NotEqual) shift(d int, x string, m int) Expression {
 	l1 := be.Left.shift(d, x, m)
 	r1 := be.Right.shift(d, x, m)
 
-	return &BoolNotEqual{Left: l1, Right: r1}
+	return &NotEqual{Left: l1, Right: r1}
 }
 
-func (be *BoolNotEqual) substitute(x string, n int, e Expression) Expression {
+func (be *NotEqual) substitute(x string, n int, e Expression) Expression {
 	l1 := be.Left.substitute(x, n, e)
 	r1 := be.Right.substitute(x, n, e)
 
-	return &BoolNotEqual{Left: l1, Right: r1}
+	return &NotEqual{Left: l1, Right: r1}
 }

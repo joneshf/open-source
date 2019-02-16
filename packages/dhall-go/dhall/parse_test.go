@@ -21,11 +21,11 @@ func TestParse(t *testing.T) {
 		assert.Equal(&BoolValue{Value: true}, actual)
 	})
 
-	t.Run("BoolEqual", func(t *testing.T) {
+	t.Run("Equal", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False == False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolEqual{
+			&Equal{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: false},
 			},
@@ -34,7 +34,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("False == True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolEqual{
+			&Equal{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: true},
 			},
@@ -43,7 +43,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("True == False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolEqual{
+			&Equal{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: false},
 			},
@@ -52,7 +52,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("True == True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolEqual{
+			&Equal{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: true},
 			},
@@ -60,11 +60,11 @@ func TestParse(t *testing.T) {
 		)
 	})
 
-	t.Run("BoolNotEqual", func(t *testing.T) {
+	t.Run("NotEqual", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False != False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: false},
 			},
@@ -73,7 +73,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("False != True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: true},
 			},
@@ -82,7 +82,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("True != False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: false},
 			},
@@ -91,7 +91,7 @@ func TestParse(t *testing.T) {
 		actual, err = Parse(&log, []byte("True != True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: true},
 			},
@@ -99,41 +99,29 @@ func TestParse(t *testing.T) {
 		)
 	})
 
-	t.Run("BoolOr", func(t *testing.T) {
+	t.Run("Or", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False || False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolOr{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: false},
-			},
+			&Or{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}},
 			actual,
 		)
 		actual, err = Parse(&log, []byte("False || True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolOr{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: true},
-			},
+			&Or{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}},
 			actual,
 		)
 		actual, err = Parse(&log, []byte("True || False"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolOr{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: false},
-			},
+			&Or{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}},
 			actual,
 		)
 		actual, err = Parse(&log, []byte("True || True"))
 		assert.NoError(err)
 		assert.Equal(
-			&BoolOr{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: true},
-			},
+			&Or{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}},
 			actual,
 		)
 	})

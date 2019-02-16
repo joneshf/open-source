@@ -12,24 +12,24 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genBoolNotEqual() gopter.Gen {
+func genNotEqual() gopter.Gen {
 	return genExpression().FlatMap(func(left interface{}) gopter.Gen {
-		return genExpression().Map(func(right Expression) BoolNotEqual {
-			return BoolNotEqual{Left: left.(Expression), Right: right}
+		return genExpression().Map(func(right Expression) NotEqual {
+			return NotEqual{Left: left.(Expression), Right: right}
 		})
-	}, reflect.TypeOf(BoolNotEqual{}))
+	}, reflect.TypeOf(NotEqual{}))
 }
 
-func TestBoolNotEqual(t *testing.T) {
+func TestNotEqual(t *testing.T) {
 	assert := testifyAssert.New(t)
 	properties := gopter.NewProperties(nil)
 	require := testifyRequire.New(t)
 
 	properties.Property("α-normalization has no effect", prop.ForAll(
-		func(expression BoolNotEqual) bool {
+		func(expression NotEqual) bool {
 			return assert.Equal(&expression, expression.alphaNormalize())
 		},
-		genBoolNotEqual(),
+		genNotEqual(),
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(
@@ -37,27 +37,27 @@ func TestBoolNotEqual(t *testing.T) {
 			if Equivalent(&BoolValue{Value: false}, left.betaNormalize()) {
 				return assert.Equal(
 					right.betaNormalize(),
-					(&BoolNotEqual{Left: left, Right: right}).betaNormalize(),
+					(&NotEqual{Left: left, Right: right}).betaNormalize(),
 				)
 			}
 			if Equivalent(&BoolValue{Value: false}, right.betaNormalize()) {
 				return assert.Equal(
 					left.betaNormalize(),
-					(&BoolNotEqual{Left: left, Right: right}).betaNormalize(),
+					(&NotEqual{Left: left, Right: right}).betaNormalize(),
 				)
 			}
 			if Equivalent(left, right) {
 				return assert.Equal(
 					&BoolValue{Value: false},
-					(&BoolNotEqual{Left: left, Right: right}).betaNormalize(),
+					(&NotEqual{Left: left, Right: right}).betaNormalize(),
 				)
 			}
 			return assert.Equal(
-				&BoolNotEqual{
+				&NotEqual{
 					Left:  left.betaNormalize(),
 					Right: right.betaNormalize(),
 				},
-				(&BoolNotEqual{Left: left, Right: right}).betaNormalize(),
+				(&NotEqual{Left: left, Right: right}).betaNormalize(),
 			)
 		},
 		genExpression(),
@@ -67,28 +67,28 @@ func TestBoolNotEqual(t *testing.T) {
 	t.Run("equivalent", func(t *testing.T) {
 		require.True(Equivalent(
 			&BoolValue{Value: false},
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: false},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: true},
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: false},
 				Right: &BoolValue{Value: true},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: true},
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: false},
 			},
 		))
 		require.True(Equivalent(
 			&BoolValue{Value: false},
-			&BoolNotEqual{
+			&NotEqual{
 				Left:  &BoolValue{Value: true},
 				Right: &BoolValue{Value: true},
 			},
@@ -97,7 +97,7 @@ func TestBoolNotEqual(t *testing.T) {
 
 	properties.Property("Inference works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			actual, err := (&BoolNotEqual{Left: left, Right: right}).infer(
+			actual, err := (&NotEqual{Left: left, Right: right}).infer(
 				emptyContext,
 			)
 			assert.NoError(err)
@@ -118,7 +118,7 @@ func TestBoolNotEqual(t *testing.T) {
 			out := fmt.Sprintf("%s != %s", left.render(), right.render())
 			return assert.Equal(
 				out,
-				(&BoolNotEqual{Left: left, Right: right}).render(),
+				(&NotEqual{Left: left, Right: right}).render(),
 			)
 		},
 		genExpression(),
@@ -132,7 +132,7 @@ func TestBoolNotEqual(t *testing.T) {
 			out := binary{value: [](interface{}){3, 3, outLeft, outRight}}
 			return assert.Equal(
 				out,
-				(&BoolNotEqual{Left: left, Right: right}).renderBinary(),
+				(&NotEqual{Left: left, Right: right}).renderBinary(),
 			)
 		},
 		genExpression(),
@@ -148,7 +148,7 @@ func TestBoolNotEqual(t *testing.T) {
 			)
 			return assert.Equal(
 				out,
-				(&BoolNotEqual{Left: left, Right: right}).renderCBOR(),
+				(&NotEqual{Left: left, Right: right}).renderCBOR(),
 			)
 		},
 		genExpression(),
@@ -161,7 +161,7 @@ func TestBoolNotEqual(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderElm()
 			require.NoError(err)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			expected, err := expression.renderElm()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s /= %s", outLeft, outRight)
@@ -183,7 +183,7 @@ func TestBoolNotEqual(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderGo()
 			require.NoError(err)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			expected, err := expression.renderGo()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s != %s", outLeft, outRight)
@@ -205,7 +205,7 @@ func TestBoolNotEqual(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderHaskell()
 			require.NoError(err)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			expected, err := expression.renderHaskell()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s /= %s", outLeft, outRight)
@@ -223,7 +223,7 @@ func TestBoolNotEqual(t *testing.T) {
 
 	properties.Property("renderJSON works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			unexpected, err := expression.renderJSON()
 			return assert.Error(
 				err,
@@ -237,7 +237,7 @@ func TestBoolNotEqual(t *testing.T) {
 
 	properties.Property("renderJSONSchema works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			unexpected, err := expression.renderJSONSchema()
 			return assert.Error(
 				err,
@@ -255,7 +255,7 @@ func TestBoolNotEqual(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderJavaScript()
 			require.NoError(err)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			expected, err := expression.renderJavaScript()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s !== %s", outLeft, outRight)
@@ -277,7 +277,7 @@ func TestBoolNotEqual(t *testing.T) {
 			require.NoError(err)
 			outRight, err := right.renderPureScript()
 			require.NoError(err)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			expected, err := expression.renderPureScript()
 			require.NoError(err)
 			actual := fmt.Sprintf("%s /= %s", outLeft, outRight)
@@ -295,7 +295,7 @@ func TestBoolNotEqual(t *testing.T) {
 
 	properties.Property("renderYAML works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			unexpected, err := expression.renderYAML()
 			return assert.Error(
 				err,
@@ -311,9 +311,9 @@ func TestBoolNotEqual(t *testing.T) {
 		func(left, right Expression, add int, variable string, index int) bool {
 			shiftLeft := left.shift(add, variable, index)
 			shiftRight := right.shift(add, variable, index)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			return assert.Equal(
-				&BoolNotEqual{Left: shiftLeft, Right: shiftRight},
+				&NotEqual{Left: shiftLeft, Right: shiftRight},
 				expression.shift(add, variable, index),
 			)
 		},
@@ -328,9 +328,9 @@ func TestBoolNotEqual(t *testing.T) {
 		func(left, right Expression, variable string, index int, e Expression) bool {
 			substituteLeft := left.substitute(variable, index, e)
 			substituteRight := right.substitute(variable, index, e)
-			expression := &BoolNotEqual{Left: left, Right: right}
+			expression := &NotEqual{Left: left, Right: right}
 			return assert.Equal(
-				&BoolNotEqual{Left: substituteLeft, Right: substituteRight},
+				&NotEqual{Left: substituteLeft, Right: substituteRight},
 				expression.substitute(variable, index, e),
 			)
 		},

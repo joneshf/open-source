@@ -4,20 +4,20 @@ import (
 	"fmt"
 )
 
-// BoolEqual represents equality of Dhall Bools.
-type BoolEqual struct {
+// Equal represents equality of Dhall Bools.
+type Equal struct {
 	Left  Expression
 	Right Expression
 }
 
-func (be *BoolEqual) alphaNormalize() Expression {
-	return &BoolEqual{
+func (be *Equal) alphaNormalize() Expression {
+	return &Equal{
 		Left:  be.Left.alphaNormalize(),
 		Right: be.Right.alphaNormalize(),
 	}
 }
 
-func (be *BoolEqual) betaNormalize() Expression {
+func (be *Equal) betaNormalize() Expression {
 	l1 := be.Left.betaNormalize()
 	switch expression := l1.(type) {
 	case *BoolValue:
@@ -35,18 +35,18 @@ func (be *BoolEqual) betaNormalize() Expression {
 	if l1.equivalent(r1) {
 		return &BoolValue{Value: true}
 	}
-	return &BoolEqual{Left: l1, Right: r1}
+	return &Equal{Left: l1, Right: r1}
 }
 
-func (be *BoolEqual) equivalent(e Expression) bool {
+func (be *Equal) equivalent(e Expression) bool {
 	l1 := be.betaNormalize().alphaNormalize()
 	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*BoolEqual)
-	r, rOk := r1.(*BoolEqual)
+	l, lOk := l1.(*Equal)
+	r, rOk := r1.(*Equal)
 	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
-func (be *BoolEqual) infer(context Context) (Expression, error) {
+func (be *Equal) infer(context Context) (Expression, error) {
 	l, err := reduce(be.Left, context)
 	if err != nil {
 		return nil, err
@@ -70,11 +70,11 @@ func (be *BoolEqual) infer(context Context) (Expression, error) {
 	}
 }
 
-func (be *BoolEqual) render() string {
+func (be *Equal) render() string {
 	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
 }
 
-func (be *BoolEqual) renderBinary() binary {
+func (be *Equal) renderBinary() binary {
 	l1 := be.Left.renderBinary()
 	r1 := be.Right.renderBinary()
 	return binary{
@@ -82,13 +82,13 @@ func (be *BoolEqual) renderBinary() binary {
 	}
 }
 
-func (be *BoolEqual) renderCBOR() string {
+func (be *Equal) renderCBOR() string {
 	l1 := be.Left.renderCBOR()
 	r1 := be.Right.renderCBOR()
 	return fmt.Sprintf("[3, 2, %s, %s]", l1, r1)
 }
 
-func (be *BoolEqual) renderElm() (string, error) {
+func (be *Equal) renderElm() (string, error) {
 	left, errLeft := be.Left.renderElm()
 	if errLeft != nil {
 		return "", errLeft
@@ -100,7 +100,7 @@ func (be *BoolEqual) renderElm() (string, error) {
 	return fmt.Sprintf("%s == %s", left, right), nil
 }
 
-func (be *BoolEqual) renderGo() (string, error) {
+func (be *Equal) renderGo() (string, error) {
 	left, errLeft := be.Left.renderGo()
 	if errLeft != nil {
 		return "", errLeft
@@ -112,7 +112,7 @@ func (be *BoolEqual) renderGo() (string, error) {
 	return fmt.Sprintf("%s == %s", left, right), nil
 }
 
-func (be *BoolEqual) renderHaskell() (string, error) {
+func (be *Equal) renderHaskell() (string, error) {
 	left, errLeft := be.Left.renderHaskell()
 	if errLeft != nil {
 		return "", errLeft
@@ -124,21 +124,21 @@ func (be *BoolEqual) renderHaskell() (string, error) {
 	return fmt.Sprintf("%s == %s", left, right), nil
 }
 
-func (be *BoolEqual) renderJSON() (string, error) {
+func (be *Equal) renderJSON() (string, error) {
 	return "", &JSONError{
 		expression: be,
 		message:    "Cannot render `==` to JSON. Try normalizing first.",
 	}
 }
 
-func (be *BoolEqual) renderJSONSchema() (string, error) {
+func (be *Equal) renderJSONSchema() (string, error) {
 	return "", &JSONSchemaError{
 		expression: be,
 		message:    "Cannot render `==` to JSONSchema. Try inferring the type.",
 	}
 }
 
-func (be *BoolEqual) renderJavaScript() (string, error) {
+func (be *Equal) renderJavaScript() (string, error) {
 	left, errLeft := be.Left.renderJavaScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -150,7 +150,7 @@ func (be *BoolEqual) renderJavaScript() (string, error) {
 	return fmt.Sprintf("%s === %s", left, right), nil
 }
 
-func (be *BoolEqual) renderPureScript() (string, error) {
+func (be *Equal) renderPureScript() (string, error) {
 	left, errLeft := be.Left.renderPureScript()
 	if errLeft != nil {
 		return "", errLeft
@@ -162,23 +162,23 @@ func (be *BoolEqual) renderPureScript() (string, error) {
 	return fmt.Sprintf("%s == %s", left, right), nil
 }
 
-func (be *BoolEqual) renderYAML() (string, error) {
+func (be *Equal) renderYAML() (string, error) {
 	return "", &YAMLError{
 		expression: be,
 		message:    "Cannot render `==` to YAML. Try normalizing first.",
 	}
 }
 
-func (be *BoolEqual) shift(d int, x string, m int) Expression {
+func (be *Equal) shift(d int, x string, m int) Expression {
 	l1 := be.Left.shift(d, x, m)
 	r1 := be.Right.shift(d, x, m)
 
-	return &BoolEqual{Left: l1, Right: r1}
+	return &Equal{Left: l1, Right: r1}
 }
 
-func (be *BoolEqual) substitute(x string, n int, e Expression) Expression {
+func (be *Equal) substitute(x string, n int, e Expression) Expression {
 	l1 := be.Left.substitute(x, n, e)
 	r1 := be.Right.substitute(x, n, e)
 
-	return &BoolEqual{Left: l1, Right: r1}
+	return &Equal{Left: l1, Right: r1}
 }
