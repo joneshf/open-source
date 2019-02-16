@@ -126,6 +126,33 @@ func TestParse(t *testing.T) {
 		)
 	})
 
+	t.Run("And", func(t *testing.T) {
+		actual, err := Parse(&log, []byte("False && False"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("False && True"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("True && False"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("True && True"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}},
+			actual,
+		)
+	})
+
 	t.Run("Bool", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Bool"))
 		assert.NoError(err)

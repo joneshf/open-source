@@ -79,7 +79,9 @@ var (
 	).Bind(interpretBinaryExpression(
 		"and-expression",
 		"combine-expression",
-		constExpression,
+		func(left, right Expression) Expression {
+			return &And{Left: left, Right: right}
+		},
 	))
 
 	applicationExpression = combinator.SeqOf(
