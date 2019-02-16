@@ -12,6 +12,39 @@ func TestParse(t *testing.T) {
 
 	assert := require.New(t)
 
+	t.Run("And", func(t *testing.T) {
+		actual, err := Parse(&log, []byte("False && False"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("False && True"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("True && False"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("True && True"))
+		assert.NoError(err)
+		assert.Equal(
+			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}},
+			actual,
+		)
+	})
+
+	t.Run("Bool", func(t *testing.T) {
+		actual, err := Parse(&log, []byte("Bool"))
+		assert.NoError(err)
+		assert.Equal(&Bool{}, actual)
+	})
+
 	t.Run("BoolValue", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("False"))
 		assert.NoError(err)
@@ -58,6 +91,12 @@ func TestParse(t *testing.T) {
 			},
 			actual,
 		)
+	})
+
+	t.Run("Kind", func(t *testing.T) {
+		actual, err := Parse(&log, []byte("Kind"))
+		assert.NoError(err)
+		assert.Equal(&Kind{}, actual)
 	})
 
 	t.Run("NotEqual", func(t *testing.T) {
@@ -124,45 +163,6 @@ func TestParse(t *testing.T) {
 			&Or{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}},
 			actual,
 		)
-	})
-
-	t.Run("And", func(t *testing.T) {
-		actual, err := Parse(&log, []byte("False && False"))
-		assert.NoError(err)
-		assert.Equal(
-			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: false}},
-			actual,
-		)
-		actual, err = Parse(&log, []byte("False && True"))
-		assert.NoError(err)
-		assert.Equal(
-			&And{Left: &BoolValue{Value: false}, Right: &BoolValue{Value: true}},
-			actual,
-		)
-		actual, err = Parse(&log, []byte("True && False"))
-		assert.NoError(err)
-		assert.Equal(
-			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: false}},
-			actual,
-		)
-		actual, err = Parse(&log, []byte("True && True"))
-		assert.NoError(err)
-		assert.Equal(
-			&And{Left: &BoolValue{Value: true}, Right: &BoolValue{Value: true}},
-			actual,
-		)
-	})
-
-	t.Run("Bool", func(t *testing.T) {
-		actual, err := Parse(&log, []byte("Bool"))
-		assert.NoError(err)
-		assert.Equal(&Bool{}, actual)
-	})
-
-	t.Run("Kind", func(t *testing.T) {
-		actual, err := Parse(&log, []byte("Kind"))
-		assert.NoError(err)
-		assert.Equal(&Kind{}, actual)
 	})
 
 	t.Run("Sort", func(t *testing.T) {
