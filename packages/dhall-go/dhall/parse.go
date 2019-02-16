@@ -358,7 +358,9 @@ var (
 	).Bind(interpretBinaryExpression(
 		"or-expression",
 		"plus-expression",
-		constExpression,
+		func(left, right Expression) Expression {
+			return &BoolOr{Left: left, Right: right}
+		},
 	))
 
 	plus = combinator.SeqOf(terminal.Op("+"), nonemptyWhitespace)
