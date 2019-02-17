@@ -9,7 +9,7 @@ import (
 	"github.com/ugorji/go/codec"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/joneshf/open-source/packages/dhall-go/dhall"
+	"github.com/joneshf/open-source/packages/dhall-go/pkg/dhall"
 )
 
 func main() {
