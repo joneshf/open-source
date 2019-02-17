@@ -93,6 +93,29 @@ func TestParse(t *testing.T) {
 		)
 	})
 
+	t.Run("If", func(t *testing.T) {
+		actual, err := Parse(&log, []byte("if False then False else True"))
+		assert.NoError(err)
+		assert.Equal(
+			&If{
+				Condition: &BoolValue{Value: false},
+				Then:      &BoolValue{Value: false},
+				Else:      &BoolValue{Value: true},
+			},
+			actual,
+		)
+		actual, err = Parse(&log, []byte("if True then True else False"))
+		assert.NoError(err)
+		assert.Equal(
+			&If{
+				Condition: &BoolValue{Value: true},
+				Then:      &BoolValue{Value: true},
+				Else:      &BoolValue{Value: false},
+			},
+			actual,
+		)
+	})
+
 	t.Run("Kind", func(t *testing.T) {
 		actual, err := Parse(&log, []byte("Kind"))
 		assert.NoError(err)

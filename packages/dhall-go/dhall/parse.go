@@ -161,6 +161,12 @@ var (
 
 	doubleEqual = combinator.SeqOf(terminal.Op("=="), whitespace)
 
+	elseParser = combinator.SeqOf(elseRaw, nonemptyWhitespace).Bind(
+		interpreter.Select(0),
+	)
+
+	elseRaw = terminal.Op(string([]rune{0x65, 0x6c, 0x73, 0x65}))
+
 	endOfLine = combinator.Choice(
 		terminal.Rune(0x0A),
 		terminal.Op(string([]rune{0x0D, 0x0A})),
@@ -186,6 +192,12 @@ var (
 		&BoolValue{Value: false},
 		"reserved",
 	)
+
+	ifParser = combinator.SeqOf(ifRaw, nonemptyWhitespace).Bind(
+		interpreter.Select(0),
+	)
+
+	ifRaw = terminal.Op(string([]rune{0x69, 0x66}))
 
 	importAlt = combinator.SeqOf(terminal.Op("?"), nonemptyWhitespace)
 
@@ -279,6 +291,54 @@ var (
 				}).Debug("No import-expressions")
 				return e2, nil
 			}
+		}
+
+		value, err := node.Value(ctx)
+		return nil, parsley.WrapError(err, "Unhandled case: %#v", value)
+	})
+
+	interpretIfExpression = ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		log := *ctx.(*logrus.FieldLogger)
+		log = log.WithFields(logrus.Fields{"interpreter": "if-expression"})
+		log.Info("Interpreting if-expression")
+		children := node.Children()
+		log = log.WithFields(logrus.Fields{"children": children})
+
+		if len(children) == 6 {
+			c, errC := children[1].Value(ctx)
+			if errC != nil {
+				log.WithFields(logrus.Fields{"err": errC}).Error(
+					"Error parsing condition-expression",
+				)
+				return nil, errC
+			}
+			log = log.WithFields(logrus.Fields{"condition-expression": c})
+			log.Debug("Successfully parsed condition-expression")
+			t, errT := children[3].Value(ctx)
+			if errT != nil {
+				log.WithFields(logrus.Fields{"err": errT}).Error(
+					"Error parsing then-expression",
+				)
+				return nil, errT
+			}
+			log = log.WithFields(logrus.Fields{"then-expression": t})
+			log.Debug("Successfully parsed then-expression")
+
+			e, errE := children[5].Value(ctx)
+			if errE != nil {
+				log.WithFields(logrus.Fields{"err": errE}).Error(
+					"Error parsing else-expression",
+				)
+				return nil, errE
+			}
+			log = log.WithFields(logrus.Fields{"else-expression": e})
+			log.Debug("Successfully parsed else-expression")
+
+			return &If{
+				Condition: c.(Expression),
+				Then:      t.(Expression),
+				Else:      e.(Expression),
+			}, nil
 		}
 
 		value, err := node.Value(ctx)
@@ -491,6 +551,12 @@ var (
 		constExpression,
 	))
 
+	then = combinator.SeqOf(thenRaw, nonemptyWhitespace).Bind(
+		interpreter.Select(0),
+	)
+
+	thenRaw = terminal.Op(string([]rune{0x74, 0x68, 0x65, 0x6e}))
+
 	times = combinator.SeqOf(terminal.Op("*"), whitespace)
 
 	timesExpression = combinator.SeqOf(
@@ -545,9 +611,9 @@ func Parse(log *logrus.FieldLogger, input []byte) (Expression, error) {
 }
 
 func completeExpression() parsley.Parser {
-	var annotatedExpression parser.Func
+	var annotatedExpression, expression, ifExpression parser.Func
 
-	expression := combinator.Choice(
+	expression = combinator.Choice(
 		// TODO: combinator.SeqOf(
 		// 	lambda(),
 		// 	openParens(),
@@ -558,14 +624,7 @@ func completeExpression() parsley.Parser {
 		// 	arrow(),
 		// 	expression(),
 		// ),
-		// TODO: combinator.SeqOf(
-		// 	if_(),
-		// 	expression(),
-		// 	then(),
-		// 	expression(),
-		// 	else_(),
-		// 	expression(),
-		// ),
+		&ifExpression,
 		// TODO: combinator.SeqOf(
 		// 	combinator.Many1(
 		// 		let(),
@@ -611,6 +670,15 @@ func completeExpression() parsley.Parser {
 			)),
 		).Bind(interpretAnnotatedExpression),
 	)
+
+	ifExpression = combinator.Choice(combinator.SeqOf(
+		ifParser,
+		expression,
+		then,
+		expression,
+		elseParser,
+		expression,
+	).Bind(interpretIfExpression))
 
 	return combinator.SeqOf(whitespace, expression).Bind(interpreter.Select(1))
 }

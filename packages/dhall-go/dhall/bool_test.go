@@ -17,7 +17,7 @@ func genBoolValue() gopter.Gen { return gen.OneGenOf(genFalse(), genTrue()) }
 func genExpression() gopter.Gen {
 	return gen.Weighted([]gen.WeightedGen{
 		gen.WeightedGen{Weight: 1, Gen: genBool()},
-		gen.WeightedGen{Weight: 1, Gen: genBoolValue()},
+		gen.WeightedGen{Weight: 5, Gen: genBoolValue()},
 	})
 }
 

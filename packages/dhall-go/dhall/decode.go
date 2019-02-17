@@ -71,6 +71,22 @@ func hydrate(raw interface{}) (Expression, error) {
 				}
 				return &NotEqual{Left: left, Right: right}, nil
 			}
+			// If
+			if xs[0].(uint64) == 14 {
+				c, err := hydrate(xs[1])
+				if err != nil {
+					return nil, err
+				}
+				t, err := hydrate(xs[2])
+				if err != nil {
+					return nil, err
+				}
+				e, err := hydrate(xs[3])
+				if err != nil {
+					return nil, err
+				}
+				return &If{Condition: c, Then: t, Else: e}, nil
+			}
 		}
 	}
 
