@@ -12,12 +12,11 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genNotEqual() gopter.Gen {
-	return genExpression().FlatMap(func(left interface{}) gopter.Gen {
-		return genExpression().Map(func(right Expression) NotEqual {
-			return NotEqual{Left: left.(Expression), Right: right}
-		})
-	}, reflect.TypeOf(NotEqual{}))
+func genNotEqual(size int) gopter.Gen {
+	return gen.StructPtr(reflect.TypeOf(&NotEqual{}), map[string]gopter.Gen{
+		"Left":  genSizedExpression(size / 2),
+		"Right": genSizedExpression(size / 2),
+	}).Map(func(e *NotEqual) Expression { return e })
 }
 
 func TestNotEqual(t *testing.T) {
@@ -26,10 +25,10 @@ func TestNotEqual(t *testing.T) {
 	require := testifyRequire.New(t)
 
 	properties.Property("α-normalization has no effect", prop.ForAll(
-		func(expression NotEqual) bool {
-			return assert.Equal(&expression, expression.alphaNormalize())
+		func(expression *NotEqual) bool {
+			return assert.Equal(expression, expression.alphaNormalize())
 		},
-		genNotEqual(),
+		sized(genNotEqual),
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(

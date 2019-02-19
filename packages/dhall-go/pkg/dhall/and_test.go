@@ -12,12 +12,11 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genAnd() gopter.Gen {
-	return genExpression().FlatMap(func(left interface{}) gopter.Gen {
-		return genExpression().Map(func(right Expression) And {
-			return And{Left: left.(Expression), Right: right}
-		})
-	}, reflect.TypeOf(And{}))
+func genAnd(size int) gopter.Gen {
+	return gen.StructPtr(reflect.TypeOf(&And{}), map[string]gopter.Gen{
+		"Left":  genSizedExpression(size / 2),
+		"Right": genSizedExpression(size / 2),
+	}).Map(func(e *And) Expression { return e })
 }
 
 func TestAnd(t *testing.T) {
@@ -26,10 +25,10 @@ func TestAnd(t *testing.T) {
 	require := testifyRequire.New(t)
 
 	properties.Property("α-normalization has no effect", prop.ForAll(
-		func(expression And) bool {
-			return assert.Equal(&expression, expression.alphaNormalize())
+		func(expression *And) bool {
+			return assert.Equal(expression, expression.alphaNormalize())
 		},
-		genAnd(),
+		sized(genAnd),
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(

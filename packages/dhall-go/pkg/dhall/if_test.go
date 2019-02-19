@@ -12,14 +12,12 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genIf() gopter.Gen {
-	return genExpression().FlatMap(func(c interface{}) gopter.Gen {
-		return genExpression().FlatMap(func(t interface{}) gopter.Gen {
-			return genExpression().Map(func(e Expression) If {
-				return If{Condition: c.(Expression), Then: t.(Expression), Else: e}
-			})
-		}, reflect.TypeOf(If{}))
-	}, reflect.TypeOf(If{}))
+func genIf(size int) gopter.Gen {
+	return gen.StructPtr(reflect.TypeOf(&If{}), map[string]gopter.Gen{
+		"Condition": genSizedExpression(size / 2),
+		"Then":      genSizedExpression(size / 2),
+		"Else":      genSizedExpression(size / 2),
+	}).Map(func(e *If) Expression { return e })
 }
 
 func TestIf(t *testing.T) {
@@ -28,10 +26,10 @@ func TestIf(t *testing.T) {
 	require := testifyRequire.New(t)
 
 	properties.Property("α-normalization has no effect", prop.ForAll(
-		func(expression If) bool {
-			return assert.Equal(&expression, expression.alphaNormalize())
+		func(expression *If) bool {
+			return assert.Equal(expression, expression.alphaNormalize())
 		},
-		genIf(),
+		sized(genIf),
 	))
 
 	properties.Property("β-normalization works correctly", prop.ForAll(

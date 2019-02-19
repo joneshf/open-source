@@ -10,13 +10,23 @@ import (
 	testifyRequire "github.com/stretchr/testify/require"
 )
 
-func genBool() gopter.Gen { return gen.Const(&Bool{}) }
+func genBool() gopter.Gen {
+	return gen.Const(&Bool{}).Map(func(x *Bool) Expression { return x })
+}
 
 func genBoolValue() gopter.Gen { return gen.OneGenOf(genFalse(), genTrue()) }
 
-func genFalse() gopter.Gen { return gen.Const(&BoolValue{Value: false}) }
+func genFalse() gopter.Gen {
+	return gen.Const(&BoolValue{Value: false}).Map(
+		func(x *BoolValue) Expression { return x },
+	)
+}
 
-func genTrue() gopter.Gen { return gen.Const(&BoolValue{Value: true}) }
+func genTrue() gopter.Gen {
+	return gen.Const(&BoolValue{Value: true}).Map(
+		func(x *BoolValue) Expression { return x },
+	)
+}
 
 func TestBool(t *testing.T) {
 	assert := testifyAssert.New(t)
