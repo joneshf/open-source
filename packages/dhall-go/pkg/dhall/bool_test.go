@@ -14,13 +14,6 @@ func genBool() gopter.Gen { return gen.Const(&Bool{}) }
 
 func genBoolValue() gopter.Gen { return gen.OneGenOf(genFalse(), genTrue()) }
 
-func genExpression() gopter.Gen {
-	return gen.Weighted([]gen.WeightedGen{
-		gen.WeightedGen{Weight: 1, Gen: genBool()},
-		gen.WeightedGen{Weight: 5, Gen: genBoolValue()},
-	})
-}
-
 func genFalse() gopter.Gen { return gen.Const(&BoolValue{Value: false}) }
 
 func genTrue() gopter.Gen { return gen.Const(&BoolValue{Value: true}) }
@@ -36,10 +29,6 @@ func TestBool(t *testing.T) {
 
 	t.Run("betaNormalize", func(t *testing.T) {
 		require.Equal(&Bool{}, (&Bool{}).betaNormalize())
-	})
-
-	t.Run("equivalent", func(t *testing.T) {
-		require.True(Equivalent(&Bool{}, &Bool{}))
 	})
 
 	t.Run("infer", func(t *testing.T) {
@@ -151,13 +140,6 @@ func TestBoolValue(t *testing.T) {
 		},
 		genBoolValue(),
 	))
-
-	t.Run("equivalent", func(t *testing.T) {
-		require.Equal(&BoolValue{Value: false}, (&BoolValue{Value: false}))
-		require.NotEqual(&BoolValue{Value: false}, (&BoolValue{Value: true}))
-		require.NotEqual(&BoolValue{Value: true}, (&BoolValue{Value: false}))
-		require.Equal(&BoolValue{Value: true}, (&BoolValue{Value: true}))
-	})
 
 	properties.Property("Inferred type is `Bool`", prop.ForAll(
 		func(expression *BoolValue) bool {

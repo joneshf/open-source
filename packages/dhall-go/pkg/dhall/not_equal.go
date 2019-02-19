@@ -32,18 +32,10 @@ func (be *NotEqual) betaNormalize() Expression {
 			return l1
 		}
 	}
-	if l1.equivalent(r1) {
+	if Equivalent(l1, r1) {
 		return &BoolValue{Value: false}
 	}
 	return &NotEqual{Left: l1, Right: r1}
-}
-
-func (be *NotEqual) equivalent(e Expression) bool {
-	l1 := be.betaNormalize().alphaNormalize()
-	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*NotEqual)
-	r, rOk := r1.(*NotEqual)
-	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
 func (be *NotEqual) infer(context Context) (Expression, error) {

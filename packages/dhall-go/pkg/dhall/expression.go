@@ -1,5 +1,9 @@
 package dhall
 
+import (
+	"reflect"
+)
+
 type binary struct {
 	value interface{}
 }
@@ -8,7 +12,6 @@ type binary struct {
 type Expression interface {
 	alphaNormalize() Expression
 	betaNormalize() Expression
-	equivalent(Expression) bool
 	infer(Context) (Expression, error)
 	render() string
 	renderBinary() binary
@@ -26,8 +29,10 @@ type Expression interface {
 }
 
 // Equivalent determines the following relationship between Expressions: l ≡ r.
-func Equivalent(l Expression, r Expression) bool {
-	return l.equivalent(r)
+func Equivalent(l0 Expression, r0 Expression) bool {
+	l1 := l0.betaNormalize().alphaNormalize()
+	r1 := r0.betaNormalize().alphaNormalize()
+	return reflect.DeepEqual(l1, r1)
 }
 
 // Normalize performs beta normalization followed by alpha normalization.

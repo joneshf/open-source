@@ -51,44 +51,13 @@ func TestOr(t *testing.T) {
 				return assert.Equal(&BoolValue{Value: true}, actual)
 			}
 			if Equivalent(left, right) {
-				return assert.Equal(left, actual)
+				return assert.Equal(betaLeft, actual)
 			}
 			return assert.Equal(&Or{Left: betaLeft, Right: betaRight}, actual)
 		},
 		genExpression(),
 		genExpression(),
 	))
-
-	t.Run("equivalent", func(t *testing.T) {
-		require.True(Equivalent(
-			&BoolValue{Value: false},
-			&Or{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: false},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&Or{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: true},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&Or{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: false},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&Or{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: true},
-			},
-		))
-	})
 
 	properties.Property("Inference works correctly", prop.ForAll(
 		func(left, right Expression) bool {

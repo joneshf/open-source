@@ -53,37 +53,6 @@ func TestEqual(t *testing.T) {
 		genExpression(),
 	))
 
-	t.Run("equivalent", func(t *testing.T) {
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&Equal{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: false},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: false},
-			&Equal{
-				Left:  &BoolValue{Value: false},
-				Right: &BoolValue{Value: true},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: false},
-			&Equal{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: false},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&Equal{
-				Left:  &BoolValue{Value: true},
-				Right: &BoolValue{Value: true},
-			},
-		))
-	})
-
 	properties.Property("Inference works correctly", prop.ForAll(
 		func(left, right Expression) bool {
 			actual, err := (&Equal{Left: left, Right: right}).infer(

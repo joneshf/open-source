@@ -11,11 +11,6 @@ func (*Bool) alphaNormalize() Expression { return &Bool{} }
 
 func (*Bool) betaNormalize() Expression { return &Bool{} }
 
-func (*Bool) equivalent(e Expression) bool {
-	r, ok := e.betaNormalize().alphaNormalize().(*Bool)
-	return ok && Bool{} == *r
-}
-
 func (*Bool) infer(Context) (Expression, error) { return &Type{}, nil }
 
 func (*Bool) render() string { return "Bool" }
@@ -71,11 +66,6 @@ type BoolValue struct {
 func (b *BoolValue) alphaNormalize() Expression { return b }
 
 func (b *BoolValue) betaNormalize() Expression { return b }
-
-func (b *BoolValue) equivalent(e Expression) bool {
-	r, ok := e.betaNormalize().alphaNormalize().(*BoolValue)
-	return ok && *b == *r
-}
 
 func (*BoolValue) infer(Context) (Expression, error) { return &Bool{}, nil }
 

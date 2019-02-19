@@ -31,18 +31,10 @@ func (be *And) betaNormalize() Expression {
 	if ok && (*r1Expression == BoolValue{Value: false}) {
 		return &BoolValue{Value: false}
 	}
-	if l1.equivalent(r1) {
+	if Equivalent(l1, r1) {
 		return l1
 	}
 	return &And{Left: l1, Right: r1}
-}
-
-func (be *And) equivalent(e Expression) bool {
-	l1 := be.betaNormalize().alphaNormalize()
-	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*And)
-	r, rOk := r1.(*And)
-	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
 func (be *And) infer(context Context) (Expression, error) {

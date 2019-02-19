@@ -26,11 +26,6 @@ func (*Kind) alphaNormalize() Expression { return &Kind{} }
 
 func (*Kind) betaNormalize() Expression { return &Kind{} }
 
-func (*Kind) equivalent(e Expression) bool {
-	r, ok := e.betaNormalize().alphaNormalize().(*Kind)
-	return ok && Kind{} == *r
-}
-
 func (*Kind) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {
 	case *Kind:
@@ -112,11 +107,6 @@ type Sort struct{}
 func (*Sort) alphaNormalize() Expression { return &Sort{} }
 
 func (*Sort) betaNormalize() Expression { return &Sort{} }
-
-func (*Sort) equivalent(e Expression) bool {
-	r, ok := e.betaNormalize().alphaNormalize().(*Sort)
-	return ok && Sort{} == *r
-}
 
 func (*Sort) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {
@@ -201,11 +191,6 @@ type Type struct{}
 func (*Type) alphaNormalize() Expression { return &Type{} }
 
 func (*Type) betaNormalize() Expression { return &Type{} }
-
-func (*Type) equivalent(e Expression) bool {
-	r, ok := e.betaNormalize().alphaNormalize().(*Type)
-	return ok && Type{} == *r
-}
 
 func (*Type) functionCheck(c Constant) (Constant, error) {
 	switch c.(type) {

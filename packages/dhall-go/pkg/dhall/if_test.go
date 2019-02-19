@@ -52,10 +52,10 @@ func TestIf(t *testing.T) {
 				return assert.Equal(betaC, actual)
 			}
 			if Equivalent(t, e) {
-				return assert.Equal(t, actual)
+				return assert.Equal(betaT, actual)
 			}
 			return assert.Equal(
-				&If{Condition: c, Then: betaT, Else: betaE},
+				&If{Condition: betaC, Then: betaT, Else: betaE},
 				actual,
 			)
 		},
@@ -63,25 +63,6 @@ func TestIf(t *testing.T) {
 		genExpression(),
 		genExpression(),
 	))
-
-	t.Run("equivalent", func(t *testing.T) {
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&If{
-				Condition: &BoolValue{Value: false},
-				Then:      &BoolValue{Value: false},
-				Else:      &BoolValue{Value: true},
-			},
-		))
-		require.True(Equivalent(
-			&BoolValue{Value: true},
-			&If{
-				Condition: &BoolValue{Value: true},
-				Then:      &BoolValue{Value: true},
-				Else:      &BoolValue{Value: false},
-			},
-		))
-	})
 
 	properties.Property("Inference works correctly", prop.ForAll(
 		func(c, tE Expression) bool {

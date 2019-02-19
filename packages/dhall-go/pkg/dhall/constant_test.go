@@ -17,10 +17,6 @@ func TestKind(t *testing.T) {
 		assert.Equal(&Kind{}, (&Kind{}).betaNormalize())
 	})
 
-	t.Run("equivalent", func(t *testing.T) {
-		assert.True(Equivalent(&Kind{}, &Kind{}))
-	})
-
 	t.Run("functionCheck", func(t *testing.T) {
 		actual, err := (&Kind{}).functionCheck(&Kind{})
 		assert.NoError(err)
@@ -129,10 +125,6 @@ func TestSort(t *testing.T) {
 		assert.Equal(&Sort{}, (&Sort{}).betaNormalize())
 	})
 
-	t.Run("equivalent", func(t *testing.T) {
-		assert.True(Equivalent(&Sort{}, &Sort{}))
-	})
-
 	t.Run("functionCheck", func(t *testing.T) {
 		actual, err := (&Sort{}).functionCheck(&Kind{})
 		assert.NoError(err)
@@ -239,10 +231,6 @@ func TestType(t *testing.T) {
 
 	t.Run("betaNormalize", func(t *testing.T) {
 		assert.Equal(&Type{}, (&Type{}).betaNormalize())
-	})
-
-	t.Run("equivalent", func(t *testing.T) {
-		assert.True(Equivalent(&Type{}, &Type{}))
 	})
 
 	t.Run("functionCheck", func(t *testing.T) {

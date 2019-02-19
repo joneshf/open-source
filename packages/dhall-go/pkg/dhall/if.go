@@ -38,18 +38,10 @@ func (i *If) betaNormalize() Expression {
 		(*e1Expression == BoolValue{Value: false}) {
 		return c1
 	}
-	if t1.equivalent(e1) {
+	if Equivalent(t1, e1) {
 		return t1
 	}
 	return &If{Condition: c1, Then: t1, Else: e1}
-}
-
-func (i *If) equivalent(e Expression) bool {
-	l1 := i.betaNormalize().alphaNormalize()
-	r1 := e.betaNormalize().alphaNormalize()
-	l, lOk := l1.(*If)
-	r, rOk := r1.(*If)
-	return (lOk && rOk && *l == *r) || l1.equivalent(r1)
 }
 
 func (i *If) infer(context Context) (Expression, error) {
@@ -76,7 +68,7 @@ func (i *If) infer(context Context) (Expression, error) {
 	_, cOk := c.(*Bool)
 	_, tOk := tType.(*Type)
 	_, eOk := eType.(*Type)
-	if cOk && tOk && eOk && t.equivalent(e) {
+	if cOk && tOk && eOk && Equivalent(t, e) {
 		return t, nil
 	}
 	return nil, &TypeError{
