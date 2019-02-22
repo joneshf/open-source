@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"reflect"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 type binary struct {
@@ -13,7 +15,7 @@ type Expression interface {
 	alphaNormalize() Expression
 	betaNormalize() Expression
 	infer(Context) (Expression, error)
-	render() string
+	render() pretty.Document
 	renderBinary() binary
 	renderCBOR() string
 	renderElm() (string, error)

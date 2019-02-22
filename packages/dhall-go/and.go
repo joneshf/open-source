@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"fmt"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // And represents equality of Dhall Bools.
@@ -61,8 +63,8 @@ func (be *And) infer(context Context) (Expression, error) {
 	}
 }
 
-func (be *And) render() string {
-	return fmt.Sprintf("%s && %s", be.Left.render(), be.Right.render())
+func (be *And) render() pretty.Document {
+	return pretty.Spread(be.Left.render(), pretty.Text("&&"), be.Right.render())
 }
 
 func (be *And) renderBinary() binary {

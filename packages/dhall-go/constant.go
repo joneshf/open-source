@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"fmt"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // Constant represents Dhall Constants
@@ -47,7 +49,7 @@ func (*Kind) functionCheck(c Constant) (Constant, error) {
 
 func (*Kind) infer(Context) (Expression, error) { return &Sort{}, nil }
 
-func (*Kind) render() string { return "Kind" }
+func (*Kind) render() pretty.Document { return pretty.Text("Kind") }
 
 func (*Kind) renderBinary() binary { return binary{value: "Kind"} }
 
@@ -131,7 +133,7 @@ func (*Sort) infer(context Context) (Expression, error) {
 	}
 }
 
-func (*Sort) render() string { return "Sort" }
+func (*Sort) render() pretty.Document { return pretty.Text("Sort") }
 
 func (*Sort) renderBinary() binary { return binary{value: "Sort"} }
 
@@ -216,7 +218,7 @@ func (*Type) functionCheck(c Constant) (Constant, error) {
 
 func (*Type) infer(Context) (Expression, error) { return &Kind{}, nil }
 
-func (*Type) render() string { return "Type" }
+func (*Type) render() pretty.Document { return pretty.Text("Type") }
 
 func (*Type) renderBinary() binary { return binary{value: "Type"} }
 

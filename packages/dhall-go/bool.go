@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"fmt"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // Bool represents the type of Dhall Bools.
@@ -13,7 +15,7 @@ func (*Bool) betaNormalize() Expression { return &Bool{} }
 
 func (*Bool) infer(Context) (Expression, error) { return &Type{}, nil }
 
-func (*Bool) render() string { return "Bool" }
+func (*Bool) render() pretty.Document { return pretty.Text("Bool") }
 
 func (*Bool) renderBinary() binary { return binary{value: "Bool"} }
 
@@ -69,11 +71,11 @@ func (b *BoolValue) betaNormalize() Expression { return b }
 
 func (*BoolValue) infer(Context) (Expression, error) { return &Bool{}, nil }
 
-func (b *BoolValue) render() string {
+func (b *BoolValue) render() pretty.Document {
 	if b.Value {
-		return "True"
+		return pretty.Text("True")
 	}
-	return "False"
+	return pretty.Text("False")
 }
 
 func (b *BoolValue) renderBinary() binary { return binary{value: b.Value} }

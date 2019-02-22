@@ -10,6 +10,8 @@ import (
 	"github.com/leanovate/gopter/prop"
 	testifyAssert "github.com/stretchr/testify/assert"
 	testifyRequire "github.com/stretchr/testify/require"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 func genNotEqual(size int) gopter.Gen {
@@ -75,10 +77,14 @@ func TestNotEqual(t *testing.T) {
 
 	properties.Property("render works correctly", prop.ForAll(
 		func(left, right Expression) bool {
-			out := fmt.Sprintf("%s != %s", left.render(), right.render())
+			out := fmt.Sprintf(
+				"%s != %s",
+				pretty.Render(0, left.render()),
+				pretty.Render(0, right.render()),
+			)
 			return assert.Equal(
 				out,
-				(&NotEqual{Left: left, Right: right}).render(),
+				pretty.Render(0, (&NotEqual{Left: left, Right: right}).render()),
 			)
 		},
 		genExpression(),

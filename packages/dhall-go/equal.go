@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"fmt"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // Equal represents equality of Dhall Bools.
@@ -62,8 +64,8 @@ func (be *Equal) infer(context Context) (Expression, error) {
 	}
 }
 
-func (be *Equal) render() string {
-	return fmt.Sprintf("%s == %s", be.Left.render(), be.Right.render())
+func (be *Equal) render() pretty.Document {
+	return pretty.Spread(be.Left.render(), pretty.Text("=="), be.Right.render())
 }
 
 func (be *Equal) renderBinary() binary {

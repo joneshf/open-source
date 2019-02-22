@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/ugorji/go/codec"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // ElmError represents errors attempting to render Elm.
@@ -87,7 +89,7 @@ func (e *YAMLError) Error() string {
 }
 
 // Render renders the given expression as Dhall source.
-func Render(expression Expression) string { return expression.render() }
+func Render(expression Expression) pretty.Document { return expression.render() }
 
 // RenderBinary attempts to render the given Expression as binary.
 func RenderBinary(

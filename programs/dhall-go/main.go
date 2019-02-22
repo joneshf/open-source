@@ -10,6 +10,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/joneshf/open-source/packages/dhall-go"
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 func main() {
@@ -268,11 +269,14 @@ func renderDhall(log *logrus.FieldLogger) func(dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"expression": e})
 
 		(*log).Info("Rendering expression to Dhall")
-		rendered := dhall.Render(e)
-		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		document := dhall.Render(e)
+		*log = (*log).WithFields(logrus.Fields{"output": document})
 		(*log).Debug("Successfully rendered expression to Dhall")
 
-		return fmt.Sprintf("%s\n", rendered)
+		return fmt.Sprintf(
+			"%s\n",
+			pretty.RenderWithLog(log, 80, pretty.Group(document)),
+		)
 	}
 }
 

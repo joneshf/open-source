@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 func TestKind(t *testing.T) {
@@ -39,7 +41,7 @@ func TestKind(t *testing.T) {
 	})
 
 	t.Run("render", func(t *testing.T) {
-		assert.Equal("Kind", (&Kind{}).render())
+		assert.Equal("Kind", pretty.Render(0, (&Kind{}).render()))
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
@@ -147,7 +149,7 @@ func TestSort(t *testing.T) {
 	})
 
 	t.Run("render", func(t *testing.T) {
-		assert.Equal("Sort", (&Sort{}).render())
+		assert.Equal("Sort", pretty.Render(0, (&Sort{}).render()))
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
@@ -258,7 +260,7 @@ func TestType(t *testing.T) {
 	})
 
 	t.Run("render", func(t *testing.T) {
-		assert.Equal("Type", (&Type{}).render())
+		assert.Equal("Type", pretty.Render(0, (&Type{}).render()))
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {

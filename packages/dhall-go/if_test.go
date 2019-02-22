@@ -10,6 +10,8 @@ import (
 	"github.com/leanovate/gopter/prop"
 	testifyAssert "github.com/stretchr/testify/assert"
 	testifyRequire "github.com/stretchr/testify/require"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 func genIf(size int) gopter.Gen {
@@ -93,14 +95,14 @@ func TestIf(t *testing.T) {
 	properties.Property("render works correctly", prop.ForAll(
 		func(c, t, e Expression) bool {
 			out := fmt.Sprintf(
-				"if %s then %s else %s",
-				c.render(),
-				t.render(),
-				e.render(),
+				"if %s then\n    %s\nelse\n    %s",
+				pretty.Render(0, c.render()),
+				pretty.Render(0, pretty.Nest(4, t.render())),
+				pretty.Render(0, pretty.Nest(4, e.render())),
 			)
 			return assert.Equal(
 				out,
-				(&If{Condition: c, Then: t, Else: e}).render(),
+				pretty.Render(0, (&If{Condition: c, Then: t, Else: e}).render()),
 			)
 		},
 		genExpression(),

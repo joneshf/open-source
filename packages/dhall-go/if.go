@@ -2,6 +2,8 @@ package dhall
 
 import (
 	"fmt"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 // If represents equality of Dhall Bools.
@@ -84,12 +86,17 @@ func (i *If) infer(context Context) (Expression, error) {
 	}
 }
 
-func (i *If) render() string {
-	return fmt.Sprintf(
-		"if %s then %s else %s",
-		i.Condition.render(),
-		i.Then.render(),
-		i.Else.render(),
+func (i *If) render() pretty.Document {
+	return pretty.Append(
+		pretty.Spread(
+			pretty.Text("if"),
+			i.Condition.render(),
+			pretty.Text("then"),
+		),
+		pretty.Nest(4, pretty.Append(pretty.Line, i.Then.render())),
+		pretty.Line,
+		pretty.Text("else"),
+		pretty.Nest(4, pretty.Append(pretty.Line, i.Else.render())),
 	)
 }
 
