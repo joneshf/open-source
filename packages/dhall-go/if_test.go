@@ -131,14 +131,17 @@ func TestIf(t *testing.T) {
 	properties.Property("renderCBOR works correctly", prop.ForAll(
 		func(c, t, e Expression) bool {
 			out := fmt.Sprintf(
-				"[14, %s, %s, %s]",
-				c.renderCBOR(),
-				t.renderCBOR(),
-				e.renderCBOR(),
+				"[\n    14,\n    %s,\n    %s,\n    %s\n]",
+				pretty.Render(0, pretty.Nest(4, c.renderCBOR())),
+				pretty.Render(0, pretty.Nest(4, t.renderCBOR())),
+				pretty.Render(0, pretty.Nest(4, e.renderCBOR())),
 			)
 			return assert.Equal(
 				out,
-				(&If{Condition: c, Then: t, Else: e}).renderCBOR(),
+				pretty.Render(
+					0,
+					(&If{Condition: c, Then: t, Else: e}).renderCBOR(),
+				),
 			)
 		},
 		genExpression(),

@@ -53,7 +53,7 @@ func (*Kind) render() pretty.Document { return pretty.Text("Kind") }
 
 func (*Kind) renderBinary() binary { return binary{value: "Kind"} }
 
-func (*Kind) renderCBOR() string { return fmt.Sprintf("%q", "Kind") }
+func (*Kind) renderCBOR() pretty.Document { return pretty.Text(`"Kind"`) }
 
 func (k *Kind) renderElm() (string, error) {
 	return "", &ElmError{expression: k, message: "Cannot render `Kind` to Elm"}
@@ -137,7 +137,7 @@ func (*Sort) render() pretty.Document { return pretty.Text("Sort") }
 
 func (*Sort) renderBinary() binary { return binary{value: "Sort"} }
 
-func (*Sort) renderCBOR() string { return fmt.Sprintf("%q", "Sort") }
+func (*Sort) renderCBOR() pretty.Document { return pretty.Text(`"Sort"`) }
 
 func (k *Sort) renderElm() (string, error) {
 	return "", &ElmError{expression: k, message: "Cannot render `Sort` to Elm"}
@@ -222,7 +222,7 @@ func (*Type) render() pretty.Document { return pretty.Text("Type") }
 
 func (*Type) renderBinary() binary { return binary{value: "Type"} }
 
-func (*Type) renderCBOR() string { return fmt.Sprintf("%q", "Type") }
+func (*Type) renderCBOR() pretty.Document { return pretty.Text(`"Type"`) }
 
 func (k *Type) renderElm() (string, error) {
 	return "", &ElmError{expression: k, message: "Cannot render `Type` to Elm"}

@@ -88,15 +88,15 @@ func (i *If) infer(context Context) (Expression, error) {
 
 func (i *If) render() pretty.Document {
 	return pretty.Append(
-		pretty.Spread(
-			pretty.Text("if"),
-			i.Condition.render(),
-			pretty.Text("then"),
-		),
-		pretty.Nest(4, pretty.Append(pretty.Line, i.Then.render())),
+		pretty.Text("if"),
+		pretty.Space,
+		i.Condition.render(),
+		pretty.Space,
+		pretty.Text("then"),
+		pretty.Indent(4, i.Then.render()),
 		pretty.Line,
 		pretty.Text("else"),
-		pretty.Nest(4, pretty.Append(pretty.Line, i.Else.render())),
+		pretty.Indent(4, i.Else.render()),
 	)
 }
 
@@ -107,11 +107,27 @@ func (i *If) renderBinary() binary {
 	return binary{value: [](interface{}){14, c.value, t.value, e.value}}
 }
 
-func (i *If) renderCBOR() string {
-	c := i.Condition.renderCBOR()
-	t := i.Then.renderCBOR()
-	e := i.Else.renderCBOR()
-	return fmt.Sprintf("[14, %s, %s, %s]", c, t, e)
+func (i *If) renderCBOR() pretty.Document {
+	return pretty.Append(
+		pretty.Text("["),
+		pretty.Indent(
+			4,
+			pretty.Append(
+				pretty.Text("14"),
+				pretty.Text(","),
+				pretty.Line,
+				i.Condition.renderCBOR(),
+				pretty.Text(","),
+				pretty.Line,
+				i.Then.renderCBOR(),
+				pretty.Text(","),
+				pretty.Line,
+				i.Else.renderCBOR(),
+			),
+		),
+		pretty.Line,
+		pretty.Text("]"),
+	)
 }
 
 func (i *If) renderElm() (string, error) {

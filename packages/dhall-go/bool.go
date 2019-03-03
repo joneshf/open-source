@@ -19,7 +19,7 @@ func (*Bool) render() pretty.Document { return pretty.Text("Bool") }
 
 func (*Bool) renderBinary() binary { return binary{value: "Bool"} }
 
-func (*Bool) renderCBOR() string { return fmt.Sprintf("%q", "Bool") }
+func (*Bool) renderCBOR() pretty.Document { return pretty.Text(`"Bool"`) }
 
 func (bt *Bool) renderElm() (string, error) { return "Bool", nil }
 
@@ -80,7 +80,12 @@ func (b *BoolValue) render() pretty.Document {
 
 func (b *BoolValue) renderBinary() binary { return binary{value: b.Value} }
 
-func (b *BoolValue) renderCBOR() string { return fmt.Sprintf("%t", b.Value) }
+func (b *BoolValue) renderCBOR() pretty.Document {
+	if b.Value {
+		return pretty.Text("true")
+	}
+	return pretty.Text("false")
+}
 
 func (b *BoolValue) renderElm() (string, error) {
 	if b.Value {

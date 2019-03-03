@@ -108,13 +108,16 @@ func TestNotEqual(t *testing.T) {
 	properties.Property("renderCBOR works correctly", prop.ForAll(
 		func(left, right Expression) bool {
 			out := fmt.Sprintf(
-				"[3, 3, %s, %s]",
-				left.renderCBOR(),
-				right.renderCBOR(),
+				"[\n    3,\n    3,\n    %s,\n    %s\n]",
+				pretty.Render(0, pretty.Nest(4, left.renderCBOR())),
+				pretty.Render(0, pretty.Nest(4, right.renderCBOR())),
 			)
 			return assert.Equal(
 				out,
-				(&NotEqual{Left: left, Right: right}).renderCBOR(),
+				pretty.Render(
+					0,
+					(&NotEqual{Left: left, Right: right}).renderCBOR(),
+				),
 			)
 		},
 		genExpression(),

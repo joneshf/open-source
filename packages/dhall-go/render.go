@@ -108,7 +108,7 @@ func RenderBinary(
 
 // RenderCBOR renders the given Expression as CBOR.
 // This rendering can be useful for humans to understand the binary rendering.
-func RenderCBOR(expr Expression) string { return expr.renderCBOR() }
+func RenderCBOR(expr Expression) pretty.Document { return expr.renderCBOR() }
 
 // RenderElm attempts to render the given expression as elm.
 func RenderElm(expression Expression) (string, error) {

@@ -17,7 +17,7 @@ type Expression interface {
 	infer(Context) (Expression, error)
 	render() pretty.Document
 	renderBinary() binary
-	renderCBOR() string
+	renderCBOR() pretty.Document
 	renderElm() (string, error)
 	renderGo() (string, error)
 	renderHaskell() (string, error)

@@ -48,10 +48,17 @@ func Group(x Document) Document {
 	return &documentUNION{Left: x.flatten(), Right: x}
 }
 
+// Indent will create a Document on a new line with the given indentation.
+func Indent(value int, document Document) Document {
+	return Nest(value, Append(Line, document))
+}
+
 // Line represents an newline Document.
 var Line = &documentLINE{}
 
 // Nest represents an indented Document.
+// N.B. The indentation only happens after a Line.
+// If you're wanting the conventional idea of indentation, use Indent.
 func Nest(value int, document Document) Document {
 	return &documentNEST{Document: document, Value: value}
 }
@@ -72,6 +79,9 @@ func RenderWithLog(log *logrus.FieldLogger, w int, x Document) string {
 	return best(log, w, 0, x).layout()
 }
 
+// Space represents a single space Document.
+var Space = Text(" ")
+
 // Spread represents one Document appended to another with a space between.
 // There must be at least two documents to spread.
 // If multiple documents are given, they will be left-associated.
@@ -81,7 +91,7 @@ func Spread(left, right Document, rest ...Document) Document {
 		func(left, right Document) Document {
 			return &documentAPPEND{
 				Left:  left,
-				Right: &documentAPPEND{Left: Text(" "), Right: right},
+				Right: &documentAPPEND{Left: Space, Right: right},
 			}
 		},
 		append([]Document{left, right}, rest...)...,

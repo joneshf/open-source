@@ -8,6 +8,8 @@ import (
 	"github.com/leanovate/gopter/prop"
 	testifyAssert "github.com/stretchr/testify/assert"
 	testifyRequire "github.com/stretchr/testify/require"
+
+	"github.com/joneshf/open-source/packages/go-pretty"
 )
 
 func genBool() gopter.Gen {
@@ -48,7 +50,7 @@ func TestBool(t *testing.T) {
 	})
 
 	t.Run("render", func(t *testing.T) {
-		require.Equal("Bool", (&Bool{}).render())
+		require.Equal("Bool", pretty.Render(0, (&Bool{}).render()))
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
@@ -56,7 +58,7 @@ func TestBool(t *testing.T) {
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		require.Equal("\"Bool\"", (&Bool{}).renderCBOR())
+		require.Equal(`"Bool"`, pretty.Render(0, (&Bool{}).renderCBOR()))
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
@@ -160,8 +162,14 @@ func TestBoolValue(t *testing.T) {
 	))
 
 	t.Run("render", func(t *testing.T) {
-		require.Equal("False", (&BoolValue{Value: false}).render())
-		require.Equal("True", (&BoolValue{Value: true}).render())
+		require.Equal(
+			"False",
+			pretty.Render(0, (&BoolValue{Value: false}).render()),
+		)
+		require.Equal(
+			"True",
+			pretty.Render(0, (&BoolValue{Value: true}).render()),
+		)
 	})
 
 	t.Run("renderBinary", func(t *testing.T) {
@@ -176,8 +184,14 @@ func TestBoolValue(t *testing.T) {
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		require.Equal("false", (&BoolValue{Value: false}).renderCBOR())
-		require.Equal("true", (&BoolValue{Value: true}).renderCBOR())
+		require.Equal(
+			"false",
+			pretty.Render(0, (&BoolValue{Value: false}).renderCBOR()),
+		)
+		require.Equal(
+			"true",
+			pretty.Render(0, (&BoolValue{Value: true}).renderCBOR()),
+		)
 	})
 
 	t.Run("renderElm", func(t *testing.T) {

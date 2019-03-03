@@ -73,10 +73,27 @@ func (be *Or) renderBinary() binary {
 	return binary{value: [](interface{}){3, 0, l1.value, r1.value}}
 }
 
-func (be *Or) renderCBOR() string {
-	l1 := be.Left.renderCBOR()
-	r1 := be.Right.renderCBOR()
-	return fmt.Sprintf("[3, 0, %s, %s]", l1, r1)
+func (be *Or) renderCBOR() pretty.Document {
+	return pretty.Append(
+		pretty.Text("["),
+		pretty.Indent(
+			4,
+			pretty.Append(
+				pretty.Text("3"),
+				pretty.Text(","),
+				pretty.Line,
+				pretty.Text("0"),
+				pretty.Text(","),
+				pretty.Line,
+				be.Left.renderCBOR(),
+				pretty.Text(","),
+				pretty.Line,
+				be.Right.renderCBOR(),
+			),
+		),
+		pretty.Line,
+		pretty.Text("]"),
+	)
 }
 
 func (be *Or) renderElm() (string, error) {

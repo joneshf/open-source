@@ -49,7 +49,7 @@ func TestKind(t *testing.T) {
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		assert.Equal("\"Kind\"", (&Kind{}).renderCBOR())
+		assert.Equal(`"Kind"`, pretty.Render(0, (&Kind{}).renderCBOR()))
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
@@ -157,7 +157,7 @@ func TestSort(t *testing.T) {
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		assert.Equal("\"Sort\"", (&Sort{}).renderCBOR())
+		assert.Equal(`"Sort"`, pretty.Render(0, (&Sort{}).renderCBOR()))
 	})
 
 	t.Run("renderElm", func(t *testing.T) {
@@ -268,7 +268,7 @@ func TestType(t *testing.T) {
 	})
 
 	t.Run("renderCBOR", func(t *testing.T) {
-		assert.Equal("\"Type\"", (&Type{}).renderCBOR())
+		assert.Equal(`"Type"`, pretty.Render(0, (&Type{}).renderCBOR()))
 	})
 
 	t.Run("renderElm", func(t *testing.T) {

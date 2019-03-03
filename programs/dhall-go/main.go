@@ -256,11 +256,14 @@ func renderCBOR(log *logrus.FieldLogger) func(dhall.Expression) string {
 		*log = (*log).WithFields(logrus.Fields{"expression": e})
 
 		(*log).Info("Attempting to render expression to CBOR")
-		rendered := dhall.RenderCBOR(e)
-		*log = (*log).WithFields(logrus.Fields{"output": rendered})
+		document := dhall.RenderCBOR(e)
+		*log = (*log).WithFields(logrus.Fields{"output": document})
 		(*log).Debug("Successfully rendered expression to CBOR")
 
-		return fmt.Sprintf("%s\n", rendered)
+		return fmt.Sprintf(
+			"%s\n",
+			pretty.RenderWithLog(log, 80, pretty.Group(document)),
+		)
 	}
 }
 

@@ -111,13 +111,13 @@ func TestAnd(t *testing.T) {
 	properties.Property("renderCBOR works correctly", prop.ForAll(
 		func(left, right Expression) bool {
 			out := fmt.Sprintf(
-				"[3, 0, %s, %s]",
-				left.renderCBOR(),
-				right.renderCBOR(),
+				"[\n    3,\n    1,\n    %s,\n    %s\n]",
+				pretty.Render(0, pretty.Nest(4, left.renderCBOR())),
+				pretty.Render(0, pretty.Nest(4, right.renderCBOR())),
 			)
 			return assert.Equal(
 				out,
-				(&And{Left: left, Right: right}).renderCBOR(),
+				pretty.Render(0, (&And{Left: left, Right: right}).renderCBOR()),
 			)
 		},
 		genExpression(),

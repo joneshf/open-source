@@ -76,10 +76,27 @@ func (be *NotEqual) renderBinary() binary {
 	}
 }
 
-func (be *NotEqual) renderCBOR() string {
-	l1 := be.Left.renderCBOR()
-	r1 := be.Right.renderCBOR()
-	return fmt.Sprintf("[3, 3, %s, %s]", l1, r1)
+func (be *NotEqual) renderCBOR() pretty.Document {
+	return pretty.Append(
+		pretty.Text("["),
+		pretty.Indent(
+			4,
+			pretty.Append(
+				pretty.Text("3"),
+				pretty.Text(","),
+				pretty.Line,
+				pretty.Text("3"),
+				pretty.Text(","),
+				pretty.Line,
+				be.Left.renderCBOR(),
+				pretty.Text(","),
+				pretty.Line,
+				be.Right.renderCBOR(),
+			),
+		),
+		pretty.Line,
+		pretty.Text("]"),
+	)
 }
 
 func (be *NotEqual) renderElm() (string, error) {
