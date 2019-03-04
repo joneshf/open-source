@@ -38,3 +38,5 @@ executable build
     -with-rtsopts=-I0
   hs-source-dirs: src
   main-is: Main.hs
+  other-modules: Build
+               , Build.PureScript
