@@ -17,7 +17,6 @@ import qualified "base" Control.Monad
 import qualified "base" Control.Monad.Fail
 import qualified "mtl" Control.Monad.State.Strict
 import qualified "mtl" Control.Monad.Trans
-import qualified "base" Data.Bifunctor
 import qualified "base" Data.Foldable
 import qualified "unordered-containers" Data.HashMap.Strict
 import qualified "unordered-containers" Data.HashSet
@@ -383,7 +382,7 @@ data Artifact
     }
 
 artifact :: Dhall.Type Artifact
-artifact = union [("PureScript/program", pureScriptProgram)]
+artifact = union [(Data.Text.pack "PureScript/program", pureScriptProgram)]
   where
   pureScriptProgram :: Dhall.Type Artifact
   pureScriptProgram = Dhall.record $ do
@@ -406,7 +405,7 @@ data Dependency
     }
 
 dependency :: Dhall.Type Dependency
-dependency = union [("PureScript", pureScript)]
+dependency = union [(Data.Text.pack "PureScript", pureScript)]
   where
   pureScript :: Dhall.Type Dependency
   pureScript = Dhall.record $ do
@@ -418,18 +417,15 @@ dependency = union [("PureScript", pureScript)]
       Dhall.field (Data.Text.pack "version") (fmap Version Dhall.strictText)
     pure PureScript { modules, name, src, uri, version }
 
-union :: forall a. [(String, Dhall.Type a)] -> Dhall.Type a
+union :: forall a. [(Data.Text.Text, Dhall.Type a)] -> Dhall.Type a
 union xs = Dhall.Type { Dhall.expected, Dhall.extract }
   where
   expected :: Dhall.Core.Expr Dhall.Parser.Src Dhall.TypeCheck.X
   expected =
-    Dhall.Core.Union
-      ( GHC.Exts.fromList
-        $ fmap (Data.Bifunctor.bimap Data.Text.pack Dhall.expected) xs
-      )
+    Dhall.Core.Union (GHC.Exts.fromList $ (fmap . fmap) Dhall.expected xs)
   extract :: Dhall.Core.Expr Dhall.Parser.Src Dhall.TypeCheck.X -> Maybe a
   extract = \case
-    Dhall.Core.UnionLit alternate' x _ -> do
-      (_, ty) <- Data.Foldable.find ((== Data.Text.unpack alternate') . fst) xs
+    Dhall.Core.UnionLit alternate x _ -> do
+      ty <- lookup alternate xs
       Dhall.extract ty x
     _ -> Nothing
