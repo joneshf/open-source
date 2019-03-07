@@ -1,10 +1,13 @@
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Werror #-}
-module Build.PureScript where
+module Build.PureScript (Program, program, rules, uris) where
 
 import "shake" Development.Shake          ((%>))
 import "shake" Development.Shake.FilePath ((<.>), (</>))
@@ -21,11 +24,73 @@ import qualified "base" Data.Maybe
 import qualified "text" Data.Text
 import qualified "base" Data.Traversable
 import qualified "shake" Development.Shake
+import qualified "shake" Development.Shake.Classes
 import qualified "shake" Development.Shake.FilePath
+import qualified "dhall" Dhall
+import qualified "base" GHC.Generics
+
+data Program
+  = Program
+    { compiler     :: Build.Version
+    , dependencies :: [Dependency]
+    , main'        :: FileModuleName
+    , name         :: Build.Name
+    , src          :: Build.Dir
+    }
+
+program :: Dhall.Type Program
+program = Dhall.record $ do
+  compiler <-
+    Dhall.field (Data.Text.pack "compiler") (fmap Build.Version Dhall.strictText)
+  dependencies <-
+    Dhall.field (Data.Text.pack "dependencies") (Dhall.list dependency)
+  main' <- Dhall.field (Data.Text.pack "main") fileModuleName
+  name <- Dhall.field (Data.Text.pack "name") (fmap Build.Name Dhall.strictText)
+  src <- Dhall.field (Data.Text.pack "src") (fmap Build.Dir Dhall.strictText)
+  pure Program { compiler, dependencies, main', name, src }
+
+data Dependency
+  = PureScript
+    { modules :: [FileModuleName]
+    , name    :: Build.Name
+    , src     :: Build.Dir
+    , uri     :: Build.URI
+    , version :: Build.Version
+    }
+
+dependency :: Dhall.Type Dependency
+dependency = Build.union [(Data.Text.pack "PureScript", pureScript)]
+  where
+  pureScript :: Dhall.Type Dependency
+  pureScript = Dhall.record $ do
+    modules <- Dhall.field (Data.Text.pack "modules") (Dhall.list fileModuleName)
+    name <- Dhall.field (Data.Text.pack "name") (fmap Build.Name Dhall.strictText)
+    src <- Dhall.field (Data.Text.pack "src") (fmap Build.Dir Dhall.strictText)
+    uri <- Dhall.field (Data.Text.pack "uri") (fmap Build.URI Dhall.strictText)
+    version <-
+      Dhall.field (Data.Text.pack "version") (fmap Build.Version Dhall.strictText)
+    pure PureScript { modules, name, src, uri, version }
+
+data FileModuleName
+  = FileModuleName
+    { file    :: Build.File
+    , module' :: ModuleName
+    }
+  deriving (GHC.Generics.Generic, Eq)
+
+fileModuleName :: Dhall.Type FileModuleName
+fileModuleName = Dhall.record $ do
+  file <- Dhall.field (Data.Text.pack "file") (fmap Build.File Dhall.strictText)
+  module' <-
+    Dhall.field (Data.Text.pack "module") (fmap ModuleName Dhall.strictText)
+  pure FileModuleName { file, module' }
+
+newtype ModuleName = ModuleName Data.Text.Text
+  deriving (Development.Shake.Classes.Hashable, Eq)
 
 rules ::
   Traversable f =>
-  f Build.Artifact ->
+  f Program ->
   FilePath ->
   FilePath ->
   FilePath ->
@@ -143,24 +208,24 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform p
       "--strip-components 1"
 
   Data.Traversable.for artifacts $ \case
-    Build.PureScriptProgram
-      { Build.compiler
-      , Build.dependencies = dependencies'
-      , Build.main' = main'@Build.FileModuleName { module' = module'' }
-      , Build.name = Build.Name name'
-      , Build.src = src'
+    Program
+      { compiler
+      , dependencies = dependencies'
+      , main' = main'@FileModuleName { module' = module'' }
+      , name = Build.Name name'
+      , src = src'
       } -> do
 
         let dependencies ::
-              Data.HashMap.Strict.HashMap Build.ModuleName (Build.Dir, Build.FileModuleName)
+              Data.HashMap.Strict.HashMap ModuleName (Build.Dir, FileModuleName)
             dependencies = flip foldMap dependencies' $ \case
-              Build.PureScript
+              PureScript
                 { modules
                 , name = Build.Name name
                 , src = Build.Dir src
                 , version = Build.Version version
                 } ->
-                  flip foldMap modules $ \x@Build.FileModuleName { module' } ->
+                  flip foldMap modules $ \x@FileModuleName { module' } ->
                     Data.HashMap.Strict.singleton
                       module'
                       ( Build.Dir
@@ -190,10 +255,10 @@ compile ::
   FilePath ->
   Build.Version ->
   Data.HashSet.HashSet Build.File ->
-  Build.ModuleName ->
+  ModuleName ->
   FilePath ->
   Development.Shake.Action ()
-compile bin buildDir (Build.Version compiler) modules (Build.ModuleName module') out = do
+compile bin buildDir (Build.Version compiler) modules (ModuleName module') out = do
   Development.Shake.need (purs : Data.HashSet.toList psFiles)
   Development.Shake.cmd_
     (Development.Shake.Traced "purs compile")
@@ -218,14 +283,14 @@ compile bin buildDir (Build.Version compiler) modules (Build.ModuleName module')
 
 transitiveImports ::
   FilePath ->
-  Data.HashMap.Strict.HashMap Build.ModuleName (Build.Dir, Build.FileModuleName) ->
+  Data.HashMap.Strict.HashMap ModuleName (Build.Dir, FileModuleName) ->
   Build.Dir ->
-  Build.FileModuleName ->
+  FileModuleName ->
   Control.Monad.State.Strict.StateT
-    (Data.HashMap.Strict.HashMap Build.ModuleName Build.File)
+    (Data.HashMap.Strict.HashMap ModuleName Build.File)
     Development.Shake.Action
     ()
-transitiveImports buildFile dependencies (Build.Dir src') Build.FileModuleName { file = Build.File file', module' = module'' } = do
+transitiveImports buildFile dependencies (Build.Dir src') FileModuleName { file = Build.File file', module' = module'' } = do
   found <- Control.Monad.State.Strict.gets (Data.HashMap.Strict.member module'')
   Control.Monad.unless found $ do
     psLines <-
@@ -240,8 +305,8 @@ transitiveImports buildFile dependencies (Build.Dir src') Build.FileModuleName {
   fileName' :: String
   fileName' = Data.Text.unpack src' </> Data.Text.unpack file'
 
-  moduleNotFound :: (Control.Monad.Fail.MonadFail f) => Build.ModuleName -> f a
-  moduleNotFound (Build.ModuleName name) =
+  moduleNotFound :: (Control.Monad.Fail.MonadFail f) => ModuleName -> f a
+  moduleNotFound (ModuleName name) =
     fail
       ( unwords
         [ "Could not find module"
@@ -252,14 +317,14 @@ transitiveImports buildFile dependencies (Build.Dir src') Build.FileModuleName {
       )
 
   go ::
-    Build.ModuleName ->
+    ModuleName ->
     Control.Monad.State.Strict.StateT
-      (Data.HashMap.Strict.HashMap Build.ModuleName Build.File)
+      (Data.HashMap.Strict.HashMap ModuleName Build.File)
       Development.Shake.Action
       ()
   go module' = do
     let file@(Build.File rawFile) = fileFromModuleName module'
-        fileModuleName' = Build.FileModuleName { file, module' }
+        fileModuleName' = FileModuleName { file, module' }
     fileExists <-
       Control.Monad.Trans.lift
         ( Development.Shake.doesFileExist
@@ -270,34 +335,41 @@ transitiveImports buildFile dependencies (Build.Dir src') Build.FileModuleName {
       then transitiveImports buildFile dependencies (Build.Dir src') fileModuleName'
       else moduleNotFound module'
 
-fileFromModuleName :: Build.ModuleName -> Build.File
-fileFromModuleName (Build.ModuleName name) =
+fileFromModuleName :: ModuleName -> Build.File
+fileFromModuleName (ModuleName name) =
   Build.File
     $ Data.Text.pack
     $ Development.Shake.FilePath.joinPath
       (Data.Text.unpack <$> Data.Text.splitOn (Data.Text.pack ".") name)
     <.> "purs"
 
-imports :: [String] -> Data.HashSet.HashSet Build.ModuleName
+imports :: [String] -> Data.HashSet.HashSet ModuleName
 imports =
   Data.HashSet.fromList . Data.Maybe.mapMaybe (parsePrefix "import")
 
-parsePrefix :: String -> String -> Maybe Build.ModuleName
+parsePrefix :: String -> String -> Maybe ModuleName
 parsePrefix needle' haystack = case words haystack of
-  (needle:name:_) | needle == needle' -> pure (Build.ModuleName $ Data.Text.pack name)
+  (needle:name:_) | needle == needle' -> pure (ModuleName $ Data.Text.pack name)
   _                                   -> Nothing
 
-prim :: Build.ModuleName -> Bool
+prim :: ModuleName -> Bool
 prim = (`Data.HashSet.member` primModules)
 
-primModules :: Data.HashSet.HashSet Build.ModuleName
+primModules :: Data.HashSet.HashSet ModuleName
 primModules =
   Data.HashSet.fromList
-    [ Build.ModuleName (Data.Text.pack "Prim")
-    , Build.ModuleName (Data.Text.pack "Prim.Boolean")
-    , Build.ModuleName (Data.Text.pack "Prim.Ordering")
-    , Build.ModuleName (Data.Text.pack "Prim.Row")
-    , Build.ModuleName (Data.Text.pack "Prim.RowList")
-    , Build.ModuleName (Data.Text.pack "Prim.Symbol")
-    , Build.ModuleName (Data.Text.pack "Prim.TypeError")
+    [ ModuleName (Data.Text.pack "Prim")
+    , ModuleName (Data.Text.pack "Prim.Boolean")
+    , ModuleName (Data.Text.pack "Prim.Ordering")
+    , ModuleName (Data.Text.pack "Prim.Row")
+    , ModuleName (Data.Text.pack "Prim.RowList")
+    , ModuleName (Data.Text.pack "Prim.Symbol")
+    , ModuleName (Data.Text.pack "Prim.TypeError")
     ]
+
+uris ::
+  Program ->
+  Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
+uris Program { dependencies } = flip foldMap dependencies $ \case
+  PureScript { name, uri, version } ->
+    Data.HashMap.Strict.singleton (name, version) uri

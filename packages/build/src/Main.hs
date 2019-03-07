@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PackageImports #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Werror #-}
@@ -8,6 +9,7 @@ import "shake" Development.Shake.FilePath ((</>))
 import qualified "this" Build
 import qualified "this" Build.PureScript
 import qualified "unordered-containers" Data.HashMap.Strict
+import qualified "base" Data.Maybe
 import qualified "text" Data.Text
 import qualified "shake" Development.Shake
 import qualified "dhall" Dhall
@@ -33,14 +35,17 @@ main = do
           }
       platform = "linux64"
   Config artifacts <- Dhall.detailed (Dhall.inputFile config buildFile)
-  let psURIs :: Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
-      psURIs = Build.psURIs artifacts
+  let psPrograms :: [Build.PureScript.Program]
+      psPrograms = flip Data.Maybe.mapMaybe artifacts $ \case
+        PureScriptProgram program -> Just program
+      psURIs :: Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
+      psURIs = foldMap Build.PureScript.uris psPrograms
 
   Development.Shake.shakeArgs options $ do
 
     names <-
       Build.PureScript.rules
-        artifacts
+        psPrograms
         binDir
         buildDir
         buildFile
@@ -55,7 +60,18 @@ main = do
       "clean"
       (Development.Shake.removeFilesAfter buildDir ["//*"])
 
-newtype Config = Config [Build.Artifact]
+newtype Config = Config [Artifact]
 
 config :: Dhall.Type Config
-config = fmap Config (Dhall.list Build.artifact)
+config =
+  fmap Config (Dhall.list artifact)
+
+newtype Artifact = PureScriptProgram Build.PureScript.Program
+
+artifact :: Dhall.Type Artifact
+artifact =
+  Build.union
+    [ ( Data.Text.pack "PureScript/program"
+      , fmap PureScriptProgram Build.PureScript.program
+      )
+    ]
