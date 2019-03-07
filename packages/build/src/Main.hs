@@ -8,7 +8,6 @@ import "shake" Development.Shake.FilePath ((</>))
 
 import qualified "this" Build
 import qualified "this" Build.PureScript
-import qualified "unordered-containers" Data.HashMap.Strict
 import qualified "base" Data.Maybe
 import qualified "text" Data.Text
 import qualified "shake" Development.Shake
@@ -38,8 +37,6 @@ main = do
   let psPrograms :: [Build.PureScript.Program]
       psPrograms = flip Data.Maybe.mapMaybe artifacts $ \case
         PureScriptProgram program -> Just program
-      psURIs :: Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
-      psURIs = foldMap Build.PureScript.uris psPrograms
 
   Development.Shake.shakeArgs options $ do
 
@@ -52,7 +49,6 @@ main = do
         dependenciesDir
         downloadDir
         platform
-        psURIs
 
     Development.Shake.want (fmap (\(Build.Name x) -> Data.Text.unpack x) names)
 

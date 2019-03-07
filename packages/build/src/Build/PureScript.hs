@@ -7,7 +7,7 @@
 {-# LANGUAGE PackageImports #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Werror #-}
-module Build.PureScript (Program, program, rules, uris) where
+module Build.PureScript (Program, program, rules) where
 
 import "shake" Development.Shake          ((%>))
 import "shake" Development.Shake.FilePath ((<.>), (</>))
@@ -97,9 +97,14 @@ rules ::
   FilePath ->
   FilePath ->
   FilePath ->
-  Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI ->
   Development.Shake.Rules (f Build.Name)
-rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform psURIs = do
+rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform = do
+  let uris :: Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
+      uris = flip foldMap artifacts $ \case
+        Program { dependencies } -> flip foldMap dependencies $ \case
+          PureScript { name, uri, version } ->
+            Data.HashMap.Strict.singleton (name, version) uri
+
   binDir </> "purs/*/purs" %> \out -> do
     let untar = downloadDir </> "purs" </> version </> platform </> "purs"
         version =
@@ -170,7 +175,7 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform p
           ]
         )
         pure
-        (Data.HashMap.Strict.lookup (Build.Name name, Build.Version version) psURIs)
+        (Data.HashMap.Strict.lookup (Build.Name name, Build.Version version) uris)
     Development.Shake.cmd_
       "curl --location"
       "--output"
@@ -366,10 +371,3 @@ primModules =
     , ModuleName (Data.Text.pack "Prim.Symbol")
     , ModuleName (Data.Text.pack "Prim.TypeError")
     ]
-
-uris ::
-  Program ->
-  Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
-uris Program { dependencies } = flip foldMap dependencies $ \case
-  PureScript { name, uri, version } ->
-    Data.HashMap.Strict.singleton (name, version) uri
