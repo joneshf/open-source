@@ -99,20 +99,26 @@ let
     tools-formatting ++
     tools-static-analyzing;
 
+  # These are tools necessary to build packages and programs.
+  # These are for one-off builds (like in CI).
   tools-building = [
     nixpkgs.haskellPackages.cabal-install
     nixpkgs.haskellPackages.hpack
   ];
 
+  # These are tools used when doing development.
+  # These are useful when doing something in a cycle (like on a local computer).
   tools-developing = [
     nixpkgs.haskellPackages.ghcid
   ];
 
+  # These are tools that format source code.
   tools-formatting = [
     nixpkgs.haskellPackages.stylish-haskell
     nixpkgs.nodePackages.prettier
   ];
 
+  # These are tools that analyze source code in some way.
   tools-static-analyzing = [
     nixpkgs.haskellPackages.hlint
     nixpkgs.pythonPackages.yamllint
