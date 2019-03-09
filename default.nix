@@ -8,6 +8,19 @@ let
     [ haskell-packages ] ++
     tools;
 
+  config = {
+    packageOverrides = pkgs: {
+      haskellPackages = pkgs.haskellPackages.override {
+        overrides = self: super: {
+          dhall_1_21_0 = self.callPackage ./nix/dhall_1_21_0.nix {
+            megaparsec = self.callPackage ./nix/megaparsec_7_0_4.nix {};
+            repline = self.callPackage ./nix/repline_0_2_0_0.nix {};
+          };
+        };
+      };
+    };
+  };
+
   haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
     haskell-packages-dhall-javascript p ++
     haskell-packages-katip-rollbar p ++
@@ -19,7 +32,7 @@ let
   haskell-packages-dhall-javascript = p: [
     p.ansi-wl-pprint
     p.base
-    p.dhall_1_17_0
+    p.dhall_1_21_0
     p.freer-simple
     p.language-ecmascript
     p.optparse-applicative
@@ -62,7 +75,7 @@ let
   haskell-packages-shake = p: [
     p.base
     p.bytestring
-    p.dhall_1_17_0
+    p.dhall_1_21_0
     p.directory
     p.shake
     p.typed-process
@@ -83,7 +96,9 @@ let
     p.wai
   ];
 
-  nixpkgs = import nixpkgs-tarball {};
+  nixpkgs = import nixpkgs-tarball {
+    inherit config;
+  };
 
   nixpkgs-tarball = builtins.fetchTarball {
     inherit sha256 url;
@@ -109,6 +124,7 @@ let
   # These are tools used when doing development.
   # These are useful when doing something in a cycle (like on a local computer).
   tools-developing = [
+    nixpkgs.haskellPackages.cabal2nix
     nixpkgs.haskellPackages.ghcid
   ];
 

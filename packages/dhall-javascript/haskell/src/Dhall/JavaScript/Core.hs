@@ -13,6 +13,7 @@ module Dhall.JavaScript.Core
 import "base" Control.Monad                       ((>=>))
 import "freer-simple" Control.Monad.Freer         (Eff, Member)
 import "freer-simple" Control.Monad.Freer.Fresh   (Fresh)
+import "base" Data.List.NonEmpty                  (NonEmpty((:|)))
 import "text" Data.Text                           (Text)
 import "dhall" Dhall.Core                         (Expr)
 import "dhall" Dhall.TypeCheck                    (X)
@@ -33,6 +34,7 @@ import qualified "this" Dhall.JavaScript.Optional
 import qualified "this" Dhall.JavaScript.Record
 import qualified "this" Dhall.JavaScript.Text
 import qualified "this" Dhall.JavaScript.Union
+import qualified "dhall" Dhall.Set
 import qualified "dhall" Dhall.TypeCheck
 import qualified "this" Exit
 import qualified "base" GHC.Exts
@@ -95,13 +97,8 @@ toJS = Rename.normalize >=> go
       y <- go y'
       Dhall.JavaScript.Record.combineTypes x y
     Dhall.Core.Const Dhall.Core.Kind -> CodeGen.kind
+    Dhall.Core.Const Dhall.Core.Sort -> CodeGen.sort
     Dhall.Core.Const Dhall.Core.Type -> CodeGen.type'
-    Dhall.Core.Constructors (Dhall.Core.Union x) -> do
-      union <- traverse go x
-      Dhall.JavaScript.Union.constructors (GHC.Exts.toList union)
-    Dhall.Core.Constructors x -> do
-      Log.error ("Constructors was not normalized: " <> Data.Text.pack (show x))
-      Exit.failure
     Dhall.Core.Double -> Dhall.JavaScript.Double.double
     Dhall.Core.DoubleLit x -> Dhall.JavaScript.Double.literal x
     Dhall.Core.DoubleShow -> Dhall.JavaScript.Double.show
@@ -132,12 +129,23 @@ toJS = Rename.normalize >=> go
     Dhall.Core.Lam argument _type body ->
       CodeGen.lambda' (GHC.Exts.fromString $ Data.Text.unpack argument) $
         go body
-    Dhall.Core.Let x Nothing y' z -> do
+    Dhall.Core.Let (Dhall.Core.Binding x Nothing y' :| []) z -> do
       y <- go y'
       CodeGen.lambda' (GHC.Exts.fromString $ Data.Text.unpack x) (go z)
         `CodeGen.call1` y
-    Dhall.Core.Let w (Just x) y z ->
+    Dhall.Core.Let (Dhall.Core.Binding w Nothing x' :| y : ys) z -> do
+      x <- go x'
+      CodeGen.lambda'
+        (GHC.Exts.fromString $ Data.Text.unpack w)
+        (go $ Dhall.Core.Let (y :| ys) z)
+          `CodeGen.call1` x
+    Dhall.Core.Let (Dhall.Core.Binding w (Just x) y :| []) z ->
       go (Dhall.Core.normalize $ Dhall.Core.App (Dhall.Core.Lam w x z) y)
+    Dhall.Core.Let (Dhall.Core.Binding v (Just w) x :| y : ys) z' ->
+      go
+        ( Dhall.Core.normalize
+        $ Dhall.Core.App (Dhall.Core.Lam v w $ Dhall.Core.Let (y :| ys) z') x
+        )
     Dhall.Core.List -> Dhall.JavaScript.List.list
     Dhall.Core.ListAppend xs' ys' -> do
       xs <- go xs'
@@ -174,6 +182,7 @@ toJS = Rename.normalize >=> go
       y <- go y'
       Dhall.JavaScript.Natural.times x y
     Dhall.Core.NaturalToInteger -> Dhall.JavaScript.Natural.toInteger
+    Dhall.Core.None -> Dhall.JavaScript.Optional.literal Nothing
     Dhall.Core.Pi argument _type body ->
       CodeGen.lambda' (GHC.Exts.fromString $ Data.Text.unpack argument) $
         go body
@@ -184,11 +193,14 @@ toJS = Rename.normalize >=> go
     Dhall.Core.Project expression' fields -> do
       expression <- go expression'
       Dhall.JavaScript.Record.project expression $ \var ->
-        traverse (toObjectPair . toPair var) (GHC.Exts.toList fields)
+        traverse (toObjectPair . toPair var) (Dhall.Set.toList fields)
     Dhall.Core.Record _type -> Dhall.JavaScript.Record.record
     Dhall.Core.RecordLit pairs' -> do
       pairs <- traverse toObjectPair (GHC.Exts.toList pairs')
       Dhall.JavaScript.Record.literal pairs
+    Dhall.Core.Some x' -> do
+      x <- go x'
+      Dhall.JavaScript.Optional.literal (Just x)
     Dhall.Core.Text -> Dhall.JavaScript.Text.text
     Dhall.Core.TextAppend x' y' -> do
       x <- go x'
@@ -197,6 +209,7 @@ toJS = Rename.normalize >=> go
     Dhall.Core.TextLit (Dhall.Core.Chunks xs' x) -> do
       xs <- (traverse . traverse) go xs'
       Dhall.JavaScript.Text.literal xs x
+    Dhall.Core.TextShow -> Dhall.JavaScript.Text.show
     Dhall.Core.Union _type -> Dhall.JavaScript.Union.union
     Dhall.Core.UnionLit label expression' _alternatives -> do
       expression <- go expression'

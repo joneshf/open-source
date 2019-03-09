@@ -14,7 +14,6 @@ module Dhall.JavaScript.Double
 
 import "freer-simple" Control.Monad.Freer         (Eff, Member)
 import "freer-simple" Control.Monad.Freer.Fresh   (Fresh)
-import "scientific" Data.Scientific               (Scientific)
 import "language-ecmascript" Language.ECMAScript3 (Expression)
 
 import qualified "this" CodeGen
@@ -26,7 +25,7 @@ double = CodeGen.type'
 
 -- |
 -- @'literal' x ~ x@
-literal :: Scientific -> Eff e (Expression ())
+literal :: Double -> Eff e (Expression ())
 literal = CodeGen.number
 
 -- |

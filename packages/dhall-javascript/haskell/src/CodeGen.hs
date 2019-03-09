@@ -47,6 +47,7 @@ module CodeGen
   , propId
   , property
   , returns
+  , sort
   , string
   , ternary
   , type'
@@ -55,7 +56,6 @@ module CodeGen
 
 import "freer-simple" Control.Monad.Freer         (Eff, Member)
 import "freer-simple" Control.Monad.Freer.Fresh   (Fresh)
-import "scientific" Data.Scientific               (Scientific)
 import "text" Data.Text                           (Text)
 import "dhall" Dhall.Core                         (Var)
 import "language-ecmascript" Language.ECMAScript3
@@ -66,7 +66,6 @@ import "language-ecmascript" Language.ECMAScript3
     )
 
 import qualified "base" Data.Foldable
-import qualified "scientific" Data.Scientific
 import qualified "text" Data.Text
 import qualified "dhall" Dhall.Core
 import qualified "this" Fresh
@@ -525,9 +524,8 @@ neq x = pure . Language.ECMAScript3.Syntax.CodeGen.stneq x
 
 -- |
 -- @'number' x ~ x@
-number :: Scientific -> Eff e (Expression ())
-number =
-  pure . Language.ECMAScript3.Syntax.CodeGen.number . Data.Scientific.toRealFloat
+number :: Double -> Eff e (Expression ())
+number = pure . Language.ECMAScript3.Syntax.CodeGen.number
 
 -- |
 -- @'literal' [(key1, val1), (key2, val2), ...] ~ {key1: val1, key2: val2, ...}@
@@ -592,6 +590,11 @@ property expression key'
 -- @'returns' x ~ return x;@
 returns :: Expression () -> Statement ()
 returns = Language.ECMAScript3.Syntax.CodeGen.returns
+
+-- |
+-- @'sort' ~ null@
+sort :: Eff e (Expression ())
+sort = pure Language.ECMAScript3.Syntax.CodeGen.null_
 
 -- |
 -- @'string' x ~ x@
