@@ -15,6 +15,7 @@ module Rename
 
 import "freer-simple" Control.Monad.Freer       (Eff, Member)
 import "freer-simple" Control.Monad.Freer.Fresh (Fresh)
+import "base" Data.List.NonEmpty                (NonEmpty((:|)))
 import "text" Data.Text                         (Text)
 import "dhall" Dhall.Core                       (Expr, Var)
 import "this" Exit                              (Exit)
@@ -82,7 +83,6 @@ normalize = \case
   Dhall.Core.CombineTypes x y ->
     Dhall.Core.CombineTypes <$> normalize x <*> normalize y
   Dhall.Core.Const x -> pure (Dhall.Core.Const x)
-  Dhall.Core.Constructors x -> Dhall.Core.Constructors <$> normalize x
   Dhall.Core.Double -> pure Dhall.Core.Double
   Dhall.Core.DoubleLit x -> pure (Dhall.Core.DoubleLit x)
   Dhall.Core.DoubleShow -> pure Dhall.Core.DoubleShow
@@ -98,12 +98,19 @@ normalize = \case
     _A1 <- normalize _A0
     (x1, b1) <- normalizeBound x0 b0
     pure (Dhall.Core.Lam x1 _A1 b1)
-  Dhall.Core.Let x0 _A0 a0 b0 -> do
+  Dhall.Core.Let (Dhall.Core.Binding x0 _A0 a0 :| []) b0 -> do
     Log.debug "Renaming in `Let`"
     a1 <- normalize a0
     _A1 <- traverse normalize _A0
     (x1, b1) <- normalizeBound x0 b0
-    pure (Dhall.Core.Let x1 _A1 a1 b1)
+    pure (Dhall.Core.Let (Dhall.Core.Binding x1 _A1 a1 :| []) b1)
+  Dhall.Core.Let (Dhall.Core.Binding x0 _A0 a0 :| xs0 : xs1) b0 -> do
+    Log.debug "Renaming in `Multi-Let`"
+    a1 <- normalize a0
+    _A1 <- traverse normalize _A0
+    b1 <- normalize (Dhall.Core.Let (xs0 :| xs1) b0)
+    (x1, b2) <- normalizeBound x0 b1
+    pure (Dhall.Core.Let (Dhall.Core.Binding x1 _A1 a1 :| []) b2)
   Dhall.Core.List -> pure Dhall.Core.List
   Dhall.Core.ListAppend x y ->
     Dhall.Core.ListAppend <$> normalize x <*> normalize y
@@ -131,6 +138,7 @@ normalize = \case
   Dhall.Core.NaturalTimes x y ->
     Dhall.Core.NaturalTimes <$> normalize x <*> normalize y
   Dhall.Core.NaturalToInteger -> pure Dhall.Core.NaturalToInteger
+  Dhall.Core.None -> pure Dhall.Core.None
   Dhall.Core.Note x y -> Dhall.Core.Note x <$> normalize y
   Dhall.Core.Optional -> pure Dhall.Core.Optional
   Dhall.Core.OptionalBuild -> pure Dhall.Core.OptionalBuild
@@ -146,10 +154,12 @@ normalize = \case
   Dhall.Core.Project x y -> Dhall.Core.Project <$> normalize x <*> pure y
   Dhall.Core.Record x -> Dhall.Core.Record <$> traverse normalize x
   Dhall.Core.RecordLit x -> Dhall.Core.RecordLit <$> traverse normalize x
+  Dhall.Core.Some x -> Dhall.Core.Some <$> normalize x
   Dhall.Core.Text -> pure Dhall.Core.Text
   Dhall.Core.TextAppend x y ->
     Dhall.Core.TextAppend <$> normalize x <*> normalize y
   Dhall.Core.TextLit x -> pure (Dhall.Core.TextLit x)
+  Dhall.Core.TextShow -> pure Dhall.Core.TextShow
   Dhall.Core.Union x -> Dhall.Core.Union <$> traverse normalize x
   Dhall.Core.UnionLit x y z ->
     Dhall.Core.UnionLit x <$> normalize y <*> traverse normalize z

@@ -9,6 +9,7 @@
 module Dhall.JavaScript.Text
   ( append
   , literal
+  , Dhall.JavaScript.Text.show
   , text
   ) where
 
@@ -40,6 +41,13 @@ literal xs x' = do
     text' <- CodeGen.string text''
     temp <- text' `CodeGen.add` expression
     temp `CodeGen.add` acc
+
+-- |
+-- @'show' ~ JSON.stringify@
+show :: Eff e (Expression ())
+show = do
+  _JSON <- CodeGen.var "JSON"
+  _JSON `CodeGen.property` "stringify"
 
 -- |
 -- @'text' ~ null@

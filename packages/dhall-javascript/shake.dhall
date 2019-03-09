@@ -1,8 +1,8 @@
-    let Manifest = ./../../Manifest.dhall
+let Manifest = ./../../Manifest.dhall
 
-in  let Package = ./../../Package.dhall
+let Package = ./../../Package.dhall
 
-in  let Test = ./../../Test.dhall
+let Test = ./../../Test.dhall
 
 in    { executables =
           [ { executableDirectory =
@@ -12,7 +12,7 @@ in    { executables =
             }
           ]
       , manifest =
-          (constructors Manifest).Cabal {=}
+          Manifest.Cabal {=}
       , name =
           "dhall-javascript"
       , sourceDirectory =
