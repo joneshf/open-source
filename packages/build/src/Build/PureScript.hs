@@ -59,7 +59,8 @@ data Dependency
     }
 
 dependency :: Dhall.Type Dependency
-dependency = Build.union [(Data.Text.pack "PureScript", pureScript)]
+dependency =
+  Dhall.union (Dhall.constructor (Data.Text.pack "PureScript") pureScript)
   where
   pureScript :: Dhall.Type Dependency
   pureScript = Dhall.record $ do

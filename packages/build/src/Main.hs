@@ -66,8 +66,8 @@ newtype Artifact = PureScriptProgram Build.PureScript.Program
 
 artifact :: Dhall.Type Artifact
 artifact =
-  Build.union
-    [ ( Data.Text.pack "PureScript/program"
-      , fmap PureScriptProgram Build.PureScript.program
-      )
-    ]
+  Dhall.union
+    ( Dhall.constructor
+      (Data.Text.pack "PureScript/program")
+      (fmap PureScriptProgram Build.PureScript.program)
+    )

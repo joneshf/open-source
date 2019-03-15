@@ -32,7 +32,7 @@ let
 
   haskell-packages-build = p: [
     p.base
-    p.dhall_1_17_0
+    p.dhall_1_21_0
     p.mtl
     p.shake
     p.text

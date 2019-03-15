@@ -1,13 +1,13 @@
-    let Manifest = ./../../Manifest.dhall
+let Manifest = ./../../Manifest.dhall
 
-in  let Package = ./../../Package.dhall
+let Package = ./../../Package.dhall
 
-in  let Test = ./../../Test.dhall
+let Test = ./../../Test.dhall
 
 in    { executables =
           [ { executableDirectory = "src", executableName = "build" } ]
       , manifest =
-          (constructors Manifest).Cabal {=}
+          Manifest.Cabal {=}
       , name =
           "build"
       , sourceDirectory =

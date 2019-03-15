@@ -17,7 +17,7 @@ version: 0.1.0.0
 
 executable build
   build-depends: base >= 4.11 && < 4.12
-               , dhall >= 1.17 && < 1.18
+               , dhall >= 1.21 && < 1.22
                , mtl >= 2.2 && < 2.3
                , shake >= 0.16 && < 0.17
                , text >= 1.2 && < 1.3

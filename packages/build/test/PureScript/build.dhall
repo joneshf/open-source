@@ -1,6 +1,6 @@
-    let artifact = constructors ./../../src/Artifact.dhall
+let artifact = ./../../src/Artifact.dhall
 
-in  let dependencies = ./../../src/dependencies.dhall
+let dependencies = ./../../src/dependencies.dhall
 
 in  [ artifact.PureScript/program
       { compiler =
