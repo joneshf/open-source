@@ -8,6 +8,19 @@ let
     [ haskell-packages ] ++
     tools;
 
+  config = {
+    packageOverrides = pkgs: {
+      haskellPackages = pkgs.haskellPackages.override {
+        overrides = self: super: {
+          dhall_1_21_0 = self.callPackage ./nix/dhall_1_21_0.nix {
+            megaparsec = self.callPackage ./nix/megaparsec_7_0_4.nix {};
+            repline = self.callPackage ./nix/repline_0_2_0_0.nix {};
+          };
+        };
+      };
+    };
+  };
+
   haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
     haskell-packages-build p ++
     haskell-packages-dhall-javascript p ++
@@ -29,7 +42,7 @@ let
   haskell-packages-dhall-javascript = p: [
     p.ansi-wl-pprint
     p.base
-    p.dhall_1_17_0
+    p.dhall_1_21_0
     p.freer-simple
     p.language-ecmascript
     p.optparse-applicative
@@ -72,7 +85,7 @@ let
   haskell-packages-shake = p: [
     p.base
     p.bytestring
-    p.dhall_1_17_0
+    p.dhall_1_21_0
     p.directory
     p.shake
     p.typed-process
@@ -93,7 +106,9 @@ let
     p.wai
   ];
 
-  nixpkgs = import nixpkgs-tarball {};
+  nixpkgs = import nixpkgs-tarball {
+    inherit config;
+  };
 
   nixpkgs-tarball = builtins.fetchTarball {
     inherit sha256 url;
@@ -109,20 +124,27 @@ let
     tools-formatting ++
     tools-static-analyzing;
 
+  # These are tools necessary to build packages and programs.
+  # These are for one-off builds (like in CI).
   tools-building = [
     nixpkgs.haskellPackages.cabal-install
     nixpkgs.haskellPackages.hpack
   ];
 
+  # These are tools used when doing development.
+  # These are useful when doing something in a cycle (like on a local computer).
   tools-developing = [
+    nixpkgs.haskellPackages.cabal2nix
     nixpkgs.haskellPackages.ghcid
   ];
 
+  # These are tools that format source code.
   tools-formatting = [
     nixpkgs.haskellPackages.stylish-haskell
     nixpkgs.nodePackages.prettier
   ];
 
+  # These are tools that analyze source code in some way.
   tools-static-analyzing = [
     nixpkgs.haskellPackages.hlint
     nixpkgs.pythonPackages.yamllint
