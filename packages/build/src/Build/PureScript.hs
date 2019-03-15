@@ -18,6 +18,7 @@ import qualified "base" Control.Monad.Fail
 import qualified "mtl" Control.Monad.State.Strict
 import qualified "mtl" Control.Monad.Trans
 import qualified "base" Data.Foldable
+import qualified "base" Data.Functor
 import qualified "unordered-containers" Data.HashMap.Strict
 import qualified "unordered-containers" Data.HashSet
 import qualified "base" Data.Maybe
@@ -246,12 +247,10 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
 
         Data.Text.unpack name' %> \out -> do
           Development.Shake.need [buildFile]
-          modules' <-
+          modules <-
             Control.Monad.State.Strict.execStateT
               (transitiveImports buildFile dependencies src' main')
               mempty
-          let modules =
-                Data.HashSet.fromList (Data.HashMap.Strict.elems modules')
           compile binDir buildDir compiler modules module'' out
 
         pure (Build.Name name')
@@ -260,7 +259,7 @@ compile ::
   FilePath ->
   FilePath ->
   Build.Version ->
-  Data.HashSet.HashSet Build.File ->
+  Data.HashMap.Strict.HashMap ModuleName Build.File ->
   ModuleName ->
   FilePath ->
   Development.Shake.Action ()
@@ -273,19 +272,34 @@ compile bin buildDir (Build.Version compiler) modules (ModuleName module') out =
     "--output"
     [output]
     (Data.HashSet.toList psFiles)
-  Development.Shake.writeFileLines
-    out
-    [ "#!/usr/bin/env node"
-    , show "use strict" <> ";"
-    , "require("
-      <> show ("." </> output </> Data.Text.unpack module')
-      <> ").main()"
-    ]
-  Development.Shake.cmd_ "chmod 0755" [out]
+  Development.Shake.cmd_
+    (Development.Shake.Traced "purs bundle")
+    [purs]
+    "bundle"
+    "--main"
+    [Data.Text.unpack module']
+    "--module"
+    [Data.Text.unpack module']
+    "--output"
+    [out]
+    (Data.HashSet.toList outputForeigns)
+    (Data.HashSet.toList outputIndexes)
   where
-  psFiles = Data.HashSet.map (\(Build.File f) -> Data.Text.unpack f) modules
+  psFiles =
+    Data.HashSet.fromList
+      ( Data.HashMap.Strict.elems
+        $ fmap (\(Build.File f) -> Data.Text.unpack f) modules
+      )
   purs = bin </> "purs" </> Data.Text.unpack compiler </> "purs"
   output = buildDir </> "PureScript/output" </> Data.Text.unpack compiler
+  outputForeigns =
+    Data.HashSet.map
+      (\(ModuleName name) -> output </> Data.Text.unpack name </> "foreign.js")
+      (Data.HashSet.fromMap (Data.Functor.void modules))
+  outputIndexes =
+    Data.HashSet.map
+      (\(ModuleName name) -> output </> Data.Text.unpack name </> "index.js")
+      (Data.HashSet.fromMap (Data.Functor.void modules))
 
 transitiveImports ::
   FilePath ->

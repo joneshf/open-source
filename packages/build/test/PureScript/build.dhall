@@ -11,7 +11,7 @@ in  [ artifact.PureScript/program
       , main =
           { file = "Main.purs", module = "Main" }
       , name =
-          "echo"
+          "echo.js"
       , src =
           "."
       }
