@@ -34,7 +34,7 @@ data Program
   = Program
     { compiler     :: Build.Version
     , dependencies :: [Dependency]
-    , main'        :: FileModuleName
+    , main         :: FileModuleName
     , name         :: Build.Name
     , src          :: Build.Dir
     }
@@ -45,10 +45,10 @@ program = Dhall.record $ do
     Dhall.field (Data.Text.pack "compiler") (fmap Build.Version Dhall.strictText)
   dependencies <-
     Dhall.field (Data.Text.pack "dependencies") (Dhall.list dependency)
-  main' <- Dhall.field (Data.Text.pack "main") fileModuleName
+  main <- Dhall.field (Data.Text.pack "main") fileModuleName
   name <- Dhall.field (Data.Text.pack "name") (fmap Build.Name Dhall.strictText)
   src <- Dhall.field (Data.Text.pack "src") (fmap Build.Dir Dhall.strictText)
-  pure Program { compiler, dependencies, main', name, src }
+  pure Program { compiler, dependencies, main, name, src }
 
 data Dependency
   = PureScript
@@ -218,7 +218,7 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
     Program
       { compiler
       , dependencies = dependencies'
-      , main' = main'@FileModuleName { module' = module'' }
+      , main = main@FileModuleName { module' = module'' }
       , name = Build.Name name'
       , src = src'
       } -> do
@@ -249,7 +249,7 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
           Development.Shake.need [buildFile]
           modules <-
             Control.Monad.State.Strict.execStateT
-              (transitiveImports buildFile dependencies src' main')
+              (transitiveImports buildFile dependencies src' main)
               mempty
           compile binDir buildDir compiler modules module'' out
 
