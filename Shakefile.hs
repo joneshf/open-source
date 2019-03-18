@@ -4,6 +4,7 @@ module Main (main) where
 
 import "mtl" Control.Monad.Reader           (lift, runReaderT)
 import "text" Data.Text                     (pack)
+import "base" Data.Traversable              (for)
 import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
     , ShakeOptions(shakeChange, shakeFiles, shakeThreads)
@@ -14,6 +15,7 @@ import "shake" Development.Shake
     , shakeArgs
     , shakeOptions
     )
+import "shake" Development.Shake.FilePath   ((</>))
 import "dhall" Dhall                        (auto, detailed, input)
 import "this" Shake.Package                 (Package)
 import "typed-process" System.Process.Typed (runProcess_, shell)
@@ -37,7 +39,8 @@ main :: IO ()
 main = do
   Shake.Package.writeDhall
   packages' <- getDirectoryFilesIO "" ["packages/*/shake.dhall"]
-  packages <- traverse (detailed . input auto . pack . ("./" <>)) packages'
+  packages <- for packages' $ \package ->
+    detailed (input Shake.Package.packageType $ pack $ "." </> package)
   let binDir = "bin"
       buildDir = "_build"
       env = Env { binDir, buildDir, packageDir, packages}

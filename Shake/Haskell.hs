@@ -37,7 +37,7 @@ import "shake" Development.Shake.FilePath
     , (</>)
     )
 import "base" GHC.Records                   (HasField(getField))
-import "this" Shake.Package
+import "this" Shake.Package.Haskell
     ( Executable(Executable, executableDirectory, executableName)
     , Manifest(Cabal, Hpack)
     , Package(Haskell)
@@ -46,6 +46,8 @@ import "this" Shake.Package
 import "directory" System.Directory         (getCurrentDirectory)
 import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
 import "typed-process" System.Process.Typed (proc, runProcess_, setWorkingDir)
+
+import qualified "this" Shake.Package
 
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
@@ -64,7 +66,6 @@ package ::
   ( HasField "binDir" e FilePath
   , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
-  , HasField "packages" e [Package]
   ) =>
   [Executable] ->
   Manifest ->
@@ -210,7 +211,7 @@ rules ::
   ( HasField "binDir" e FilePath
   , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
-  , HasField "packages" e [Package]
+  , HasField "packages" e [Shake.Package.Package]
   ) =>
   ReaderT e Rules ()
 rules = do
@@ -232,5 +233,6 @@ rules = do
     copyFileChanged input out
 
   for_ packages $ \case
-    Haskell exes manifest name sourceDirectory tests' version ->
-      package exes manifest name sourceDirectory tests' version
+    Shake.Package.Haskell
+      (Haskell exes manifest name sourceDirectory tests' version) ->
+        package exes manifest name sourceDirectory tests' version

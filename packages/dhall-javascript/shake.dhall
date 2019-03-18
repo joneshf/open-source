@@ -1,10 +1,11 @@
-let Manifest = ./../../Manifest.dhall
+let Manifest = ./../../Package/Haskell/Manifest.dhall
 
 let Package = ./../../Package.dhall
 
-let Test = ./../../Test.dhall
+let Test = ./../../Package/Haskell/Test.dhall
 
-in    { executables =
+in    Package.Haskell
+      { executables =
           [ { executableDirectory =
                 "haskell/app"
             , executableName =
