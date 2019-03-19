@@ -40,7 +40,7 @@ import "base" GHC.Records                   (HasField(getField))
 import "this" Shake.Package.Haskell
     ( Executable(Executable, executableDirectory, executableName)
     , Manifest(Cabal, Hpack)
-    , Package(Haskell)
+    , Package(Package)
     , Test(Test, suite, testDirectory)
     )
 import "directory" System.Directory         (getCurrentDirectory)
@@ -234,5 +234,5 @@ rules = do
 
   for_ packages $ \case
     Shake.Package.Haskell
-      (Haskell exes manifest name sourceDirectory tests' version) ->
+      (Package exes manifest name sourceDirectory tests' version) ->
         package exes manifest name sourceDirectory tests' version

@@ -50,7 +50,7 @@ data Manifest
 instance Interpret Manifest
 
 data Package
-  = Haskell
+  = Package
     { executables     :: [Executable]
     , manifest        :: Manifest
     , name            :: String
@@ -81,7 +81,7 @@ binaries ::
   Package ->
   ReaderT e f [FilePath]
 binaries = \case
-  Haskell { executables } -> traverse go executables
+  Package { executables } -> traverse go executables
     where
     go = \case
       Executable { executableName } -> do
@@ -96,7 +96,7 @@ build ::
   Package ->
   ReaderT e f FilePath
 build = \case
-  Haskell { name } -> do
+  Package { name } -> do
     env <- ask
     pure
       ( getField @"buildDir" env
@@ -113,7 +113,7 @@ executable ::
   Package ->
   ReaderT e f [FilePath]
 executable = \case
-  Haskell { executables, name } -> traverse go executables
+  Package { executables, name } -> traverse go executables
     where
     go = \case
       Executable { executableName } -> do
@@ -135,7 +135,7 @@ inputs ::
   Package ->
   ReaderT e f [FilePattern]
 inputs = \case
-  Haskell { manifest, name, sourceDirectory, tests } -> do
+  Package { manifest, name, sourceDirectory, tests } -> do
     packageDir <- asks (getField @"packageDir")
     pure
       ( config packageDir
@@ -161,7 +161,7 @@ sdist ::
   Package ->
   ReaderT e f FilePath
 sdist = \case
-  Haskell { name, version } -> do
+  Package { name, version } -> do
     env <- ask
     pure
       ( getField @"buildDir" env
@@ -180,7 +180,7 @@ test ::
   Package ->
   ReaderT e f [FilePath]
 test = \case
-  Haskell { name, tests } -> traverse go tests
+  Package { name, tests } -> traverse go tests
     where
     go = \case
       Test { suite } -> do
@@ -203,7 +203,7 @@ uploadToHackage ::
   Package ->
   ReaderT e f FilePath
 uploadToHackage = \case
-  Haskell { name, version } -> do
+  Package { name, version } -> do
     env <- ask
     pure
       ( getField @"buildDir" env
