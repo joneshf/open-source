@@ -1,4 +1,6 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
@@ -18,6 +20,7 @@ module Shake.Package.Haskell
   , writeDhall
   ) where
 
+import "mtl" Control.Monad.Reader         (ReaderT, ask, asks)
 import "text" Data.Text                   (unpack)
 import "shake" Development.Shake
     ( FilePattern
@@ -28,6 +31,7 @@ import "shake" Development.Shake.FilePath (exe, (<.>), (</>))
 import "dhall" Dhall                      (Interpret, Type(expected), auto)
 import "dhall" Dhall.Core                 (pretty)
 import "base" GHC.Generics                (Generic)
+import "base" GHC.Records                 (HasField(getField))
 
 data Executable
   = Executable
@@ -70,68 +74,144 @@ instance Interpret Test
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
 
-binaries :: FilePath -> Package -> [FilePath]
-binaries binDir = \case
-  Haskell { executables } -> fmap go executables
+binaries ::
+  ( HasField "binDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+binaries = \case
+  Haskell { executables } -> traverse go executables
     where
     go = \case
-      Executable { executableName } -> binDir </> executableName
+      Executable { executableName } -> do
+        env <- ask
+        pure (getField @"binDir" env </> executableName)
 
-build :: FilePath -> FilePath -> Package ->  FilePath
-build buildDir packageDir = \case
-  Haskell { name } -> buildDir </> packageDir </> name </> ".build"
+build ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+build = \case
+  Haskell { name } -> do
+    env <- ask
+    pure
+      ( getField @"buildDir" env
+        </> getField @"packageDir" env
+        </> name
+        </> ".build"
+      )
 
-executable :: FilePath -> FilePath -> Package -> [FilePath]
-executable buildDir packageDir = \case
-  Haskell { executables, name } -> fmap go executables
+executable ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+executable = \case
+  Haskell { executables, name } -> traverse go executables
     where
     go = \case
-      Executable { executableName } ->
-        buildDir
-          </> packageDir
-          </> name
-          </> "build"
-          </> executableName
-          </> executableName
-          <.> exe
+      Executable { executableName } -> do
+        env <- ask
+        pure
+          ( getField @"buildDir" env
+            </> getField @"packageDir" env
+            </> name
+            </> "build"
+            </> executableName
+            </> executableName
+            <.> exe
+          )
 
-inputs :: FilePath -> Package -> [FilePattern]
-inputs packageDir = \case
-  Haskell { manifest, name, sourceDirectory, tests } ->
-    config : manifestInput manifest : sourceInput : fmap testInput tests
+inputs ::
+  ( HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePattern]
+inputs = \case
+  Haskell { manifest, name, sourceDirectory, tests } -> do
+    packageDir <- asks (getField @"packageDir")
+    pure
+      ( config packageDir
+        : manifestInput packageDir manifest
+        : sourceInput packageDir
+        : fmap (testInput packageDir) tests
+      )
     where
-    config = packageDir </> name </> "shake.dhall"
-    manifestInput = \case
+    config packageDir = packageDir </> name </> "shake.dhall"
+    manifestInput packageDir = \case
       Cabal -> packageDir </> name </> name <.> "cabal"
       Hpack -> packageDir </> name </> "package.yaml"
-    sourceInput = packageDir </> name </> sourceDirectory <//> "*.hs"
-    testInput = \case
+    sourceInput packageDir = packageDir </> name </> sourceDirectory <//> "*.hs"
+    testInput packageDir = \case
       Test { testDirectory } ->
         packageDir </> name </> testDirectory <//> "*.hs"
 
-sdist :: FilePath -> FilePath -> Package -> FilePath
-sdist buildDir packageDir = \case
-  Haskell { name, version } ->
-    buildDir </> packageDir </> name </> name <-> version <.> "tar.gz"
+sdist ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+sdist = \case
+  Haskell { name, version } -> do
+    env <- ask
+    pure
+      ( getField @"buildDir" env
+        </> getField @"packageDir" env
+        </> name
+        </> name
+        <-> version
+        <.> "tar.gz"
+      )
 
-test :: FilePath -> FilePath -> Package -> [FilePath]
-test buildDir packageDir = \case
-  Haskell { name, tests } -> fmap go tests
+test ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+test = \case
+  Haskell { name, tests } -> traverse go tests
     where
     go = \case
-      Test { suite } ->
-        buildDir
-          </> packageDir
-          </> name
-          </> "build"
-          </> suite
-          </> suite
-          <.> "out"
+      Test { suite } -> do
+        env <- ask
+        pure
+          ( getField @"buildDir" env
+            </> getField @"packageDir" env
+            </> name
+            </> "build"
+            </> suite
+            </> suite
+            <.> "out"
+          )
 
-uploadToHackage :: FilePath -> FilePath -> Package -> FilePath
-uploadToHackage buildDir packageDir = \case
-  Haskell { name, version } ->
-    buildDir </> packageDir </> name </> name <-> version
+uploadToHackage ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+uploadToHackage = \case
+  Haskell { name, version } -> do
+    env <- ask
+    pure
+      ( getField @"buildDir" env
+        </> getField @"packageDir" env
+        </> name
+        </> name
+        <-> version
+      )
 
 writeDhall :: IO ()
 writeDhall = do

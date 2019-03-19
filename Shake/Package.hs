@@ -14,6 +14,7 @@ module Shake.Package
 
 import "base" Control.Monad.IO.Class      (liftIO)
 import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
+import "base" Data.Foldable               (fold)
 import "text" Data.Text                   (pack, unpack)
 import "shake" Development.Shake
     ( FilePattern
@@ -39,21 +40,43 @@ import qualified "this" Shake.Package.Haskell
 newtype Package
   = Haskell Shake.Package.Haskell.Package
 
-binaries :: FilePath -> Package -> [FilePath]
-binaries binDir = \case
-  Haskell package -> Shake.Package.Haskell.binaries binDir package
+binaries ::
+  ( HasField "binDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+binaries = \case
+  Haskell package -> Shake.Package.Haskell.binaries package
 
-build :: FilePath -> FilePath -> Package ->  FilePath
-build buildDir packageDir = \case
-  Haskell package -> Shake.Package.Haskell.build buildDir packageDir package
+build ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+build = \case
+  Haskell package -> Shake.Package.Haskell.build package
 
-executable :: FilePath -> FilePath -> Package -> [FilePath]
-executable buildDir packageDir = \case
-  Haskell package -> Shake.Package.Haskell.executable buildDir packageDir package
+executable ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+executable = \case
+  Haskell package -> Shake.Package.Haskell.executable package
 
-inputs :: FilePath -> Package -> [FilePattern]
-inputs packageDir = \case
-  Haskell package -> Shake.Package.Haskell.inputs packageDir package
+inputs ::
+  ( HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePattern]
+inputs = \case
+  Haskell package -> Shake.Package.Haskell.inputs package
 
 packageType :: Type Package
 packageType = union (constructor (pack "Haskell") $ fmap Haskell auto)
@@ -66,31 +89,27 @@ rules ::
   ) =>
   ReaderT e Rules ()
 rules = do
-  binDir <- asks (getField @"binDir")
   buildDir <- asks (getField @"buildDir")
-  packageDir <- asks (getField @"packageDir")
   packages <- asks (getField @"packages")
+  inputNeeds <- fmap fold (traverse inputs packages)
   allFiles <-
-    liftIO
-      ( getDirectoryFilesIO
-        ""
-        ("Shakefile.hs" : "Shake//*.hs" : foldMap (inputs packageDir) packages)
-      )
-  let binariesNeeds = foldMap (binaries binDir) packages
-      buildNeeds = fmap (build buildDir packageDir) packages
-      ciNeeds =
+    liftIO (getDirectoryFilesIO "" ("Shakefile.hs" : "Shake//*.hs" : inputNeeds))
+  binariesNeeds <- fmap fold (traverse binaries packages)
+  buildNeeds <- traverse build packages
+  executableNeeds <- fmap fold (traverse executable packages)
+  sdistNeeds <- traverse sdist packages
+  testNeeds <- fmap fold (traverse test packages)
+  uploadToHackageNeeds <- traverse uploadToHackage packages
+
+  let ciNeeds =
         buildNeeds
           <> executableNeeds
           <> formatNeeds
           <> lintNeeds
           <> sdistNeeds
           <> testNeeds
-      executableNeeds = foldMap (executable buildDir packageDir) packages
       formatNeeds = fmap (\x -> buildDir </> x <.> "format") allFiles
       lintNeeds = fmap (\x -> buildDir </> x <.> "lint") allFiles
-      sdistNeeds = fmap (sdist buildDir packageDir) packages
-      testNeeds = foldMap (test buildDir packageDir) packages
-      uploadToHackageNeeds = fmap (uploadToHackage buildDir packageDir) packages
 
   lift $ want ["build"]
 
@@ -112,18 +131,36 @@ rules = do
 
   lift $ phony "upload-to-hackage" (need uploadToHackageNeeds)
 
-sdist :: FilePath -> FilePath -> Package -> FilePath
-sdist buildDir packageDir = \case
-  Haskell package -> Shake.Package.Haskell.sdist buildDir packageDir package
+sdist ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+sdist = \case
+  Haskell package -> Shake.Package.Haskell.sdist package
 
-test :: FilePath -> FilePath -> Package -> [FilePath]
-test buildDir packageDir = \case
-  Haskell package -> Shake.Package.Haskell.test buildDir packageDir package
+test ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+test = \case
+  Haskell package -> Shake.Package.Haskell.test package
 
-uploadToHackage :: FilePath -> FilePath -> Package -> FilePath
-uploadToHackage buildDir packageDir = \case
+uploadToHackage ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+uploadToHackage = \case
   Haskell package ->
-    Shake.Package.Haskell.uploadToHackage buildDir packageDir package
+    Shake.Package.Haskell.uploadToHackage package
 
 writeDhall :: IO ()
 writeDhall = do
