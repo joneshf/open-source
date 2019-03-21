@@ -24,6 +24,7 @@ import qualified "this" Shake.Cabal
 import qualified "this" Shake.Circleci
 import qualified "this" Shake.Dhall
 import qualified "this" Shake.Haskell
+import qualified "this" Shake.JavaScript
 import qualified "this" Shake.Package
 import qualified "this" Shake.Yaml
 
@@ -62,6 +63,8 @@ main = do
     Shake.Dhall.rules
 
     Shake.Haskell.rules
+
+    Shake.JavaScript.rules
 
     Shake.Package.rules
 

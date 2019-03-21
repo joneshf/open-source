@@ -6,6 +6,8 @@
 /Package/Haskell/Manifest.dhall
 /Package/Haskell/Package.dhall
 /Package/Haskell/Test.dhall
+/Package/JavaScript/Bin.dhall
+/Package/JavaScript/Package.dhall
 /_build
 /bin
 

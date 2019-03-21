@@ -236,3 +236,4 @@ rules = do
     Shake.Package.Haskell
       (Package exes manifest name sourceDirectory tests' version) ->
         package exes manifest name sourceDirectory tests' version
+    Shake.Package.JavaScript _ -> pure mempty

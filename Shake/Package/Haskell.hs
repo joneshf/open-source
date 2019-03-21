@@ -1,5 +1,5 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -14,6 +14,7 @@ module Shake.Package.Haskell
   , build
   , executable
   , inputs
+  , packageType
   , sdist
   , test
   , uploadToHackage
@@ -21,16 +22,24 @@ module Shake.Package.Haskell
   ) where
 
 import "mtl" Control.Monad.Reader         (ReaderT, ask, asks)
-import "text" Data.Text                   (unpack)
+import "text" Data.Text                   (pack, unpack)
 import "shake" Development.Shake
     ( FilePattern
     , writeFileChanged
     , (<//>)
     )
 import "shake" Development.Shake.FilePath (exe, (<.>), (</>))
-import "dhall" Dhall                      (Interpret, Type(expected), auto)
+import "dhall" Dhall
+    ( Type(expected)
+    , UnionType
+    , constructor
+    , field
+    , list
+    , record
+    , string
+    , union
+    )
 import "dhall" Dhall.Core                 (pretty)
-import "base" GHC.Generics                (Generic)
 import "base" GHC.Records                 (HasField(getField))
 
 data Executable
@@ -38,16 +47,10 @@ data Executable
     { executableName      :: String
     , executableDirectory :: FilePath
     }
-  deriving (Generic)
-
-instance Interpret Executable
 
 data Manifest
   = Cabal
   | Hpack
-  deriving (Generic)
-
-instance Interpret Manifest
 
 data Package
   = Package
@@ -58,18 +61,12 @@ data Package
     , tests           :: [Test]
     , version         :: String
     }
-  deriving (Generic)
-
-instance Interpret Package
 
 data Test
   = Test
     { suite         :: String
     , testDirectory :: FilePath
     }
-  deriving (Generic)
-
-instance Interpret Test
 
 (<->) :: FilePath -> FilePath -> FilePath
 x <-> y = x <> "-" <> y
@@ -128,6 +125,12 @@ executable = \case
             <.> exe
           )
 
+executableType :: Type Executable
+executableType = record $ do
+  executableName <- field (pack "executableName") string
+  executableDirectory <- field (pack "executableDirectory") string
+  pure Executable { executableName, executableDirectory }
+
 inputs ::
   ( HasField "packageDir" e FilePath
   , Monad f
@@ -152,6 +155,24 @@ inputs = \case
     testInput packageDir = \case
       Test { testDirectory } ->
         packageDir </> name </> testDirectory <//> "*.hs"
+
+manifestType :: Type Manifest
+manifestType = union (cabal <> hpack)
+  where
+  cabal :: UnionType Manifest
+  cabal = constructor (pack "Cabal") (record $ pure Cabal)
+  hpack :: UnionType Manifest
+  hpack = constructor (pack "Hpack") (record $ pure Hpack)
+
+packageType :: Type Package
+packageType = record $ do
+  executables <- field (pack "executables") (list executableType)
+  manifest <- field (pack "manifest") manifestType
+  name <- field (pack "name") string
+  sourceDirectory <- field (pack "sourceDirectory") string
+  tests <- field (pack "tests") (list testType)
+  version <- field (pack "version") string
+  pure Package { executables, manifest, name, sourceDirectory, tests, version }
 
 sdist ::
   ( HasField "buildDir" e FilePath
@@ -195,6 +216,12 @@ test = \case
             <.> "out"
           )
 
+testType :: Type Test
+testType = record $ do
+  suite <- field (pack "suite") string
+  testDirectory <- field (pack "testDirectory") string
+  pure Test { suite, testDirectory }
+
 uploadToHackage ::
   ( HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
@@ -217,13 +244,13 @@ writeDhall :: IO ()
 writeDhall = do
   writeFileChanged
     "Package/Haskell/Executable.dhall"
-    (unpack $ pretty $ expected $ auto @Executable)
+    (unpack $ pretty $ expected executableType)
   writeFileChanged
     "Package/Haskell/Manifest.dhall"
-    (unpack $ pretty $ expected $ auto @Manifest)
+    (unpack $ pretty $ expected manifestType)
   writeFileChanged
     "Package/Haskell/Package.dhall"
-    (unpack $ pretty $ expected $ auto @Package)
+    (unpack $ pretty $ expected packageType)
   writeFileChanged
     "Package/Haskell/Test.dhall"
-    (unpack $ pretty $ expected $ auto @Test)
+    (unpack $ pretty $ expected testType)
