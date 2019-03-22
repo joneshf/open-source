@@ -1,10 +1,11 @@
-let Executable = ./../../Executable.dhall
+let Executable = ./../../Package/Haskell/Executable.dhall
 
-let Manifest = ./../../Manifest.dhall
+let Manifest = ./../../Package/Haskell/Manifest.dhall
 
 let Package = ./../../Package.dhall
 
-in    { executables =
+in    Package.Haskell
+      { executables =
           [] : List Executable
       , manifest =
           Manifest.Hpack {=}

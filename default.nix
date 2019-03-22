@@ -129,6 +129,7 @@ let
   tools-building = [
     nixpkgs.haskellPackages.cabal-install
     nixpkgs.haskellPackages.hpack
+    nixpkgs.yarn
   ];
 
   # These are tools used when doing development.
@@ -147,6 +148,7 @@ let
   # These are tools that analyze source code in some way.
   tools-static-analyzing = [
     nixpkgs.haskellPackages.hlint
+    nixpkgs.nodePackages.eslint
     nixpkgs.pythonPackages.yamllint
   ];
 
