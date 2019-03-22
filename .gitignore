@@ -1,10 +1,13 @@
 ### Project specific ###
 
 /.direnv.cache
-/Executable.dhall
-/Manifest.dhall
 /Package.dhall
-/Test.dhall
+/Package/Haskell/Executable.dhall
+/Package/Haskell/Manifest.dhall
+/Package/Haskell/Package.dhall
+/Package/Haskell/Test.dhall
+/Package/JavaScript/Bin.dhall
+/Package/JavaScript/Package.dhall
 /_build
 /bin
 

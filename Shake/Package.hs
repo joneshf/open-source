@@ -1,23 +1,23 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 module Shake.Package
-  ( Executable(..)
-  , Manifest(..)
-  , Package(..)
-  , Test(..)
+  ( Package(..)
   , inputs
+  , packageType
   , rules
   , writeDhall
   ) where
 
 import "base" Control.Monad.IO.Class      (liftIO)
 import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
-import "text" Data.Text                   (unpack)
+import "base" Data.Foldable               (fold)
+import "base" Data.Maybe                  (catMaybes)
+import "text" Data.Text                   (Text, pack, unpack)
 import "shake" Development.Shake
     ( FilePattern
     , Rules
@@ -26,93 +26,71 @@ import "shake" Development.Shake
     , phony
     , want
     , writeFileChanged
-    , (<//>)
     )
-import "shake" Development.Shake.FilePath (exe, (<.>), (</>))
-import "dhall" Dhall                      (Interpret, Type(expected), auto)
-import "dhall" Dhall.Core                 (pretty)
-import "base" GHC.Generics                (Generic)
+import "shake" Development.Shake.FilePath ((<.>), (</>))
+import "dhall" Dhall                      (Type(Type, expected, extract))
+import "dhall" Dhall.Core                 (Expr(..), pretty)
+import "dhall" Dhall.Parser               (Src)
+import "dhall" Dhall.TypeCheck            (X)
+import "base" GHC.Exts                    (fromList)
 import "base" GHC.Records                 (HasField(getField))
 
-data Executable
-  = Executable
-    { executableName      :: String
-    , executableDirectory :: FilePath
-    }
-  deriving (Generic)
-
-instance Interpret Executable
-
-data Manifest
-  = Cabal
-  | Hpack
-  deriving (Generic)
-
-instance Interpret Manifest
+import qualified "this" Shake.Package.Haskell
+import qualified "this" Shake.Package.JavaScript
 
 data Package
-  = Haskell
-    { executables     :: [Executable]
-    , manifest        :: Manifest
-    , name            :: String
-    , sourceDirectory :: FilePath
-    , tests           :: [Test]
-    , version         :: String
-    }
-  deriving (Generic)
+  = Haskell Shake.Package.Haskell.Package
+  | JavaScript Shake.Package.JavaScript.Package
 
-instance Interpret Package
+binaries ::
+  ( HasField "binDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+binaries = \case
+  Haskell package -> Shake.Package.Haskell.binaries package
+  JavaScript package -> Shake.Package.JavaScript.binaries package
 
-data Test
-  = Test
-    { suite         :: String
-    , testDirectory :: FilePath
-    }
-  deriving (Generic)
+build ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f FilePath
+build = \case
+  Haskell package -> Shake.Package.Haskell.build package
+  JavaScript package -> Shake.Package.JavaScript.build package
 
-instance Interpret Test
+executable ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+executable = \case
+  Haskell package -> Shake.Package.Haskell.executable package
+  JavaScript _ -> pure mempty
 
-(<->) :: FilePath -> FilePath -> FilePath
-x <-> y = x <> "-" <> y
+inputs ::
+  ( HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePattern]
+inputs = \case
+  Haskell package -> Shake.Package.Haskell.inputs package
+  JavaScript package -> Shake.Package.JavaScript.inputs package
 
-binaries :: FilePath -> Package -> [FilePath]
-binaries binDir = \case
-  Haskell { executables } -> fmap go executables
-    where
-    go = \case
-      Executable { executableName } -> binDir </> executableName
-
-build :: FilePath -> FilePath -> Package ->  FilePath
-build buildDir packageDir = \case
-  Haskell { name } -> buildDir </> packageDir </> name </> ".build"
-
-executable :: FilePath -> FilePath -> Package -> [FilePath]
-executable buildDir packageDir = \case
-  Haskell { executables, name } -> fmap go executables
-    where
-    go = \case
-      Executable { executableName } ->
-        buildDir
-          </> packageDir
-          </> name
-          </> "build"
-          </> executableName
-          </> executableName
-          <.> exe
-
-inputs :: FilePath -> Package -> [FilePattern]
-inputs packageDir = \case
-  Haskell { manifest, name, sourceDirectory, tests } ->
-    config : manifestInput manifest : sourceInput : fmap testInput tests
-    where
-    config = packageDir </> name </> "shake.dhall"
-    manifestInput = \case
-      Cabal -> packageDir </> name </> name <.> "cabal"
-      Hpack -> packageDir </> name </> "package.yaml"
-    sourceInput = packageDir </> name </> sourceDirectory <//> "*.hs"
-    testInput = \case
-      Test { testDirectory } ->
-        packageDir </> name </> testDirectory <//> "*.hs"
+packageType :: Type Package
+packageType = union [(pack "Haskell", haskell), (pack "JavaScript", javaScript)]
+  where
+  haskell :: Type Package
+  haskell = fmap Haskell Shake.Package.Haskell.packageType
+  javaScript :: Type Package
+  javaScript = fmap JavaScript Shake.Package.JavaScript.packageType
 
 rules ::
   ( HasField "binDir" e FilePath
@@ -122,31 +100,27 @@ rules ::
   ) =>
   ReaderT e Rules ()
 rules = do
-  binDir <- asks (getField @"binDir")
   buildDir <- asks (getField @"buildDir")
-  packageDir <- asks (getField @"packageDir")
   packages <- asks (getField @"packages")
+  inputNeeds <- fmap fold (traverse inputs packages)
   allFiles <-
-    liftIO
-      ( getDirectoryFilesIO
-        ""
-        ("Shakefile.hs" : "Shake//*.hs" : foldMap (inputs packageDir) packages)
-      )
-  let binariesNeeds = foldMap (binaries binDir) packages
-      buildNeeds = fmap (build buildDir packageDir) packages
-      ciNeeds =
+    liftIO (getDirectoryFilesIO "" ("Shakefile.hs" : "Shake//*.hs" : inputNeeds))
+  binariesNeeds <- fmap fold (traverse binaries packages)
+  buildNeeds <- traverse build packages
+  executableNeeds <- fmap fold (traverse executable packages)
+  sdistNeeds <- fmap catMaybes (traverse sdist packages)
+  testNeeds <- fmap fold (traverse test packages)
+  uploadToHackageNeeds <- fmap catMaybes (traverse uploadToHackage packages)
+
+  let ciNeeds =
         buildNeeds
           <> executableNeeds
           <> formatNeeds
           <> lintNeeds
           <> sdistNeeds
           <> testNeeds
-      executableNeeds = foldMap (executable buildDir packageDir) packages
       formatNeeds = fmap (\x -> buildDir </> x <.> "format") allFiles
       lintNeeds = fmap (\x -> buildDir </> x <.> "lint") allFiles
-      sdistNeeds = fmap (sdist buildDir packageDir) packages
-      testNeeds = foldMap (test buildDir packageDir) packages
-      uploadToHackageNeeds = fmap (uploadToHackage buildDir packageDir) packages
 
   lift $ want ["build"]
 
@@ -168,33 +142,54 @@ rules = do
 
   lift $ phony "upload-to-hackage" (need uploadToHackageNeeds)
 
-sdist :: FilePath -> FilePath -> Package -> FilePath
-sdist buildDir packageDir = \case
-  Haskell { name, version } ->
-    buildDir </> packageDir </> name </> name <-> version <.> "tar.gz"
+sdist ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f (Maybe FilePath)
+sdist = \case
+  Haskell package -> fmap pure (Shake.Package.Haskell.sdist package)
+  JavaScript _ -> pure mempty
 
-test :: FilePath -> FilePath -> Package -> [FilePath]
-test buildDir packageDir = \case
-  Haskell { name, tests } -> fmap go tests
-    where
-    go = \case
-      Test { suite } ->
-        buildDir
-          </> packageDir
-          </> name
-          </> "build"
-          </> suite
-          </> suite
-          <.> "out"
+test ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f [FilePath]
+test = \case
+  Haskell package -> Shake.Package.Haskell.test package
+  JavaScript _ -> pure mempty
 
-uploadToHackage :: FilePath -> FilePath -> Package -> FilePath
-uploadToHackage buildDir packageDir = \case
-  Haskell { name, version } ->
-    buildDir </> packageDir </> name </> name <-> version
+union :: forall a. [(Text, Type a)] -> Type a
+union xs = Type { expected, extract }
+  where
+  expected :: Expr Src X
+  expected =
+    Union (GHC.Exts.fromList $ (fmap . fmap) Dhall.expected xs)
+  extract :: Expr Src X -> Maybe a
+  extract = \case
+    UnionLit alternate x _ -> do
+      ty <- lookup alternate xs
+      Dhall.extract ty x
+    _ -> Nothing
+
+uploadToHackage ::
+  ( HasField "buildDir" e FilePath
+  , HasField "packageDir" e FilePath
+  , Monad f
+  ) =>
+  Package ->
+  ReaderT e f (Maybe FilePath)
+uploadToHackage = \case
+  Haskell package -> fmap pure (Shake.Package.Haskell.uploadToHackage package)
+  JavaScript _ -> pure mempty
 
 writeDhall :: IO ()
 writeDhall = do
-  writeFileChanged "Executable.dhall" (unpack $ pretty $ expected $ auto @Executable)
-  writeFileChanged "Manifest.dhall" (unpack $ pretty $ expected $ auto @Manifest)
-  writeFileChanged "Package.dhall" (unpack $ pretty $ expected $ auto @Package)
-  writeFileChanged "Test.dhall" (unpack $ pretty $ expected $ auto @Test)
+  Shake.Package.Haskell.writeDhall
+  Shake.Package.JavaScript.writeDhall
+  writeFileChanged "Package.dhall" (unpack $ pretty $ expected packageType)

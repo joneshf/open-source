@@ -7,6 +7,7 @@ module Shake.Circleci (rules) where
 import "base" Control.Monad            (when)
 import "base" Control.Monad.IO.Class   (liftIO)
 import "mtl" Control.Monad.Reader      (ReaderT, asks, lift)
+import "base" Data.Foldable            (fold)
 import "text" Data.Text                (pack)
 import "text" Data.Text.Encoding       (decodeUtf8With)
 import "text" Data.Text.Encoding.Error (lenientDecode)
@@ -30,13 +31,10 @@ rules ::
   ) =>
   ReaderT e Rules ()
 rules = do
-  packageDir <- asks (getField @"packageDir")
   packages <- asks (getField @"packages")
+  inputNeeds <- fmap fold (traverse Shake.Package.inputs packages)
   lift $ ".circleci/cache" %> \out -> do
-    artifacts <-
-      getDirectoryFiles
-        ""
-        ("Shake//*" : foldMap (Shake.Package.inputs packageDir) packages)
+    artifacts <- getDirectoryFiles "" ("Shake//*" : inputNeeds)
     need artifacts
     newHash <- liftIO (getHashedShakeVersion artifacts)
     oldHash <- liftIO (Data.ByteString.readFile out)
