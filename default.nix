@@ -18,9 +18,29 @@ let
             repline = self.repline_0_2_0_0;
           };
 
+          extra_1_6_4 = super.callPackage ./nix/extra_1_6_14.nix {};
+
+          filepattern_0_1_1 = super.callPackage ./nix/filepattern_0_1_1.nix {
+            extra = self.extra_1_6_4;
+          };
+
+          heaps_0_3_6_1 = super.callPackage ./nix/heaps_0_3_6_1.nix {};
+
+          js-dgtable_0_5_2 = super.callPackage ./nix/js-dgtable_0_5_2.nix {};
+
           megaparsec_7_0_4 = super.callPackage ./nix/megaparsec_7_0_4.nix {};
 
           repline_0_2_0_0 = super.callPackage ./nix/repline_0_2_0_0.nix {};
+
+          shake_0_17_7 = super.callPackage ./nix/shake_0_17_7.nix {
+            extra = self.extra_1_6_4;
+
+            filepattern = self.filepattern_0_1_1;
+
+            heaps = self.heaps_0_3_6_1;
+
+            js-dgtable = self.js-dgtable_0_5_2;
+          };
         };
       };
     };
@@ -82,7 +102,7 @@ let
     p.bytestring
     p.dhall_1_21_0
     p.directory
-    p.shake
+    p.shake_0_17_7
     p.typed-process
   ];
 
