@@ -29,6 +29,8 @@ jobs:
           environment:
             XDG_CACHE_HOME: ~/.cache
           name: Build
+      - run:
+          command: ls -ahl ~/.cache/shake
       - save_cache:
           key: v1-shake
           name: Saving shake cache
