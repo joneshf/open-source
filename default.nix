@@ -104,6 +104,7 @@ let
     p.directory
     p.shake_0_17_7
     p.typed-process
+    p.xdg-basedir
   ];
 
   haskell-packages-wai-middleware-rollbar = p: [

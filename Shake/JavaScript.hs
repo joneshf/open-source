@@ -22,6 +22,7 @@ import "shake" Development.Shake
     , getDirectoryFiles
     , need
     , needed
+    , produces
     , writeFile'
     , writeFileChanged
     , (%>)
@@ -86,7 +87,7 @@ package = \case
           (FileStdout out)
           (Traced "yarn install")
           "yarn install"
-        needed [buildPackageDir </> "yarn.lock"]
+        produces [buildPackageDir </> "yarn.lock"]
 
       lift $ buildPackageDir </> ".copied" %> \out -> do
         srcs <- getDirectoryFiles "" [packageDir </> sourceDirectory <//> "*.js"]
