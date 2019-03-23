@@ -219,16 +219,14 @@ rules = do
   packages <- asks (getField @"packages")
   lift $ buildDir <//> "*.hs.format" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    shakeFiles <- getDirectoryFiles "" ["Shake//*.hs"]
     need [".stylish-haskell.yaml"]
     cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input]
     copyFileChanged input out
-    needed ("Shakefile.hs" : input : shakeFiles)
+    needed ["Shake/Haskell.hs", input]
 
   lift $ buildDir <//> "*.hs.lint" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    shakeFiles <- getDirectoryFiles "" ["Shake//*.hs"]
-    need (".hlint.yaml" : input : (out -<.> "format") : shakeFiles)
+    need [".hlint.yaml", "Shake/Haskell.hs", input, out -<.> "format"]
     cmd_ (Traced "hlint") "hlint" [input]
     copyFileChanged input out
 
