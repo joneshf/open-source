@@ -7,7 +7,7 @@ import "text" Data.Text                     (pack)
 import "base" Data.Traversable              (for)
 import "shake" Development.Shake
     ( Change(ChangeModtimeAndDigest)
-    , ShakeOptions(shakeChange, shakeFiles, shakeThreads)
+    , ShakeOptions(shakeChange, shakeFiles, shakeReport, shakeThreads)
     , getDirectoryFilesIO
     , phony
     , removeFilesAfter
@@ -48,6 +48,12 @@ main = do
       options = shakeOptions
         { shakeChange = ChangeModtimeAndDigest
         , shakeFiles = buildDir
+        , shakeReport =
+          [ buildDir </> "report.html"
+          , buildDir </> "report.js"
+          , buildDir </> "report.json"
+          , buildDir </> "report.trace"
+          ]
         , shakeThreads = 0
         }
       packageDir = "packages"
