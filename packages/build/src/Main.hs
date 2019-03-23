@@ -32,7 +32,7 @@ main = do
             ]
           , Development.Shake.shakeThreads = 0
           }
-      platform = "linux64"
+      platform = Build.Linux
   Config artifacts <- Dhall.detailed (Dhall.inputFile config buildFile)
   let psPrograms :: [Build.PureScript.Program]
       psPrograms = flip Data.Maybe.mapMaybe artifacts $ \case

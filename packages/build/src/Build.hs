@@ -6,6 +6,7 @@ module Build
   ( Dir(Dir)
   , File(File)
   , Name(Name)
+  , Platform(Linux)
   , URI(URI)
   , Version(Version)
   ) where
@@ -21,6 +22,9 @@ newtype File = File Data.Text.Text
 
 newtype Name = Name Data.Text.Text
   deriving (Development.Shake.Classes.Hashable, Eq)
+
+data Platform
+  = Linux
 
 newtype URI = URI Data.Text.Text
   deriving (Development.Shake.Classes.Hashable, Eq)

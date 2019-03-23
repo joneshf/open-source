@@ -33,6 +33,7 @@ let
   haskell-packages-build = p: [
     p.base
     p.dhall_1_21_0
+    p.directory
     p.mtl
     p.shake
     p.text

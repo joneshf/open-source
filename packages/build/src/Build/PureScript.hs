@@ -29,6 +29,7 @@ import qualified "shake" Development.Shake.Classes
 import qualified "shake" Development.Shake.FilePath
 import qualified "dhall" Dhall
 import qualified "base" GHC.Generics
+import qualified "directory" System.Directory
 
 data Program
   = Program
@@ -37,6 +38,7 @@ data Program
     , main         :: FileModuleName
     , name         :: Build.Name
     , src          :: Build.Dir
+    , target       :: Target
     }
 
 program :: Dhall.Type Program
@@ -48,7 +50,8 @@ program = Dhall.record $ do
   main <- Dhall.field (Data.Text.pack "main") fileModuleName
   name <- Dhall.field (Data.Text.pack "name") (fmap Build.Name Dhall.strictText)
   src <- Dhall.field (Data.Text.pack "src") (fmap Build.Dir Dhall.strictText)
-  pure Program { compiler, dependencies, main, name, src }
+  target <- Dhall.field (Data.Text.pack "target") typeTarget
+  pure Program { compiler, dependencies, main, name, src, target }
 
 data Dependency
   = PureScript
@@ -90,6 +93,20 @@ fileModuleName = Dhall.record $ do
 newtype ModuleName = ModuleName Data.Text.Text
   deriving (Development.Shake.Classes.Hashable, Eq)
 
+data Target
+  = Browser
+  | NodeJS
+
+typeTarget :: Dhall.Type Target
+typeTarget = Dhall.union (browser <> nodeJS)
+  where
+  browser :: Dhall.UnionType Target
+  browser =
+    Dhall.constructor (Data.Text.pack "Browser") (Dhall.record $ pure Browser)
+  nodeJS :: Dhall.UnionType Target
+  nodeJS =
+    Dhall.constructor (Data.Text.pack "NodeJS") (Dhall.record $ pure NodeJS)
+
 rules ::
   Traversable f =>
   f Program ->
@@ -98,17 +115,35 @@ rules ::
   FilePath ->
   FilePath ->
   FilePath ->
-  FilePath ->
+  Build.Platform ->
   Development.Shake.Rules (f Build.Name)
-rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform = do
+rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform' = do
   let uris :: Data.HashMap.Strict.HashMap (Build.Name, Build.Version) Build.URI
       uris = flip foldMap artifacts $ \case
         Program { dependencies } -> flip foldMap dependencies $ \case
           PureScript { name, uri, version } ->
             Data.HashMap.Strict.singleton (name, version) uri
 
+  binDir </> "build-browserify/*/build-browserify" %> \out -> do
+    let platform = case platform' of
+          Build.Linux -> "linux"
+        untar =
+          downloadDir
+            </> "build-browserify"
+            </> version
+            </> platform
+            </> "build-browserify"
+        version =
+          Development.Shake.FilePath.takeFileName
+            . Development.Shake.FilePath.takeDirectory
+            $ out
+    Development.Shake.need [untar]
+    Development.Shake.copyFileChanged untar out
+
   binDir </> "purs/*/purs" %> \out -> do
-    let untar = downloadDir </> "purs" </> version </> platform </> "purs"
+    let platform = case platform' of
+          Build.Linux -> "linux64"
+        untar = downloadDir </> "purs" </> version </> platform </> "purs"
         version =
           Development.Shake.FilePath.takeFileName
             . Development.Shake.FilePath.takeDirectory
@@ -186,20 +221,52 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
       [Data.Text.unpack uri]
 
   downloadDir </> "purs/*/*" %> \out -> do
-    let (parent, platform') = Development.Shake.FilePath.splitFileName out
+    let (parent, platform) = Development.Shake.FilePath.splitFileName out
         uri =
           "https://github.com/purescript/purescript/releases/download/v"
             <> version
             <> "/"
-            <> platform'
+            <> platform
         version =
             Development.Shake.FilePath.takeFileName
             . Development.Shake.FilePath.takeDirectory
             $ parent
     Development.Shake.cmd_ "curl --location --output" [out] "--silent" [uri]
 
+  downloadDir </> "build-browserify/*/*/build-browserify" %> \out -> do
+    let platform =
+          Development.Shake.FilePath.takeFileName
+            . Development.Shake.FilePath.takeDirectory
+            $ out
+        binary =
+          "build-browserify-"
+            <> version
+            <> "-"
+            <> platform
+            <> "-x64"
+            <.> Development.Shake.FilePath.exe
+        uri =
+          "https://github.com/joneshf/open-source/releases/download/build-browserify-"
+            <> version
+            <> "/"
+            <> binary
+        version =
+          Development.Shake.FilePath.takeFileName
+            . Development.Shake.FilePath.takeDirectory
+            . Development.Shake.FilePath.takeDirectory
+            $ out
+    Development.Shake.cmd_ "curl --location --output" [out] "--silent" [uri]
+    permissions <-
+      Control.Monad.Trans.liftIO (System.Directory.getPermissions out)
+    Control.Monad.Trans.liftIO
+      ( System.Directory.setPermissions out
+        $ System.Directory.setOwnerExecutable True permissions
+      )
+
   downloadDir </> "purs/*/*/purs" %> \out -> do
-    let tar = downloadDir </> "purs" </> version </> platform <.> "tar.gz"
+    let platform = case platform' of
+          Build.Linux -> "linux64"
+        tar = downloadDir </> "purs" </> version </> platform <.> "tar.gz"
         untar = Development.Shake.FilePath.takeDirectory out
         version =
           Development.Shake.FilePath.takeFileName
@@ -221,6 +288,7 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
       , main = main@FileModuleName { module' = module'' }
       , name = Build.Name name'
       , src = src'
+      , target
       } -> do
 
         let dependencies ::
@@ -251,9 +319,25 @@ rules artifacts binDir buildDir buildFile dependenciesDir downloadDir platform =
             Control.Monad.State.Strict.execStateT
               (transitiveImports buildFile dependencies src' main)
               mempty
-          compile binDir buildDir compiler modules module'' out
+          case target of
+            Browser -> do
+              let compiled =
+                    buildDir </> "programs" </> out </> out <.> "compiled"
+              compile binDir buildDir compiler modules module'' compiled
+              browserify binDir compiled out
+            NodeJS -> compile binDir buildDir compiler modules module'' out
 
         pure (Build.Name name')
+
+browserify :: FilePath -> FilePath -> FilePath -> Development.Shake.Action ()
+browserify binDir compiled out = do
+  Development.Shake.need
+    [binDir </> "build-browserify/1.0.0/build-browserify", compiled]
+  Development.Shake.cmd_
+    (Development.Shake.FileStdout out)
+    (Development.Shake.Traced "build-browserify")
+    [binDir </> "build-browserify/1.0.0/build-browserify"]
+    [compiled]
 
 compile ::
   FilePath ->
