@@ -12,10 +12,15 @@ let
     packageOverrides = pkgs: {
       haskellPackages = pkgs.haskellPackages.override {
         overrides = self: super: {
-          dhall_1_21_0 = self.callPackage ./nix/dhall_1_21_0.nix {
-            megaparsec = self.callPackage ./nix/megaparsec_7_0_4.nix {};
-            repline = self.callPackage ./nix/repline_0_2_0_0.nix {};
+          dhall_1_21_0 = super.callPackage ./nix/dhall_1_21_0.nix {
+            megaparsec = self.megaparsec_7_0_4;
+
+            repline = self.repline_0_2_0_0;
           };
+
+          megaparsec_7_0_4 = super.callPackage ./nix/megaparsec_7_0_4.nix {};
+
+          repline_0_2_0_0 = super.callPackage ./nix/repline_0_2_0_0.nix {};
         };
       };
     };
