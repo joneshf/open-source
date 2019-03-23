@@ -22,7 +22,6 @@ import "xdg-basedir" System.Environment.XDG.BaseDir (getUserCacheDir)
 import "typed-process" System.Process.Typed         (runProcess_, shell)
 
 import qualified "this" Shake.Cabal
-import qualified "this" Shake.Circleci
 import qualified "this" Shake.Dhall
 import qualified "this" Shake.Haskell
 import qualified "this" Shake.JavaScript
@@ -66,8 +65,6 @@ main = do
     lift $ phony "shell" (runAfter $ runProcess_ $ shell "nix-shell --pure")
 
     Shake.Cabal.rules
-
-    Shake.Circleci.rules
 
     Shake.Dhall.rules
 
