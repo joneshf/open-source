@@ -22,6 +22,6 @@ rules = do
 
   lift $ buildDir <//> "*.js.lint" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    need ["Shake/JavaScript/Lint.hs", input]
+    need [".eslintrc.yml", "Shake/JavaScript/Lint.hs", input]
     cmd_ "eslint" [input]
     copyFileChanged input out
