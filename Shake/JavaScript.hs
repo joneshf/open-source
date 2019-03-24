@@ -82,7 +82,9 @@ package = \case
           (FileStdout out)
           (Traced "yarn install")
           "yarn install"
-        produces [buildPackageDir </> "yarn.lock"]
+        installed <-
+          getDirectoryFiles "" [buildPackageDir </> "node_modules" <//> "*"]
+        produces ((buildPackageDir </> "yarn.lock") : installed)
 
       lift $ buildPackageDir </> ".copied" %> \out -> do
         srcs <- getDirectoryFiles "" [packageDir </> sourceDirectory <//> "*.js"]
