@@ -21,20 +21,13 @@ import "shake" Development.Shake
     , copyFileChanged
     , getDirectoryFiles
     , need
-    , needed
     , produces
     , writeFile'
     , writeFileChanged
     , (%>)
     , (<//>)
     )
-import "shake" Development.Shake.FilePath
-    ( dropDirectory1
-    , dropExtension
-    , takeDirectory
-    , takeFileName
-    , (</>)
-    )
+import "shake" Development.Shake.FilePath (takeDirectory, takeFileName, (</>))
 import "base" GHC.Generics                (Generic)
 import "base" GHC.Records                 (HasField(getField))
 import "this" Shake.Package.JavaScript
@@ -44,6 +37,8 @@ import "this" Shake.Package.JavaScript
     )
 
 import qualified "unordered-containers" Data.HashMap.Strict
+import qualified "this" Shake.JavaScript.Format
+import qualified "this" Shake.JavaScript.Lint
 import qualified "this" Shake.Package
 
 data PackageJSON
@@ -156,21 +151,11 @@ rules ::
   ) =>
   ReaderT e Rules ()
 rules = do
-  buildDir <- asks (getField @"buildDir")
   packages <- asks (getField @"packages")
 
-  lift $ buildDir <//> "*.js.format" %> \out -> do
-    let input = (dropDirectory1 . dropExtension) out
-    need [".prettierrc", "Shake/JavaScript.hs"]
-    cmd_ "prettier" "--write" [input]
-    copyFileChanged input out
-    needed [input]
+  Shake.JavaScript.Format.rules
 
-  lift $ buildDir <//> "*.js.lint" %> \out -> do
-    let input = (dropDirectory1 . dropExtension) out
-    need ["Shake/JavaScript.hs", input]
-    cmd_ "eslint" [input]
-    copyFileChanged input out
+  Shake.JavaScript.Lint.rules
 
   for_ packages $ \case
     Shake.Package.Haskell _ -> pure mempty
