@@ -1,8 +1,14 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PackageImports #-}
 module Main (main) where
 
-import "mtl" Control.Monad.Reader                   (lift, runReaderT)
+import "mtl" Control.Monad.Reader
+    ( lift
+    , runReaderT
+    , withReaderT
+    )
+import "base" Data.Maybe                            (mapMaybe)
 import "text" Data.Text                             (pack)
 import "base" Data.Traversable                      (for)
 import "shake" Development.Shake
@@ -26,15 +32,17 @@ import qualified "this" Shake.Dhall
 import qualified "this" Shake.Haskell
 import qualified "this" Shake.JavaScript
 import qualified "this" Shake.Package
+import qualified "this" Shake.Package.Haskell
 import qualified "this" Shake.Yaml
 
-data Env
+data Env a
   = Env
     { binDir     :: FilePath
     , buildDir   :: FilePath
     , packageDir :: FilePath
-    , packages   :: [Package]
+    , packages   :: a
     }
+  deriving (Functor)
 
 main :: IO ()
 main = do
@@ -68,7 +76,7 @@ main = do
 
     Shake.Dhall.rules
 
-    Shake.Haskell.rules
+    withReaderT ((fmap . mapMaybe) Shake.Package.haskell) Shake.Haskell.rules
 
     Shake.JavaScript.rules
 

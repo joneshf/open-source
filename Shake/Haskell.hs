@@ -22,13 +22,12 @@ import qualified "this" Shake.Haskell.Sdist
 import qualified "this" Shake.Haskell.Test
 import qualified "this" Shake.Haskell.UploadToHackage
 import qualified "this" Shake.Haskell.Watch
-import qualified "this" Shake.Package
 
 rules ::
   ( HasField "binDir" e FilePath
   , HasField "buildDir" e FilePath
   , HasField "packageDir" e FilePath
-  , HasField "packages" e [Shake.Package.Package]
+  , HasField "packages" e [Package]
   ) =>
   ReaderT e Rules ()
 rules = do
@@ -39,15 +38,12 @@ rules = do
   Shake.Haskell.Lint.rules
 
   for_ packages $ \case
-    Shake.Package.Haskell
-      (Package executables manifest name sourceDirectory tests version) -> do
-        Shake.Haskell.Build.rules name sourceDirectory
-        Shake.Haskell.Configure.rules name tests
-        Shake.Haskell.Manifest.rules name manifest
-        Shake.Haskell.Sdist.rules name sourceDirectory version
-        Shake.Haskell.UploadToHackage.rules name version
-        Shake.Haskell.Watch.rules name
-        for_ executables (Shake.Haskell.Executable.rules name sourceDirectory)
-        for_ tests (Shake.Haskell.Test.rules name sourceDirectory)
-
-    Shake.Package.JavaScript _ -> pure mempty
+    Package executables manifest name sourceDirectory tests version -> do
+      Shake.Haskell.Build.rules name sourceDirectory
+      Shake.Haskell.Configure.rules name tests
+      Shake.Haskell.Manifest.rules name manifest
+      Shake.Haskell.Sdist.rules name sourceDirectory version
+      Shake.Haskell.UploadToHackage.rules name version
+      Shake.Haskell.Watch.rules name
+      for_ executables (Shake.Haskell.Executable.rules name sourceDirectory)
+      for_ tests (Shake.Haskell.Test.rules name sourceDirectory)

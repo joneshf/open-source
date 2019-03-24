@@ -7,12 +7,14 @@
 {-# LANGUAGE TypeApplications #-}
 module Shake.Package
   ( Package(..)
+  , haskell
   , inputs
   , packageType
   , rules
   , writeDhall
   ) where
 
+import "base" Control.Applicative         (Alternative, empty)
 import "base" Control.Monad.IO.Class      (liftIO)
 import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
 import "base" Data.Foldable               (fold)
@@ -74,6 +76,11 @@ executable = \case
   Haskell package -> Shake.Package.Haskell.executable package
   JavaScript _ -> pure mempty
 
+haskell :: (Alternative f) => Package -> f Shake.Package.Haskell.Package
+haskell = \case
+  Haskell package -> pure package
+  JavaScript _ -> empty
+
 inputs ::
   ( HasField "packageDir" e FilePath
   , Monad f
@@ -85,12 +92,11 @@ inputs = \case
   JavaScript package -> Shake.Package.JavaScript.inputs package
 
 packageType :: Type Package
-packageType = union [(pack "Haskell", haskell), (pack "JavaScript", javaScript)]
-  where
-  haskell :: Type Package
-  haskell = fmap Haskell Shake.Package.Haskell.packageType
-  javaScript :: Type Package
-  javaScript = fmap JavaScript Shake.Package.JavaScript.packageType
+packageType =
+  union
+    [ (pack "Haskell", fmap Haskell Shake.Package.Haskell.packageType)
+    , (pack "JavaScript", fmap JavaScript Shake.Package.JavaScript.packageType)
+    ]
 
 rules ::
   ( HasField "binDir" e FilePath
