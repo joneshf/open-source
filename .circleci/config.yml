@@ -22,8 +22,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-shake-{{ .Branch }}
-            - v2-shake-master
+            - v1-shake-{{ .Branch }}
+            - v1-shake-master
           name: Restoring shake cache
       - run:
           command: nix-shell --run 'shake ci'
@@ -31,7 +31,7 @@ jobs:
             XDG_CACHE_HOME: .cache
           name: Build
       - save_cache:
-          key: v2-shake-{{ .Branch }}-{{ epoch }}
+          key: v1-shake-{{ .Branch }}-{{ epoch }}
           name: Saving shake cache
           paths:
             - .cache/shake
