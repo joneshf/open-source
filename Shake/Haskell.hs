@@ -6,60 +6,28 @@
 {-# LANGUAGE TypeApplications #-}
 module Shake.Haskell (rules) where
 
-import "base" Control.Monad.IO.Class        (liftIO)
-import "mtl" Control.Monad.Reader           (ReaderT, asks, lift)
-import "base" Data.Foldable                 (for_)
-import "base" Data.List.NonEmpty            (nonEmpty)
-import "shake" Development.Shake
-    ( CmdOption(Cwd, FileStdout, Traced)
-    , Exit(Exit)
-    , Rules
-    , Stdout(Stdout)
-    , cmd
-    , cmd_
-    , copyFileChanged
-    , getDirectoryFiles
-    , need
-    , phony
-    , runAfter
-    , writeFile'
-    , (%>)
-    , (<//>)
-    )
-import "shake" Development.Shake.FilePath
-    ( dropExtension
-    , replaceFileName
-    , takeFileName
-    , (<.>)
-    , (</>)
-    )
-import "base" GHC.Records                   (HasField(getField))
+import "mtl" Control.Monad.Reader   (ReaderT, asks)
+import "base" Data.Foldable         (for_)
+import "shake" Development.Shake    (Rules)
+import "base" GHC.Records           (HasField(getField))
 import "this" Shake.Package.Haskell
-    ( Executable(Executable, executableDirectory, executableName)
-    , Manifest(Cabal, Hpack)
+    ( Executable
+    , Manifest
     , Package(Package)
-    , Test(Test, suite, testDirectory)
+    , Test
     )
-import "directory" System.Directory         (getCurrentDirectory)
-import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
-import "typed-process" System.Process.Typed (proc, runProcess_, setWorkingDir)
 
+import qualified "this" Shake.Haskell.Build
+import qualified "this" Shake.Haskell.Configure
+import qualified "this" Shake.Haskell.Executable
 import qualified "this" Shake.Haskell.Format
 import qualified "this" Shake.Haskell.Lint
+import qualified "this" Shake.Haskell.Manifest
+import qualified "this" Shake.Haskell.Sdist
+import qualified "this" Shake.Haskell.Test
+import qualified "this" Shake.Haskell.UploadToHackage
+import qualified "this" Shake.Haskell.Watch
 import qualified "this" Shake.Package
-
-(<->) :: FilePath -> FilePath -> FilePath
-x <-> y = x <> "-" <> y
-
-ghciFlags :: [String]
-ghciFlags =
-  [ "-ferror-spans"
-  , "-fno-break-on-exception"
-  , "-fno-break-on-error"
-  , "-fno-code"
-  , "-j"
-  , "-v1"
-  ]
 
 package ::
   ( HasField "binDir" e FilePath
@@ -74,137 +42,21 @@ package ::
   String ->
   ReaderT e Rules ()
 package exes manifest name sourceDirectory tests version = do
-  binDir <- asks (getField @"binDir")
-  buildDir <- asks (getField @"buildDir")
-  packageDir <- asks (getField @"packageDir")
-  root <- liftIO getCurrentDirectory
-  let build' = buildDir </> package'
-      package' = packageDir </> name
+  Shake.Haskell.Watch.rules name
 
-  lift $ phony ("watch-" <> name) $ do
-    need ["Shake/Haskell.hs", build' </> ".configure"]
-    runAfter
-      ( runProcess_
-      $ setWorkingDir package'
-      $ proc
-        "ghcid"
-        [ "--command"
-        , "cabal repl lib:"
-          <> name
-          <> " --builddir "
-          <> root </> build'
-          <> " --ghc-options '"
-          <> unwords ghciFlags
-          <> "'"
-        ]
-      )
+  Shake.Haskell.Build.rules name sourceDirectory
 
-  lift $ build' </> ".build" %> \out -> do
-    srcs <- getDirectoryFiles "" [package' </> sourceDirectory <//> "*.hs"]
-    need ("Shake/Haskell.hs" : (build' </> ".configure") : srcs)
-    cmd
-      (Cwd package')
-      (FileStdout out)
-      (Traced "cabal build")
-      "cabal build"
-      "--builddir"
-      [root </> build']
+  Shake.Haskell.Configure.rules name tests
 
-  lift $ build' </> ".configure" %> \out -> do
-    need
-      [ "Shake/Haskell.hs"
-      , buildDir </> ".update"
-      , package' </> name <.> "cabal"
-      ]
-    cmd
-      (Cwd package')
-      (FileStdout out)
-      (Traced "cabal configure")
-      "cabal configure"
-      "--builddir"
-      [root </> build']
-      ("--enable-tests" <$ nonEmpty tests)
+  for_ exes (Shake.Haskell.Executable.rules name sourceDirectory)
 
-  for_ exes $ \case
-    Executable { executableDirectory, executableName } -> do
-      lift $ binDir </> executableName %> \out -> do
-        let binary = build' </> "build" </> executableName </> executableName
-        need ["Shake/Haskell.hs", binary]
-        copyFileChanged binary out
+  for_ tests (Shake.Haskell.Test.rules name sourceDirectory)
 
-      lift $ build' </> "build" </> executableName </> executableName %> \_ -> do
-        srcs <-
-          getDirectoryFiles
-            ""
-            [ package' </> sourceDirectory <//> "*.hs"
-            , package' </> executableDirectory <//> "*.hs"
-            ]
-        need ("Shake/Haskell.hs" : (build' </> ".build") : srcs)
-        cmd_
-          (Cwd package')
-          (Traced "cabal build")
-          "cabal build"
-          ["exe:" <> executableName]
-          "--builddir"
-          [root </> build']
+  Shake.Haskell.UploadToHackage.rules name version
 
-  for_ tests $ \case
-    Test { testDirectory, suite } -> do
-      lift $ build' </> "build" </> suite </> suite %> \_ -> do
-        srcs <-
-          getDirectoryFiles
-            ""
-            [ package' </> sourceDirectory <//> "*.hs"
-            , package' </> testDirectory </> suite <//> "*.hs"
-            ]
-        need ("Shake/Haskell.hs" : (build' </> ".build") : srcs)
-        cmd_
-          (Cwd package')
-          (Traced "cabal build")
-          "cabal build"
-          ["test:" <> suite]
-          "--builddir"
-          [root </> build']
+  Shake.Haskell.Sdist.rules name sourceDirectory version
 
-      lift $ build' </> "build" </> suite </> suite <.> "out" %> \out -> do
-        need ["Shake/Haskell.hs", dropExtension out]
-        cmd_
-          (Cwd package')
-          (FileStdout out)
-          (Traced $ name <> " " <> suite)
-          [((root </>) . dropExtension) out]
-
-  lift $ build' </> name <-> version %> \out -> do
-    (Exit x, Stdout result) <-
-      cmd (Traced "cabal info") "cabal info" [takeFileName out]
-    case x of
-      ExitFailure _ -> do
-        need ["Shake/Haskell.hs", build' </> ".build", out <.> "tar.gz"]
-        cmd_ (Traced "cabal upload") "cabal upload" [out <.> "tar.gz"]
-        writeFile' out ""
-      ExitSuccess -> writeFile' out result
-
-  lift $ build' </> name <-> version <.> "tar.gz" %> \_ -> do
-    srcs <- getDirectoryFiles "" [package' </> sourceDirectory <//> "*.hs"]
-    need
-      ( "Shake/Haskell.hs"
-      : (build' </> name <.> "cabal.lint")
-      : (build' </> ".configure")
-      : srcs
-      )
-    cmd_
-      (Cwd package')
-      (Traced "cabal sdist")
-      "cabal sdist"
-      "--builddir"
-      [root </> build']
-
-  case manifest of
-    Cabal -> lift mempty
-    Hpack ->
-      lift $ package' </> name <.> "cabal" %> \out -> do
-        need ["Shake/Haskell.hs", replaceFileName out "package.yaml"]
-        cmd_ (Cwd package') (Traced "hpack") "hpack"
+  Shake.Haskell.Manifest.rules name manifest
 
 rules ::
   ( HasField "binDir" e FilePath
