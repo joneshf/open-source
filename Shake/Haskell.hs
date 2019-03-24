@@ -10,12 +10,7 @@ import "mtl" Control.Monad.Reader   (ReaderT, asks)
 import "base" Data.Foldable         (for_)
 import "shake" Development.Shake    (Rules)
 import "base" GHC.Records           (HasField(getField))
-import "this" Shake.Package.Haskell
-    ( Executable
-    , Manifest
-    , Package(Package)
-    , Test
-    )
+import "this" Shake.Package.Haskell (Package(Package))
 
 import qualified "this" Shake.Haskell.Build
 import qualified "this" Shake.Haskell.Configure
@@ -28,35 +23,6 @@ import qualified "this" Shake.Haskell.Test
 import qualified "this" Shake.Haskell.UploadToHackage
 import qualified "this" Shake.Haskell.Watch
 import qualified "this" Shake.Package
-
-package ::
-  ( HasField "binDir" e FilePath
-  , HasField "buildDir" e FilePath
-  , HasField "packageDir" e FilePath
-  ) =>
-  [Executable] ->
-  Manifest ->
-  String ->
-  FilePath ->
-  [Test] ->
-  String ->
-  ReaderT e Rules ()
-package exes manifest name sourceDirectory tests version = do
-  Shake.Haskell.Watch.rules name
-
-  Shake.Haskell.Build.rules name sourceDirectory
-
-  Shake.Haskell.Configure.rules name tests
-
-  for_ exes (Shake.Haskell.Executable.rules name sourceDirectory)
-
-  for_ tests (Shake.Haskell.Test.rules name sourceDirectory)
-
-  Shake.Haskell.UploadToHackage.rules name version
-
-  Shake.Haskell.Sdist.rules name sourceDirectory version
-
-  Shake.Haskell.Manifest.rules name manifest
 
 rules ::
   ( HasField "binDir" e FilePath
@@ -74,6 +40,14 @@ rules = do
 
   for_ packages $ \case
     Shake.Package.Haskell
-      (Package exes manifest name sourceDirectory tests' version) ->
-        package exes manifest name sourceDirectory tests' version
+      (Package executables manifest name sourceDirectory tests version) -> do
+        Shake.Haskell.Build.rules name sourceDirectory
+        Shake.Haskell.Configure.rules name tests
+        Shake.Haskell.Manifest.rules name manifest
+        Shake.Haskell.Sdist.rules name sourceDirectory version
+        Shake.Haskell.UploadToHackage.rules name version
+        Shake.Haskell.Watch.rules name
+        for_ executables (Shake.Haskell.Executable.rules name sourceDirectory)
+        for_ tests (Shake.Haskell.Test.rules name sourceDirectory)
+
     Shake.Package.JavaScript _ -> pure mempty
