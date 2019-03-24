@@ -27,6 +27,6 @@ rules = do
 
   lift $ buildDir <//> "*.hs.lint" %> \out -> do
     let input = (dropDirectory1 . dropExtension) out
-    need [".hlint.yaml", "Shake/Haskell.hs", input, out -<.> "format"]
+    need [".hlint.yaml", "Shake/Haskell/Lint.hs", input, out -<.> "format"]
     cmd_ (Traced "hlint") "hlint" [input]
     copyFileChanged input out

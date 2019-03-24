@@ -26,4 +26,4 @@ rules = do
     need [".stylish-haskell.yaml"]
     cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input]
     copyFileChanged input out
-    needed ["Shake/Haskell.hs", input]
+    needed ["Shake/Haskell/Format.hs", input]
