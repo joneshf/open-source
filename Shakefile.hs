@@ -78,7 +78,7 @@ main = do
 
     withReaderT ((fmap . mapMaybe) Shake.Package.haskell) Shake.Haskell.rules
 
-    Shake.JavaScript.rules
+    withReaderT ((fmap . mapMaybe) Shake.Package.javaScript) Shake.JavaScript.rules
 
     Shake.Package.rules
 

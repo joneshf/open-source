@@ -9,6 +9,7 @@ module Shake.Package
   ( Package(..)
   , haskell
   , inputs
+  , javaScript
   , packageType
   , rules
   , writeDhall
@@ -90,6 +91,11 @@ inputs ::
 inputs = \case
   Haskell package -> Shake.Package.Haskell.inputs package
   JavaScript package -> Shake.Package.JavaScript.inputs package
+
+javaScript :: (Alternative f) => Package -> f Shake.Package.JavaScript.Package
+javaScript = \case
+  Haskell _ -> empty
+  JavaScript package -> pure package
 
 packageType :: Type Package
 packageType =
