@@ -20,7 +20,6 @@ import "shake" Development.Shake
     , copyFileChanged
     , getDirectoryFiles
     , need
-    , needed
     , phony
     , runAfter
     , writeFile'
@@ -28,11 +27,9 @@ import "shake" Development.Shake
     , (<//>)
     )
 import "shake" Development.Shake.FilePath
-    ( dropDirectory1
-    , dropExtension
+    ( dropExtension
     , replaceFileName
     , takeFileName
-    , (-<.>)
     , (<.>)
     , (</>)
     )
@@ -47,6 +44,8 @@ import "directory" System.Directory         (getCurrentDirectory)
 import "base" System.Exit                   (ExitCode(ExitFailure, ExitSuccess))
 import "typed-process" System.Process.Typed (proc, runProcess_, setWorkingDir)
 
+import qualified "this" Shake.Haskell.Format
+import qualified "this" Shake.Haskell.Lint
 import qualified "this" Shake.Package
 
 (<->) :: FilePath -> FilePath -> FilePath
@@ -215,20 +214,11 @@ rules ::
   ) =>
   ReaderT e Rules ()
 rules = do
-  buildDir <- asks (getField @"buildDir")
   packages <- asks (getField @"packages")
-  lift $ buildDir <//> "*.hs.format" %> \out -> do
-    let input = (dropDirectory1 . dropExtension) out
-    need [".stylish-haskell.yaml"]
-    cmd_ (Traced "stylish-haskell") "stylish-haskell" "--inplace" [input]
-    copyFileChanged input out
-    needed ["Shake/Haskell.hs", input]
 
-  lift $ buildDir <//> "*.hs.lint" %> \out -> do
-    let input = (dropDirectory1 . dropExtension) out
-    need [".hlint.yaml", "Shake/Haskell.hs", input, out -<.> "format"]
-    cmd_ (Traced "hlint") "hlint" [input]
-    copyFileChanged input out
+  Shake.Haskell.Format.rules
+
+  Shake.Haskell.Lint.rules
 
   for_ packages $ \case
     Shake.Package.Haskell
