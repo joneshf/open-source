@@ -113,8 +113,7 @@ rules = do
   uploadToHackageNeeds <- fmap catMaybes (traverse uploadToHackage packages)
 
   let ciNeeds =
-        binariesNeeds
-          <> buildNeeds
+        buildNeeds
           <> executableNeeds
           <> formatNeeds
           <> lintNeeds
