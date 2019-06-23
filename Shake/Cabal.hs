@@ -28,7 +28,7 @@ rules = do
   buildDir <- asks (getField @"buildDir")
   lift $ buildDir </> ".update" %> \out -> do
     need ["Shake/Cabal.hs"]
-    cmd_ (FileStdout out) (Traced "cabal update") "cabal update"
+    cmd_ (FileStdout out) (Traced "cabal update") "cabal v1-update"
 
   lift $ buildDir <//> "*.cabal.format" %> \out -> do
     need ["Shake/Cabal.hs"]

@@ -8,12 +8,12 @@ extra-source-files:
 github: joneshf/katip-rollbar
 library:
   dependencies:
-    - aeson >= 1.2 && < 1.4
+    - aeson >= 1.2 && < 1.5
     - async >= 2.1 && < 2.3
     - base >= 4.7 && < 5
     - hostname >= 1.0 && < 1.1
     - http-client >= 0.5.10
-    - katip >= 0.5 && < 0.7
+    - katip >= 0.5 && < 0.8
     # TODO: Once the releases stabilize, lock in an upper bound.
     # For the time being,
     # I'm fine dealing with upper bound breakages,

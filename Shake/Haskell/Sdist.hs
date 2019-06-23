@@ -48,6 +48,6 @@ rules name sourceDirectory version = do
     cmd_
       (Cwd package')
       (Traced "cabal sdist")
-      "cabal sdist"
+      "cabal v1-sdist"
       "--builddir"
       [root </> build']
