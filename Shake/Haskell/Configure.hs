@@ -42,7 +42,7 @@ rules name tests = do
       (Cwd package')
       (FileStdout out)
       (Traced "cabal configure")
-      "cabal configure"
+      "cabal v1-configure"
       "--builddir"
       [root </> build']
       ("--enable-tests" <$ nonEmpty tests)

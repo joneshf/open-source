@@ -32,6 +32,8 @@ let
 
           repline_0_2_0_0 = super.callPackage ./nix/repline_0_2_0_0.nix {};
 
+          rollbar-hs = self.callPackage ./nix/rollbar-hs.nix {};
+
           shake_0_17_7 = super.callPackage ./nix/shake_0_17_7.nix {
             extra = self.extra_1_6_4;
 
@@ -130,9 +132,9 @@ let
     inherit sha256 url;
   };
 
-  revision = "d3d465e32f53dd88c2b4229c207ff7d005098f1d";
+  revision = "f52505fac8c82716872a616c501ad9eff188f97f";
 
-  sha256 = "sha256:092zf82gh6hn6y6zksxqv70ncpcimd51c3mj4mbrxpwl3w0gg3qd";
+  sha256 = "sha256:0q2m2qhyga9yq29yz90ywgjbn9hdahs7i8wwlq7b55rdbyiwa5dy";
 
   tools =
     tools-building ++

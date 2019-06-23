@@ -59,7 +59,7 @@ rules name sourceDirectory = \case
       cmd_
         (Cwd package')
         (Traced "cabal build")
-        "cabal build"
+        "cabal v1-build"
         ["exe:" <> executableName]
         "--builddir"
         [root </> build']

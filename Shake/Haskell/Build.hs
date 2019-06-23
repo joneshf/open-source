@@ -40,6 +40,6 @@ rules name sourceDirectory = do
       (Cwd package')
       (FileStdout out)
       (Traced "cabal build")
-      "cabal build"
+      "cabal v1-build"
       "--builddir"
       [root </> build']
