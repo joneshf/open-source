@@ -32,7 +32,7 @@ let
 
           repline_0_2_0_0 = super.callPackage ./nix/repline_0_2_0_0.nix {};
 
-          rollbar-hs = self.callPackage ./nix/rollbar-hs_0_3_1_0.nix {};
+          rollbar-hs = self.callPackage ./nix/rollbar-hs.nix {};
 
           shake_0_17_7 = super.callPackage ./nix/shake_0_17_7.nix {
             extra = self.extra_1_6_4;
