@@ -33,7 +33,7 @@ rules name sourceDirectory = do
 
   lift $ buildDir </> ".copied" %> \out -> do
     srcs <- getDirectoryFiles "" [packageDir </> sourceDirectory <//> "*.js"]
-    need ("Shake/JavaScript/Copied.hs" : fmap (buildDir </>) srcs)
+    need ("Shake/JavaScript/Copied.hs" : fmap (buildDir' </>) srcs)
     writeFile' out ""
 
   lift $ buildDir </> sourceDirectory <//> "*.js" %> \out -> do
