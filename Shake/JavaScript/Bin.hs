@@ -9,7 +9,7 @@ module Shake.JavaScript.Bin (rules) where
 
 import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
 import "shake" Development.Shake
-    ( CmdOption(Cwd, Traced)
+    ( CmdOption(Cwd, Traced, WithStderr)
     , Rules
     , cmd_
     , copyFileChanged
@@ -60,6 +60,7 @@ rules name' = \case
       cmd_
         (Cwd buildDir)
         (Traced "nexe")
+        (WithStderr False)
         "yarn run nexe"
         "--input"
         [file]
