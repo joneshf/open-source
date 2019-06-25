@@ -8,12 +8,10 @@ import "mtl" Control.Monad.Reader         (ReaderT, asks, lift)
 import "shake" Development.Shake
     ( CmdOption(Cwd, FileStdout, Traced)
     , Rules
+    , alwaysRerun
     , cmd_
-    , getDirectoryFiles
     , need
-    , produces
     , (%>)
-    , (<//>)
     )
 import "shake" Development.Shake.FilePath ((</>))
 import "base" GHC.Records                 (HasField(getField))
@@ -31,6 +29,5 @@ rules name = do
 
   lift $ buildDir </> ".build" %> \out -> do
     need ["Shake/JavaScript/Build.hs", buildDir </> "package.json"]
+    alwaysRerun
     cmd_ (Cwd buildDir) (FileStdout out) (Traced "yarn install") "yarn install"
-    installed <- getDirectoryFiles "" [buildDir </> "node_modules" <//> "*"]
-    produces ((buildDir </> "yarn.lock") : installed)
