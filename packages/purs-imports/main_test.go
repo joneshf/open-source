@@ -107,7 +107,8 @@ func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 var parsePSModuleDoesNotFail = []struct {
 	input    string
 	expected psModule
-}{}
+}{
+	{input: "module X where", expected: psModule{module: "X"}}}
 
 func TestParsePSModuleDoesNotFail(t *testing.T) {
 	for range parsePSModuleDoesNotFail {
