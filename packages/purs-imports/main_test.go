@@ -6,8 +6,8 @@ import (
 
 func TestFindImportDoesNotFail(t *testing.T) {
 	input := "import Data.Array"
+	expected := "Data.Array"
 	t.Run(input, func(t *testing.T) {
-		expected := "Data.Array"
 		actual, err := findImport(input)
 		if err != nil {
 			t.Error("Did not expect an error", err)
