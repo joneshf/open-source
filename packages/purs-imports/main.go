@@ -5,6 +5,8 @@ import (
 )
 
 func findImport(str string) (string, error) {
-	strings.Split(str, " ")
+	tokens := strings.Split(str, " ")
+	if len(tokens) > 2 {
+	}
 	return str, nil
 }
