@@ -111,16 +111,16 @@ var parsePSModuleDoesNotFail = []struct {
 
 func TestParsePSModuleDoesNotFail(t *testing.T) {
 	for range parsePSModuleDoesNotFail {
-	}
-	input := "module X where"
-	expected := psModule{module: "X"}
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	actual, err := parsePSModule(scanner)
-	if err != nil {
-		t.Errorf("Expected an error: %#v.", actual)
-	}
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
+		input := "module X where"
+		expected := psModule{module: "X"}
+		scanner := bufio.NewScanner(strings.NewReader(input))
+		actual, err := parsePSModule(scanner)
+		if err != nil {
+			t.Errorf("Expected an error: %#v.", actual)
+		}
+		if !reflect.DeepEqual(expected, actual) {
+			t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
+		}
 	}
 }
 
