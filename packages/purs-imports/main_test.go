@@ -29,7 +29,7 @@ func TestFindImportDoesNotFailForPrelude(t *testing.T) {
 }
 
 func TestFindImportDoesNotFailForPreludeWithWhitespace(t *testing.T) {
-	input := "import Prelude"
+	input := "import           Prelude          "
 	expected := "Prelude"
 	actual, err := findImport(input)
 	if err != nil {
