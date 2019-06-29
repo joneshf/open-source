@@ -22,7 +22,7 @@ func parseModule(str string) (string, error) {
 func parsePSModule(scanner bufio.Scanner) (psModule, error) {
 	for scanner.Scan() {
 	}
-	return psModule{}, nil
+	return psModule{}, fmt.Errorf("Could not parse module")
 }
 
 func parseByPrefix(prefix, str string) (string, error) {
