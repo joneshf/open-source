@@ -39,15 +39,15 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 	return result, fmt.Errorf("Could not parse module")
 }
 
-func parseByPrefix(prefix, str string) (string, error) {
+func parseByPrefix(prefix, str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 {
 		prefixToken := tokens[0]
 		if prefixToken == prefix {
-			return tokens[1], nil
+			return tokens[1], true
 		}
 	}
-	return str, fmt.Errorf("%#v is not a valid %s", str, prefix)
+	return str, false
 }
 
 func oldParseByPrefix(prefix, str string) (string, error) {
