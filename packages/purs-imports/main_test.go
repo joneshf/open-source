@@ -105,11 +105,11 @@ func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 }
 
 func TestParsePSModuleDoesNotFailATrivialModule(t *testing.T) {
-	input := ""
-	expected := psModule{}
+	input := "module X where"
+	expected := psModule{module: "X"}
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	actual, err := parsePSModule(scanner)
-	if err == nil {
+	if err != nil {
 		t.Errorf("Expected an error: %#v.", actual)
 	}
 	if !reflect.DeepEqual(expected, actual) {
