@@ -104,7 +104,7 @@ func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 	}
 }
 
-func TestParsePSModuleDoesNotFailATrivialModule(t *testing.T) {
+func TestParsePSModuleDoesNotFailWithATrivialModule(t *testing.T) {
 	input := "module X where"
 	expected := psModule{module: "X"}
 	scanner := bufio.NewScanner(strings.NewReader(input))
