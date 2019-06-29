@@ -126,19 +126,6 @@ func TestParsePSModuleDoesNotFail(t *testing.T) {
 	}
 }
 
-func TestParsePSModuleDoesNotFailWithATrivialModule(t *testing.T) {
-	input := "module X where"
-	expected := psModule{module: "X"}
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	actual, err := parsePSModule(scanner)
-	if err != nil {
-		t.Errorf("Expected an error: %#v.", actual)
-	}
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
-}
-
 func TestParsePSModuleDoesNotFailWithAModuleWithImports(t *testing.T) {
 	input := "module X where\nimport Y\nimport Z"
 	expected := psModule{module: "X", imports: []string{"Y", "Z"}}
