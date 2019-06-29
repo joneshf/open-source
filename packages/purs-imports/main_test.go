@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var findImportTests = []struct {
+var findImportDoesNotFail = []struct {
 	input    string
 	expected string
 }{
@@ -15,7 +15,7 @@ var findImportTests = []struct {
 }
 
 func TestFindImportDoesNotFail(t *testing.T) {
-	for _, test := range findImportTests {
+	for _, test := range findImportDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findImport(test.input)
 			if err != nil {
