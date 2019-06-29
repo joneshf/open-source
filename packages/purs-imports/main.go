@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"strings"
 )
@@ -18,7 +19,7 @@ func parseModule(str string) (string, error) {
 	return parseByPrefix("module", str)
 }
 
-func parsePSModule() (psModule, error) {
+func parsePSModule(...bufio.Scanner) (psModule, error) {
 	return psModule{}, fmt.Errorf("Could not parse module")
 }
 
