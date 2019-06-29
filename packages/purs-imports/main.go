@@ -31,11 +31,11 @@ func findByPrefix(prefix string) func(string) (string, error) {
 	return func(str string) (string, error) {
 		tokens := strings.Fields(str)
 		if len(tokens) > 1 {
-			moduleToken := tokens[0]
-			if moduleToken == "module" {
+			prefixToken := tokens[0]
+			if prefixToken == "prefix" {
 				return tokens[1], nil
 			}
 		}
-		return str, fmt.Errorf("%#v is not a valid module", str)
+		return str, fmt.Errorf("%#v is not a valid prefix", str)
 	}
 }
