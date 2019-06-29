@@ -28,12 +28,13 @@ func TestFindImportDoesNotFail(t *testing.T) {
 	}
 }
 
+var findImportFails = []struct {
+	input string
+}{
+	{input: ""},
+}
+
 func TestFindImportFailsForTheEmptyString(t *testing.T) {
-	var findImportFails = []struct {
-		input string
-	}{
-		{input: ""},
-	}
 	for _, test := range findImportFails {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findImport(test.input)
