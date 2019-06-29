@@ -27,3 +27,11 @@ func TestFindImportDoesNotFailForPrelude(t *testing.T) {
 		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
 	}
 }
+
+func TestFindImportFailsForTheEmptyString(t *testing.T) {
+	input := ""
+	actual, err := findImport(input)
+	if err == nil {
+		t.Error("Expected an error", actual)
+	}
+}
