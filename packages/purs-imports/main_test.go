@@ -34,6 +34,7 @@ var findImportFails = []struct {
 	{input: ""},
 	{input: "import"},
 	{input: "import' Foo = 12"},
+	{input: "module Foo"},
 }
 
 func TestFindImportFailsForTheEmptyString(t *testing.T) {
