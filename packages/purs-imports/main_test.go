@@ -4,16 +4,17 @@ import (
 	"testing"
 )
 
+var findImportTests = []struct {
+	input    string
+	expected string
+}{
+	{
+		input:    "import Data.Array",
+		expected: "Data.Array",
+	},
+}
+
 func TestFindImportDoesNotFail(t *testing.T) {
-	findImportTests := []struct {
-		input    string
-		expected string
-	}{
-		{
-			input:    "import Data.Array",
-			expected: "Data.Array",
-		},
-	}
 	for _, test := range findImportTests {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findImport(test.input)
