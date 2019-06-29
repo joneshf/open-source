@@ -44,8 +44,7 @@ func parseByPrefix(prefix, str string) (string, bool) {
 	if len(tokens) <= 1 {
 		return "", false
 	}
-	prefixToken := tokens[0]
-	if prefixToken == prefix {
+	if tokens[0] == prefix {
 		return tokens[1], true
 	}
 	return "", false
