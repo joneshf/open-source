@@ -51,50 +51,6 @@ func TestParseImportFails(t *testing.T) {
 	}
 }
 
-var oldParseImportDoesNotFail = []struct {
-	input    string
-	expected string
-}{
-	{input: "import Data.Array", expected: "Data.Array"},
-	{input: "import Effect", expected: "Effect"},
-	{input: "import Prelude", expected: "Prelude"},
-	{input: "    import           Prelude          ", expected: "Prelude"},
-}
-
-func TestOldParseImportDoesNotFail(t *testing.T) {
-	for _, test := range oldParseImportDoesNotFail {
-		t.Run(test.input, func(t *testing.T) {
-			actual, err := oldParseImport(test.input)
-			if err != nil {
-				t.Errorf("Did not expect an error: %s.", err)
-			}
-			if test.expected != actual {
-				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
-			}
-		})
-	}
-}
-
-var oldParseImportFails = []struct {
-	input string
-}{
-	{input: ""},
-	{input: "import"},
-	{input: "import' Foo = 12"},
-	{input: "module Foo"},
-}
-
-func TestOldParseImportFails(t *testing.T) {
-	for _, test := range oldParseImportFails {
-		t.Run(test.input, func(t *testing.T) {
-			actual, err := oldParseImport(test.input)
-			if err == nil {
-				t.Errorf("Expected an error: %s.", actual)
-			}
-		})
-	}
-}
-
 var parseModuleDoesNotFail = []struct {
 	input    string
 	expected string
