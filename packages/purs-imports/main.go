@@ -36,7 +36,7 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 			return result, nil
 		}
 	}
-	return result, fmt.Errorf("Could not parse module")
+	return psModule{}, fmt.Errorf("Could not parse module")
 }
 
 func parseByPrefix(prefix, str string) (string, bool) {
