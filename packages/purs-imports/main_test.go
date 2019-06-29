@@ -95,7 +95,8 @@ func TestParseModuleFails(t *testing.T) {
 }
 
 func TestParsePSModuleFails(t *testing.T) {
-	scanner := bufio.NewScanner(strings.NewReader(""))
+	input := ""
+	scanner := bufio.NewScanner(strings.NewReader(input))
 	actual, err := parsePSModule(scanner)
 	if err == nil {
 		t.Errorf("Expected an error: %#v.", actual)
