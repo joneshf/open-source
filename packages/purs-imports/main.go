@@ -13,5 +13,5 @@ func findImport(str string) (string, error) {
 			return tokens[1], nil
 		}
 	}
-	return str, fmt.Errorf("%#v", str)
+	return str, fmt.Errorf("%#v is not a valid import", str)
 }
