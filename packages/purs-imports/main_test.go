@@ -33,9 +33,9 @@ var parseImportDoesNotFail = []struct {
 func TestParseImportDoesNotFail(t *testing.T) {
 	for _, test := range parseImportDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := parseImport(test.input)
-			if err != nil {
-				t.Errorf("Did not expect an error: %s.", err)
+			actual, ok := parseImport(test.input)
+			if !ok {
+				t.Errorf("Expected %#v to parse: %#v.", test.input, actual)
 			}
 			if test.expected != actual {
 				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
@@ -56,9 +56,9 @@ var parseImportFails = []struct {
 func TestParseImportFails(t *testing.T) {
 	for _, test := range parseImportFails {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := parseImport(test.input)
-			if err == nil {
-				t.Errorf("Expected an error: %s.", actual)
+			actual, ok := parseImport(test.input)
+			if ok {
+				t.Errorf("Expected %#v not to parse: %#v.", test.input, actual)
 			}
 		})
 	}
