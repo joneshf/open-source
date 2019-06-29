@@ -36,6 +36,6 @@ func findByPrefix(prefix string) func(string) (string, error) {
 				return tokens[1], nil
 			}
 		}
-		return str, fmt.Errorf("%#v is not a valid prefix", str)
+		return str, fmt.Errorf("%#v is not a valid %s", str, prefix)
 	}
 }
