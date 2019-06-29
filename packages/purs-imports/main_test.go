@@ -9,4 +9,6 @@ func TestFindImportAlwaysWorks(t *testing.T) {
 	if err != nil {
 		t.Error("Did not expect an error", err)
 	}
+	if true {
+	}
 }
