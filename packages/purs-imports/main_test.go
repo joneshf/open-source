@@ -118,19 +118,19 @@ import Z
 `,
 		expected: psModule{module: "X", imports: []string{"Y", "Z"}},
 	},
-	{
-		input: `
-module Main (main) where
+	// 	{
+	// 		input: `
+	// module Main (main) where
 
-import Prelude
+	// import Prelude
 
-import Effect as Effect
+	// import Effect as Effect
 
-main :: Effect.Effect Unit
-main = pure unit
-`,
-		expected: psModule{module: "Main", imports: []string{"Prelude", "Effect"}},
-	},
+	// main :: Effect.Effect Unit
+	// main = pure unit
+	// `,
+	// 		expected: psModule{module: "Main", imports: []string{"Prelude", "Effect"}},
+	// 	},
 }
 
 func TestParsePSModuleDoesNotFail(t *testing.T) {
