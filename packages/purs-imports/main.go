@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type module struct {
+type psModule struct {
 	module  string
 	imports []string
 }
@@ -16,6 +16,10 @@ func parseImport(str string) (string, error) {
 
 func parseModule(str string) (string, error) {
 	return parseByPrefix("module", str)
+}
+
+func parsePSModule() (psModule, error) {
+	return psModule{}, nil
 }
 
 func parseByPrefix(prefix, str string) (string, error) {
