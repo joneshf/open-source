@@ -20,58 +20,46 @@ import (
 	"testing"
 )
 
-func TestParseImportDoesNotFailForDataArray(t *testing.T) {
-	input := "import Data.Array"
-	expected := "Data.Array"
-	actual, err := parseImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
+var parseImportDoesNotFail = []struct {
+	input    string
+	expected string
+}{
+	{input: "import Data.Array", expected: "Data.Array"},
+	{input: "import Effect", expected: "Effect"},
+	{input: "import Prelude", expected: "Prelude"},
+	{input: "    import           Prelude          ", expected: "Prelude"},
+}
+
+func TestParseImportDoesNotFail(t *testing.T) {
+	for _, test := range parseImportDoesNotFail {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := parseImport(test.input)
+			if err != nil {
+				t.Errorf("Did not expect an error: %s.", err)
+			}
+			if test.expected != actual {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
+		})
 	}
 }
 
-func TestParseImportDoesNotFailForEffect(t *testing.T) {
-	input := "import Effect"
-	expected := "Effect"
-	actual, err := parseImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
+var parseImportFails = []struct {
+	input string
+}{
+	{input: ""},
+	{input: "import"},
+	{input: "import' Foo = 12"},
+	{input: "module Foo"},
 }
 
-func TestParseImportDoesNotFailForPrelude(t *testing.T) {
-	input := "import Prelude"
-	expected := "Prelude"
-	actual, err := parseImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
-}
-
-func TestParseImportDoesNotFailForPreludeWithWhitespace(t *testing.T) {
-	input := "import           Prelude          "
-	expected := "Prelude"
-	actual, err := parseImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
-}
-
-func TestParseImportFailsForTheEmptyString(t *testing.T) {
-	input := ""
-	actual, err := parseImport(input)
-	if err == nil {
-		t.Error("Expected an error", actual)
+func TestParseImportFails(t *testing.T) {
+	for _, test := range parseImportFails {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := parseImport(test.input)
+			if err == nil {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
 	}
 }
