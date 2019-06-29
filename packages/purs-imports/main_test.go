@@ -14,3 +14,7 @@ func TestFindImportAlwaysWorks(t *testing.T) {
 		t.Errorf("Expected: %#v, Actual: %#v", expected, actual)
 	}
 }
+
+func TestFindImportGrabsTheModule(t *testing.T) {
+
+}
