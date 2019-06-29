@@ -94,7 +94,7 @@ func TestParseModuleFails(t *testing.T) {
 	}
 }
 
-func TestParsePSModuleFails(t *testing.T) {
+func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 	input := ""
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	actual, err := parsePSModule(scanner)
