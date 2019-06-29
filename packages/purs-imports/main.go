@@ -23,6 +23,8 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 	for scanner.Scan() {
 		module, err := parseModule(scanner.Text())
 		if err == nil {
+			for scanner.Scan() {
+			}
 			return psModule{module: module}, nil
 		}
 	}
