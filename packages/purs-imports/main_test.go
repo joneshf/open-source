@@ -110,7 +110,11 @@ var parsePSModuleDoesNotFail = []struct {
 }{
 	{input: "module X where", expected: psModule{module: "X"}},
 	{
-		input:    "module X where\nimport Y\nimport Z",
+		input: `
+module X where
+import Y
+import Z
+`,
 		expected: psModule{module: "X", imports: []string{"Y", "Z"}},
 	},
 }
