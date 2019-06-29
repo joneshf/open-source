@@ -31,7 +31,7 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 		if errModule == nil {
 			result.module = module
 			for scanner.Scan() {
-				parsedImport, errImport := parseImport(scanner.Text())
+				parsedImport, errImport := oldParseImport(scanner.Text())
 				if errImport == nil {
 					result.imports = append(result.imports, parsedImport)
 				}
