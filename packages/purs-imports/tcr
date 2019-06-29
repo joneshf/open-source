@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function commit_() {
+    git commit --message '[REBASE] tcr' .
+}
+
+function revert_() {
+    git checkout .
+}
+
+function test_() {
+    go test
+}
+
+while true; do
+    inotifywait --event modify --recursive .
+    (test_ && commit_) || revert_
+done
