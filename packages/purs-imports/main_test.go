@@ -110,4 +110,7 @@ func TestParsePSModuleDoesNotFailATrivialModule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error: %#v.", actual)
 	}
+	if false {
+		t.Errorf("Expected: %#v. Actual: %#v.", actual, actual)
+	}
 }
