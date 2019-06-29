@@ -18,9 +18,16 @@ package main
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"sort"
 	"strings"
 )
+
+type psModule struct {
+	module  string
+	imports []string
+}
 
 func findImports(scanner *bufio.Scanner) []string {
 	var imports []string
@@ -61,4 +68,16 @@ func parseModule(str string) (string, bool) {
 		return tokens[1], true
 	}
 	return "", false
+}
+
+func parsePSModule(reader io.Reader) (psModule, error) {
+	scanner := bufio.NewScanner(reader)
+	parsedModule, parsedModuleOk := findModule(scanner)
+	if parsedModuleOk {
+		return psModule{
+			module:  parsedModule,
+			imports: findImports(scanner),
+		}, nil
+	}
+	return psModule{}, fmt.Errorf("Could not parse module")
 }
