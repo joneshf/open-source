@@ -147,3 +147,24 @@ func TestParsePSModuleDoesNotFail(t *testing.T) {
 		})
 	}
 }
+
+var parsePSModuleFails = []struct {
+	input string
+}{
+	{input: ""},
+	{input: "module"},
+	{input: "module' Foo = 12"},
+	{input: "import Foo"},
+}
+
+func TestParsePSModuleFails(t *testing.T) {
+	for _, test := range parsePSModuleFails {
+		t.Run(test.input, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(test.input))
+			actual, err := parsePSModule(scanner)
+			if err == nil {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
+	}
+}
