@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var findImportDoesNotFail = []struct {
+var parseImportDoesNotFail = []struct {
 	input    string
 	expected string
 }{
@@ -14,10 +14,10 @@ var findImportDoesNotFail = []struct {
 	{input: "    import           Prelude          ", expected: "Prelude"},
 }
 
-func TestFindImportDoesNotFail(t *testing.T) {
-	for _, test := range findImportDoesNotFail {
+func TestParseImportDoesNotFail(t *testing.T) {
+	for _, test := range parseImportDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := findImport(test.input)
+			actual, err := parseImport(test.input)
 			if err != nil {
 				t.Errorf("Did not expect an error: %s.", err)
 			}
@@ -28,7 +28,7 @@ func TestFindImportDoesNotFail(t *testing.T) {
 	}
 }
 
-var findImportFails = []struct {
+var parseImportFails = []struct {
 	input string
 }{
 	{input: ""},
@@ -37,10 +37,10 @@ var findImportFails = []struct {
 	{input: "module Foo"},
 }
 
-func TestFindImportFails(t *testing.T) {
-	for _, test := range findImportFails {
+func TestParseImportFails(t *testing.T) {
+	for _, test := range parseImportFails {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := findImport(test.input)
+			actual, err := parseImport(test.input)
 			if err == nil {
 				t.Errorf("Expected an error: %s.", actual)
 			}
@@ -48,7 +48,7 @@ func TestFindImportFails(t *testing.T) {
 	}
 }
 
-var findModuleDoesNotFail = []struct {
+var parseModuleDoesNotFail = []struct {
 	input    string
 	expected string
 }{
@@ -58,10 +58,10 @@ var findModuleDoesNotFail = []struct {
 	{input: "    module           Prelude           where", expected: "Prelude"},
 }
 
-func TestFindModuleDoesNotFail(t *testing.T) {
-	for _, test := range findModuleDoesNotFail {
+func TestParseModuleDoesNotFail(t *testing.T) {
+	for _, test := range parseModuleDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := findModule(test.input)
+			actual, err := parseModule(test.input)
 			if err != nil {
 				t.Errorf("Did not expect an error: %s.", err)
 			}
@@ -72,7 +72,7 @@ func TestFindModuleDoesNotFail(t *testing.T) {
 	}
 }
 
-var findModuleFails = []struct {
+var parseModuleFails = []struct {
 	input string
 }{
 	{input: ""},
@@ -81,10 +81,10 @@ var findModuleFails = []struct {
 	{input: "import Foo"},
 }
 
-func TestFindModuleFails(t *testing.T) {
-	for _, test := range findModuleFails {
+func TestParseModuleFails(t *testing.T) {
+	for _, test := range parseModuleFails {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := findModule(test.input)
+			actual, err := parseModule(test.input)
 			if err == nil {
 				t.Errorf("Expected an error: %s.", actual)
 			}
