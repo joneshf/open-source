@@ -51,50 +51,6 @@ func TestParseImportFails(t *testing.T) {
 	}
 }
 
-var oldParseModuleDoesNotFail = []struct {
-	input    string
-	expected string
-}{
-	{input: "module Data.Array where", expected: "Data.Array"},
-	{input: "module Effect where", expected: "Effect"},
-	{input: "module Prelude where", expected: "Prelude"},
-	{input: "    module           Prelude           where", expected: "Prelude"},
-}
-
-func TestOldParseModuleDoesNotFail(t *testing.T) {
-	for _, test := range oldParseModuleDoesNotFail {
-		t.Run(test.input, func(t *testing.T) {
-			actual, err := oldParseModule(test.input)
-			if err != nil {
-				t.Errorf("Did not expect an error: %s.", err)
-			}
-			if test.expected != actual {
-				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
-			}
-		})
-	}
-}
-
-var oldParseModuleFails = []struct {
-	input string
-}{
-	{input: ""},
-	{input: "module"},
-	{input: "module' Foo = 12"},
-	{input: "import Foo"},
-}
-
-func TestOldParseModuleFails(t *testing.T) {
-	for _, test := range oldParseModuleFails {
-		t.Run(test.input, func(t *testing.T) {
-			actual, err := oldParseModule(test.input)
-			if err == nil {
-				t.Errorf("Expected an error: %s.", actual)
-			}
-		})
-	}
-}
-
 var parseModuleDoesNotFail = []struct {
 	input    string
 	expected string
