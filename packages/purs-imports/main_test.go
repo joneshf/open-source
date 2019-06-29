@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"strings"
 	"testing"
 )
 
@@ -93,7 +95,8 @@ func TestParseModuleFails(t *testing.T) {
 }
 
 func TestParsePSModuleFails(t *testing.T) {
-	actual, err := parsePSModule()
+	scanner := bufio.NewScanner(strings.NewReader(""))
+	actual, err := parsePSModule(scanner)
 	if err == nil {
 		t.Errorf("Expected an error: %#v.", actual)
 	}
