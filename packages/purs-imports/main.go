@@ -13,11 +13,11 @@ type psModule struct {
 }
 
 func parseImport(str string) (string, error) {
-	return parseByPrefix("import", str)
+	return oldParseByPrefix("import", str)
 }
 
 func parseModule(str string) (string, error) {
-	return parseByPrefix("module", str)
+	return oldParseByPrefix("module", str)
 }
 
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
