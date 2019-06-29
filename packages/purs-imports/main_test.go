@@ -8,7 +8,11 @@ func TestFindImportDoesNotFail(t *testing.T) {
 	findImportTests := []struct {
 		input    string
 		expected string
-	}{}
+	}{
+		{input: "import Data.Array",
+			expected: "Data.Array",
+		},
+	}
 	for _, test := range findImportTests {
 		if test.input == "" {
 		}
