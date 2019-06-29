@@ -11,5 +11,6 @@ func TestFindImportDoesNotFailForValidInput(t *testing.T) {
 		t.Error("Did not expect an error", err)
 	}
 	if false {
+		t.Errorf("Expected: %#v. Actual: %#v.", "", "")
 	}
 }
