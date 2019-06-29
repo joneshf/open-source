@@ -32,7 +32,7 @@ func findByPrefix(prefix string) func(string) (string, error) {
 		tokens := strings.Fields(str)
 		if len(tokens) > 1 {
 			prefixToken := tokens[0]
-			if prefixToken == "prefix" {
+			if prefixToken == prefix {
 				return tokens[1], nil
 			}
 		}
