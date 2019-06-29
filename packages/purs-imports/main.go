@@ -18,7 +18,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -26,8 +25,8 @@ import (
 func findImports(scanner *bufio.Scanner) []string {
 	var imports []string
 	for scanner.Scan() {
-		parsedImport, errImport := parseImport(scanner.Text())
-		if errImport == nil {
+		parsedImport, parsedImportOk := parseImport(scanner.Text())
+		if parsedImportOk {
 			imports = append(imports, parsedImport)
 		}
 	}
@@ -36,10 +35,10 @@ func findImports(scanner *bufio.Scanner) []string {
 	return imports
 }
 
-func parseImport(str string) (string, error) {
+func parseImport(str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 && tokens[0] == "import" {
-		return tokens[1], nil
+		return tokens[1], true
 	}
-	return "", fmt.Errorf("%#v is not a valid import", str)
+	return "", false
 }
