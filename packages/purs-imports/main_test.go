@@ -19,7 +19,7 @@ func TestFindImportDoesNotFail(t *testing.T) {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findImport(test.input)
 			if err != nil {
-				t.Error("Did not expect an error", err)
+				t.Errorf("Did not expect an error: %#v", err)
 			}
 			if test.expected != actual {
 				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
