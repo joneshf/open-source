@@ -27,7 +27,7 @@ func parseModule(str string) (string, error) {
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 	result := psModule{}
 	for scanner.Scan() {
-		module, errModule := parseModule(scanner.Text())
+		module, errModule := oldParseModule(scanner.Text())
 		if errModule == nil {
 			result.module = module
 			for scanner.Scan() {
