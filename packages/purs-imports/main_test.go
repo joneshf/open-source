@@ -5,7 +5,8 @@ import (
 )
 
 func TestFindImportAlwaysWorks(t *testing.T) {
-	_, err := findImport("")
+	expected := ""
+	_, err := findImport(expected)
 	if err != nil {
 		t.Error("Did not expect an error", err)
 	}
