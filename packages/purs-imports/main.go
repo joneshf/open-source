@@ -9,6 +9,7 @@ func findImport(str string) (string, error) {
 	if len(tokens) > 2 {
 		importToken := tokens[0]
 		if importToken == "import" {
+			return tokens[1], nil
 		}
 	}
 	return str, nil
