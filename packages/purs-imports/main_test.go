@@ -48,6 +48,30 @@ func TestFindImportFailsForTheEmptyString(t *testing.T) {
 	}
 }
 
+var findModuleDoesNotFail = []struct {
+	input    string
+	expected string
+}{
+	{input: "module Data.Array where", expected: "Data.Array"},
+	{input: "module Effect where", expected: "Effect"},
+	{input: "module Prelude where", expected: "Prelude"},
+	{input: "    module           Prelude           where", expected: "Prelude"},
+}
+
+func TestFindModuleDoesNotFail(t *testing.T) {
+	for _, test := range findModuleDoesNotFail {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := findModule(test.input)
+			if err != nil {
+				t.Errorf("Did not expect an error: %s.", err)
+			}
+			if test.expected != actual {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
+		})
+	}
+}
+
 var findModuleFails = []struct {
 	input string
 }{
