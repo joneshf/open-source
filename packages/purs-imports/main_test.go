@@ -4,4 +4,4 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M) {}
+func TestFindImport(t *testing.T) {}
