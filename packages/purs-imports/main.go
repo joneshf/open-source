@@ -42,3 +42,11 @@ func parseImport(str string) (string, bool) {
 	}
 	return "", false
 }
+
+func parseModule(str string) (string, bool) {
+	tokens := strings.Fields(str)
+	if len(tokens) > 1 && tokens[0] == "module" {
+		return tokens[1], true
+	}
+	return "", false
+}
