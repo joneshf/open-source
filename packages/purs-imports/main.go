@@ -16,7 +16,9 @@ func findImport(str string) (string, error) {
 	return str, fmt.Errorf("%#v is not a valid import", str)
 }
 
-var findModule = findByPrefix("module")
+func findModule(str string) (string, error) {
+	return findByPrefix("module")(str)
+}
 
 func findByPrefix(prefix string) func(string) (string, error) {
 	return func(str string) (string, error) {
