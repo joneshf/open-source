@@ -113,9 +113,8 @@ var parsePSModuleDoesNotFail = []struct {
 
 func TestParsePSModuleDoesNotFail(t *testing.T) {
 	for _, test := range parsePSModuleDoesNotFail {
-		input := test.input
 		expected := test.expected
-		scanner := bufio.NewScanner(strings.NewReader(input))
+		scanner := bufio.NewScanner(strings.NewReader(test.input))
 		actual, err := parsePSModule(scanner)
 		if err != nil {
 			t.Errorf("Expected an error: %#v.", actual)
