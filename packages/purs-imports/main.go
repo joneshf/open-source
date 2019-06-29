@@ -12,8 +12,8 @@ type psModule struct {
 	imports []string
 }
 
-func parseImport(str string) (string, error) {
-	return oldParseByPrefix("import", str)
+func parseImport(str string) (string, bool) {
+	return parseByPrefix("import", str)
 }
 
 func oldParseImport(str string) (string, error) {
