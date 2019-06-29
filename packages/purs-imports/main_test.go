@@ -10,7 +10,7 @@ func TestFindImportAlwaysWorks(t *testing.T) {
 	if err != nil {
 		t.Error("Did not expect an error", err)
 	}
-	if false {
+	if expected != actual {
 		t.Errorf("Expected: %+v, Actual: %+v", expected, actual)
 	}
 }
