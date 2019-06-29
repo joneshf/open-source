@@ -13,5 +13,5 @@ func findImport(str string) (string, error) {
 			return tokens[1], nil
 		}
 	}
-	return str, errors.New("")
+	return str, errors.New("%#v")
 }
