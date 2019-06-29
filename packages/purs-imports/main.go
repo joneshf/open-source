@@ -6,7 +6,7 @@ import (
 )
 
 func findImport(str string) (string, error) {
-	tokens := strings.Split(str, " ")
+	tokens := strings.Fields(str)
 	if len(tokens) > 1 {
 		importToken := tokens[0]
 		if importToken == "import" {
