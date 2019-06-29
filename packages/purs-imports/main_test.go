@@ -5,6 +5,12 @@ import (
 )
 
 func TestFindImportDoesNotFail(t *testing.T) {
+	findImportTests := []struct {
+		input    string
+		expected string
+	}{}
+	if len(findImportTests) == 0 {
+	}
 	input := "import Data.Array"
 	expected := "Data.Array"
 	t.Run(input, func(t *testing.T) {
