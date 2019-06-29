@@ -23,8 +23,8 @@ func parseModule(str string) (string, bool) {
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 	result := psModule{}
 	for scanner.Scan() {
-		module, ok := parseModule(scanner.Text())
-		if ok {
+		module, moduleOk := parseModule(scanner.Text())
+		if moduleOk {
 			result.module = module
 			for scanner.Scan() {
 				parsedImport, ok := parseImport(scanner.Text())
