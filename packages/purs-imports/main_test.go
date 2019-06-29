@@ -118,8 +118,8 @@ func TestParsePSModuleDoesNotFailWithATrivialModule(t *testing.T) {
 }
 
 func TestParsePSModuleDoesNotFailWithAModuleWithImports(t *testing.T) {
-	input := "module X where\nimport Y"
-	expected := psModule{module: "X", imports: []string{"Y"}}
+	input := "module X where\nimport Y\nimport Z"
+	expected := psModule{module: "X", imports: []string{"Y", "Z"}}
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	actual, err := parsePSModule(scanner)
 	if err != nil {
