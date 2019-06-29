@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -110,7 +111,7 @@ func TestParsePSModuleDoesNotFailATrivialModule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error: %#v.", actual)
 	}
-	if false {
+	if !reflect.DeepEqual(actual, actual) {
 		t.Errorf("Expected: %#v. Actual: %#v.", actual, actual)
 	}
 }
