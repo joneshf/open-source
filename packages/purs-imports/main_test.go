@@ -37,7 +37,7 @@ var findImportFails = []struct {
 	{input: "module Foo"},
 }
 
-func TestFindImportFailsForTheEmptyString(t *testing.T) {
+func TestFindImportFails(t *testing.T) {
 	for _, test := range findImportFails {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findImport(test.input)
@@ -81,7 +81,7 @@ var findModuleFails = []struct {
 	{input: "import Foo"},
 }
 
-func TestFindModuleFailsForTheEmptyString(t *testing.T) {
+func TestFindModuleFails(t *testing.T) {
 	for _, test := range findModuleFails {
 		t.Run(test.input, func(t *testing.T) {
 			actual, err := findModule(test.input)
