@@ -91,3 +91,10 @@ func TestParseModuleFails(t *testing.T) {
 		})
 	}
 }
+
+func TestParsePSModuleFails(t *testing.T) {
+	actual, err := parsePSModule()
+	if err == nil {
+		t.Errorf("Expected an error: %#v.", actual)
+	}
+}
