@@ -21,10 +21,7 @@ func TestFindImportDoesNotFail(t *testing.T) {
 	test := struct {
 		input    string
 		expected string
-	}{
-		input:    "import Data.Array",
-		expected: "Data.Array",
-	}
+	}(findImportTests[0])
 	t.Run(test.input, func(t *testing.T) {
 		actual, err := findImport(test.input)
 		if err != nil {
