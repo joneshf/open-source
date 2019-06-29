@@ -41,6 +41,9 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 
 func parseByPrefix(prefix, str string) (string, bool) {
 	tokens := strings.Fields(str)
+	if len(tokens) <= 1 {
+		return "", false
+	}
 	if len(tokens) > 1 {
 		prefixToken := tokens[0]
 		if prefixToken == prefix {
