@@ -109,6 +109,10 @@ var parsePSModuleDoesNotFail = []struct {
 	expected psModule
 }{
 	{input: "module X where", expected: psModule{module: "X"}},
+	{
+		input:    "module X where\nimport Y\nimport Z",
+		expected: psModule{module: "X", imports: []string{"Y", "Z"}},
+	},
 }
 
 func TestParsePSModuleDoesNotFail(t *testing.T) {
