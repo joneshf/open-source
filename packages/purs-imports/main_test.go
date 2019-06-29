@@ -29,6 +29,9 @@ func TestFindImportDoesNotFail(t *testing.T) {
 }
 
 func TestFindImportFailsForTheEmptyString(t *testing.T) {
+	var findImportFails = []struct{}{}
+	for range findImportFails {
+	}
 	input := ""
 	actual, err := findImport(input)
 	if err == nil {
