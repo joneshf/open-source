@@ -104,7 +104,14 @@ func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 	}
 }
 
+var parsePSModuleDoesNotFail = []struct {
+	input    string
+	expected psModule
+}{}
+
 func TestParsePSModuleDoesNotFail(t *testing.T) {
+	for range parsePSModuleDoesNotFail {
+	}
 	input := "module X where"
 	expected := psModule{module: "X"}
 	scanner := bufio.NewScanner(strings.NewReader(input))
