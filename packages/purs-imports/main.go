@@ -20,8 +20,8 @@ func oldParseModule(str string) (string, error) {
 	return oldParseByPrefix("module", str)
 }
 
-func parseModule(str string) (string, error) {
-	return oldParseByPrefix("module", str)
+func parseModule(str string) (string, bool) {
+	return parseByPrefix("module", str)
 }
 
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
