@@ -47,5 +47,5 @@ func parseByPrefix(prefix, str string) (string, bool) {
 			return tokens[1], true
 		}
 	}
-	return str, false
+	return "", false
 }
