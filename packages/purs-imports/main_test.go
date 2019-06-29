@@ -4,4 +4,6 @@ import (
 	"testing"
 )
 
-func TestFindImportAlwaysWorks(t *testing.T) {}
+func TestFindImportAlwaysWorks(t *testing.T) {
+	findImport("")
+}
