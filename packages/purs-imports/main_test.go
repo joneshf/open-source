@@ -131,10 +131,10 @@ var parseModuleFails = []struct {
 func TestParseModuleFails(t *testing.T) {
 	for _, test := range parseModuleFails {
 		t.Run(test.input, func(t *testing.T) {
-			// actual, ok := parseModule(test.input)
-			// if err == nil {
-			// 	t.Errorf("Expected an error: %s.", actual)
-			// }
+			actual, ok := parseModule(test.input)
+			if ok {
+				t.Errorf("Expected %#v not to parse: %#v.", test.input, actual)
+			}
 		})
 	}
 }
