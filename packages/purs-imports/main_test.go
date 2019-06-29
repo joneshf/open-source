@@ -9,6 +9,9 @@ var findImportTests = []struct {
 	expected string
 }{
 	{input: "import Data.Array", expected: "Data.Array"},
+	{input: "import Effect", expected: "Effect"},
+	{input: "import Prelude", expected: "Prelude"},
+	{input: "import           Prelude          ", expected: "Prelude"},
 }
 
 func TestFindImportDoesNotFail(t *testing.T) {
@@ -22,42 +25,6 @@ func TestFindImportDoesNotFail(t *testing.T) {
 				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
 			}
 		})
-	}
-}
-
-func TestFindImportDoesNotFailForEffect(t *testing.T) {
-	input := "import Effect"
-	expected := "Effect"
-	actual, err := findImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
-}
-
-func TestFindImportDoesNotFailForPrelude(t *testing.T) {
-	input := "import Prelude"
-	expected := "Prelude"
-	actual, err := findImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
-}
-
-func TestFindImportDoesNotFailForPreludeWithWhitespace(t *testing.T) {
-	input := "import           Prelude          "
-	expected := "Prelude"
-	actual, err := findImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
 	}
 }
 
