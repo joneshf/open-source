@@ -11,8 +11,7 @@ var findImportDoesNotFail = []struct {
 	{input: "import Data.Array", expected: "Data.Array"},
 	{input: "import Effect", expected: "Effect"},
 	{input: "import Prelude", expected: "Prelude"},
-	{input: "import           Prelude          ", expected: "Prelude"},
-	{input: "     import           Prelude          ", expected: "Prelude"},
+	{input: "    import           Prelude          ", expected: "Prelude"},
 }
 
 func TestFindImportDoesNotFail(t *testing.T) {
