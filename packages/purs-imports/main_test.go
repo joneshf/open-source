@@ -15,22 +15,16 @@ func TestFindImportDoesNotFail(t *testing.T) {
 		},
 	}
 	for _, test := range findImportTests {
-		if test.input == "" {
-		}
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := findImport(test.input)
+			if err != nil {
+				t.Error("Did not expect an error", err)
+			}
+			if test.expected != actual {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
+		})
 	}
-	test := struct {
-		input    string
-		expected string
-	}(findImportTests[0])
-	t.Run(test.input, func(t *testing.T) {
-		actual, err := findImport(test.input)
-		if err != nil {
-			t.Error("Did not expect an error", err)
-		}
-		if test.expected != actual {
-			t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
-		}
-	})
 }
 
 func TestFindImportDoesNotFailForDataArray(t *testing.T) {
