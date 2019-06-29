@@ -16,5 +16,10 @@ func TestFindImportAlwaysWorks(t *testing.T) {
 }
 
 func TestFindImportGrabsTheModule(t *testing.T) {
-
+	input := "import Prelude"
+	expected := "Prelude"
+	actual, _ := findImport(input)
+	if ("import " + expected) != actual {
+		t.Errorf("Expected: %#v, Actual: %#v", expected, actual)
+	}
 }
