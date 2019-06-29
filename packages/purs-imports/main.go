@@ -20,6 +20,7 @@ func parseModule(str string) (string, error) {
 }
 
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
+	result := psModule{}
 	for scanner.Scan() {
 		module, err := parseModule(scanner.Text())
 		if err == nil {
@@ -29,7 +30,7 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 			return psModule{module: module}, nil
 		}
 	}
-	return psModule{}, fmt.Errorf("Could not parse module")
+	return result, fmt.Errorf("Could not parse module")
 }
 
 func parseByPrefix(prefix, str string) (string, error) {
