@@ -49,14 +49,3 @@ func parseByPrefix(prefix, str string) (string, bool) {
 	}
 	return str, false
 }
-
-func oldParseByPrefix(prefix, str string) (string, error) {
-	tokens := strings.Fields(str)
-	if len(tokens) > 1 {
-		prefixToken := tokens[0]
-		if prefixToken == prefix {
-			return tokens[1], nil
-		}
-	}
-	return str, fmt.Errorf("%#v is not a valid %s", str, prefix)
-}
