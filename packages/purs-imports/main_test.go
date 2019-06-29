@@ -108,13 +108,13 @@ var parseModuleDoesNotFail = []struct {
 func TestParseModuleDoesNotFail(t *testing.T) {
 	for _, test := range parseModuleDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
-			// actual, err := parseModule(test.input)
-			// if err != nil {
-			// 	t.Errorf("Did not expect an error: %s.", err)
-			// }
-			// if test.expected != actual {
-			// 	t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
-			// }
+			actual, ok := parseModule(test.input)
+			if !ok {
+				t.Errorf("Expected %#v to parse: %#v.", test.input, actual)
+			}
+			if test.expected != actual {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
 		})
 	}
 }
