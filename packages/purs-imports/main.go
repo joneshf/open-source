@@ -6,7 +6,8 @@ import (
 )
 
 type module struct {
-	module string
+	module  string
+	imports []string
 }
 
 func parseImport(str string) (string, error) {
