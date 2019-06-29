@@ -102,3 +102,12 @@ func TestParsePSModuleFailsForTheEmptyString(t *testing.T) {
 		t.Errorf("Expected an error: %#v.", actual)
 	}
 }
+
+func TestParsePSModuleDoesNotFailATrivialModule(t *testing.T) {
+	input := ""
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	actual, err := parsePSModule(scanner)
+	if err == nil {
+		t.Errorf("Expected an error: %#v.", actual)
+	}
+}
