@@ -23,6 +23,7 @@ func findByPrefix(prefix, str string) (string, error) {
 	}
 	return str, fmt.Errorf("%#v is not a valid %s", str, prefix)
 }
+
 func parseImport(str string) (string, error) {
 	return parseByPrefix("import", str)
 }
