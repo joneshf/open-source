@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -102,6 +104,69 @@ func TestParseModuleFails(t *testing.T) {
 		t.Run(test.input, func(t *testing.T) {
 			actual, ok := parseModule(test.input)
 			if ok {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
+	}
+}
+
+var parsePSModuleDoesNotFail = []struct {
+	input    string
+	expected psModule
+}{
+	{input: "module X where", expected: psModule{module: "X"}},
+	{
+		input: `
+module X where
+
+import Y
+import Z
+`,
+		expected: psModule{module: "X", imports: []string{"Y", "Z"}},
+	},
+	{
+		input: `
+module Main (main) where
+
+import Prelude
+
+import Effect as Effect
+
+main :: Effect.Effect Unit
+main = pure unit
+`,
+		expected: psModule{module: "Main", imports: []string{"Effect", "Prelude"}},
+	},
+}
+
+func TestParsePSModuleDoesNotFail(t *testing.T) {
+	for _, test := range parsePSModuleDoesNotFail {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := parsePSModule(strings.NewReader(test.input))
+			if err != nil {
+				t.Errorf("Expected an error: %#v.", actual)
+			}
+			if !reflect.DeepEqual(test.expected, actual) {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
+		})
+	}
+}
+
+var parsePSModuleFails = []struct {
+	input string
+}{
+	{input: ""},
+	{input: "module"},
+	{input: "module' Foo = 12"},
+	{input: "import Foo"},
+}
+
+func TestParsePSModuleFails(t *testing.T) {
+	for _, test := range parsePSModuleFails {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := parsePSModule(strings.NewReader(test.input))
+			if err == nil {
 				t.Errorf("Expected an error: %s.", actual)
 			}
 		})
