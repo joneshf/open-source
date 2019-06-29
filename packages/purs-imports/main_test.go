@@ -17,7 +17,6 @@ func TestFindImportDoesNotFail(t *testing.T) {
 		input    string
 		expected string
 	}{
-
 		input:    "import Data.Array",
 		expected: "Data.Array",
 	}
