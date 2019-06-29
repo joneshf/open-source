@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -31,6 +32,7 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 					result.imports = append(result.imports, parsedImport)
 				}
 			}
+			sort.Strings(result.imports)
 			return result, nil
 		}
 	}
