@@ -6,16 +6,16 @@ import (
 
 func TestFindImportDoesNotFail(t *testing.T) {
 	t.Run("import Data.Array", func(t *testing.T) {
+		input := "import Data.Array"
+		expected := "Data.Array"
+		actual, err := findImport(input)
+		if err != nil {
+			t.Error("Did not expect an error", err)
+		}
+		if expected != actual {
+			t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
+		}
 	})
-	input := "import Data.Array"
-	expected := "Data.Array"
-	actual, err := findImport(input)
-	if err != nil {
-		t.Error("Did not expect an error", err)
-	}
-	if expected != actual {
-		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
-	}
 }
 
 func TestFindImportDoesNotFailForDataArray(t *testing.T) {
