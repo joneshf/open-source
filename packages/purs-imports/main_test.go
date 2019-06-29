@@ -35,9 +35,11 @@ func TestFindImportFailsForTheEmptyString(t *testing.T) {
 		{input: ""},
 	}
 	for _, test := range findImportFails {
-		actual, err := findImport(test.input)
-		if err == nil {
-			t.Errorf("Expected an error: %s.", actual)
-		}
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := findImport(test.input)
+			if err == nil {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
 	}
 }
