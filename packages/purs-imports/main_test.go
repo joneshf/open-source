@@ -9,7 +9,7 @@ func TestFindImportDoesNotFail(t *testing.T) {
 		input    string
 		expected string
 	}{}
-	if len(findImportTests) == 0 {
+	for range findImportTests {
 	}
 	input := "import Data.Array"
 	expected := "Data.Array"
