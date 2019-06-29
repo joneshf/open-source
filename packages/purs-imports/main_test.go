@@ -36,8 +36,8 @@ func TestFindImportFailsForTheEmptyString(t *testing.T) {
 	}
 	for range findImportFails {
 	}
-	input := ""
-	actual, err := findImport(input)
+	test := struct{ input string }(findImportFails[0])
+	actual, err := findImport(test.input)
 	if err == nil {
 		t.Errorf("Expected an error: %s.", actual)
 	}
