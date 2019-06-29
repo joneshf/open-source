@@ -11,6 +11,6 @@ func TestFindImportAlwaysWorks(t *testing.T) {
 		t.Error("Did not expect an error", err)
 	}
 	if false {
-		t.Error()
+		t.Error("Expected: ", expected)
 	}
 }
