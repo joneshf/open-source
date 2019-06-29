@@ -13,7 +13,7 @@ func findModule(str string) (string, error) {
 	return findByPrefix("module", str)
 }
 
-func findByPrefix(prefix string, str string) (string, error) {
+func findByPrefix(prefix, str string) (string, error) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 {
 		prefixToken := tokens[0]
