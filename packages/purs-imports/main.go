@@ -16,10 +16,6 @@ func parseImport(str string) (string, bool) {
 	return parseByPrefix("import", str)
 }
 
-func oldParseImport(str string) (string, error) {
-	return oldParseByPrefix("import", str)
-}
-
 func parseModule(str string) (string, error) {
 	return oldParseByPrefix("module", str)
 }
