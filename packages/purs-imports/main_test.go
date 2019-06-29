@@ -47,3 +47,23 @@ func TestFindImportFailsForTheEmptyString(t *testing.T) {
 		})
 	}
 }
+
+var findModuleFails = []struct {
+	input string
+}{
+	{input: ""},
+	{input: "module"},
+	{input: "module' Foo = 12"},
+	{input: "import Foo"},
+}
+
+func TestFindModuleFailsForTheEmptyString(t *testing.T) {
+	for _, test := range findModuleFails {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := findModule(test.input)
+			if err == nil {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
+	}
+}
