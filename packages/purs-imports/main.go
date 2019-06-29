@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -13,5 +13,5 @@ func findImport(str string) (string, error) {
 			return tokens[1], nil
 		}
 	}
-	return str, errors.New("%#v")
+	return str, fmt.Errorf("%#v", str)
 }
