@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type module struct{}
+
 func parseImport(str string) (string, error) {
 	return parseByPrefix("import", str)
 }
