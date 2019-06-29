@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestFindImportFailsForNonImports(t *testing.T) {
+func TestFindImportAlwaysWorks(t *testing.T) {
 	expected := ""
 	actual, err := findImport(expected)
 	if err != nil {
