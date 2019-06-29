@@ -27,8 +27,8 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 		if parsedModuleOk {
 			result.module = parsedModule
 			for scanner.Scan() {
-				parsedImport, ok := parseImport(scanner.Text())
-				if ok {
+				parsedImport, parsedImportOk := parseImport(scanner.Text())
+				if parsedImportOk {
 					result.imports = append(result.imports, parsedImport)
 				}
 			}
