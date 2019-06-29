@@ -8,10 +8,7 @@ var findImportTests = []struct {
 	input    string
 	expected string
 }{
-	{
-		input:    "import Data.Array",
-		expected: "Data.Array",
-	},
+	{input: "import Data.Array", expected: "Data.Array"},
 }
 
 func TestFindImportDoesNotFail(t *testing.T) {
