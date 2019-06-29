@@ -31,7 +31,9 @@ func TestFindImportDoesNotFail(t *testing.T) {
 func TestFindImportFailsForTheEmptyString(t *testing.T) {
 	var findImportFails = []struct {
 		input string
-	}{{input: ""}}
+	}{
+		{input: ""},
+	}
 	for range findImportFails {
 	}
 	input := ""
