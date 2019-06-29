@@ -32,6 +32,6 @@ func TestFindImportFailsForTheEmptyString(t *testing.T) {
 	input := ""
 	actual, err := findImport(input)
 	if err == nil {
-		t.Error("Expected an error", actual)
+		t.Errorf("Expected an error: %s.", actual)
 	}
 }
