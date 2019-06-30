@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(os.Stdin)
+	parsePSModule(scanner)
 }
 
 type psModule struct {
