@@ -15,7 +15,7 @@ func TestGraph(t *testing.T) {
   "Main" -> "Prelude";
 }`
 	actual := graph(input)
-	if !reflect.DeepEqual(actual, actual) {
+	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
 	}
 }
