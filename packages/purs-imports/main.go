@@ -45,7 +45,9 @@ func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 			return
 		}
 	}
-	err = fmt.Errorf("Could not parse module")
+	if !ok {
+		err = fmt.Errorf("Could not parse module")
+	}
 	return
 }
 
