@@ -28,6 +28,7 @@ func parsePSImports(scanner *bufio.Scanner, result *psModule) []string {
 		}
 	}
 	sort.Strings(result.imports)
+
 	return result.imports
 }
 
