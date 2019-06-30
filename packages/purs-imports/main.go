@@ -11,8 +11,7 @@ import (
 )
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	module, err := parsePSModule(scanner)
+	module, err := parsePSModuleNew(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
 	}
