@@ -43,7 +43,7 @@ func graph(module psModule) string {
 	builder.WriteString("digraph imports {\n")
 	fmt.Fprintf(&builder, "  %#v;\n", module.module)
 	for _, psImport := range module.imports {
-		fmt.Fprintf(&builder, "  %#v;\n", psImport)
+		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
 	}
 	builder.WriteString("}")
 	return builder.String()
