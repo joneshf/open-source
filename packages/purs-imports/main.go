@@ -40,8 +40,8 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 
 func graph(module psModule) string {
 	var builder strings.Builder
-	builder.WriteString("digraph imports {")
-	fmt.Fprintf(&builder, "  %#v;", module.module)
+	builder.WriteString("digraph imports {\n")
+	fmt.Fprintf(&builder, "  %#v;\n", module.module)
 	builder.WriteString("}")
 	return builder.String()
 }
