@@ -42,6 +42,8 @@ func graph(module psModule) string {
 	var builder strings.Builder
 	builder.WriteString("digraph imports {\n")
 	fmt.Fprintf(&builder, "  %#v;\n", module.module)
+	for range module.imports {
+	}
 	builder.WriteString("}")
 	return builder.String()
 }
