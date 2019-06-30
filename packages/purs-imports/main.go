@@ -54,6 +54,17 @@ func findModule(scanner *bufio.Scanner) (string, bool) {
 	return module, ok
 }
 
+func graph(module psModule) string {
+	var builder strings.Builder
+	builder.WriteString("digraph imports {\n")
+	fmt.Fprintf(&builder, "  %#v;\n", module.module)
+	for _, psImport := range module.imports {
+		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+
 func parseImport(str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 && tokens[0] == "import" {
