@@ -24,8 +24,7 @@ func findModule(scanner *bufio.Scanner) (string, bool) {
 	return module, ok
 }
 
-func findModuleWithError(scanner *bufio.Scanner) (string, error) {
-	var module string
+func findModuleWithError(scanner *bufio.Scanner) (module string, err error) {
 	var ok bool
 	for scanner.Scan() {
 		module, ok = parseModule(scanner.Text())
