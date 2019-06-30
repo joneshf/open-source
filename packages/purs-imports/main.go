@@ -24,7 +24,7 @@ func findModule(scanner *bufio.Scanner) (string, bool) {
 	return module, ok
 }
 
-func findModuleWithError(scanner *bufio.Scanner) (string, bool) {
+func findModuleWithError(scanner *bufio.Scanner) (string, error) {
 	var module string
 	var ok bool
 	for scanner.Scan() {
@@ -33,7 +33,7 @@ func findModuleWithError(scanner *bufio.Scanner) (string, bool) {
 			break
 		}
 	}
-	return module, ok
+	return module, fmt.Errorf("Could not parse module")
 }
 
 func parseImport(str string) (string, bool) {
