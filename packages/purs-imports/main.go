@@ -17,9 +17,24 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"sort"
 	"strings"
 )
+
+func findImports(scanner *bufio.Scanner) []string {
+	var imports []string
+	for scanner.Scan() {
+		parsedImport, errImport := parseImport(scanner.Text())
+		if errImport == nil {
+			imports = append(imports, parsedImport)
+		}
+	}
+	sort.Strings(imports)
+
+	return imports
+}
 
 func parseImport(str string) (string, error) {
 	tokens := strings.Fields(str)
