@@ -20,9 +20,19 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"sort"
 	"strings"
 )
+
+func main() {
+	module, err := parsePSModule(os.Stdin)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("%s\n", graph(module))
+}
 
 type psModule struct {
 	module  string
