@@ -38,7 +38,7 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 		parsedModule, parsedModuleOk := parseModule(scanner.Text())
 		if parsedModuleOk {
 			result.module = parsedModule
-			parsePSImports(scanner, &result)
+			result.imports = parsePSImports(scanner, &result)
 			return result, nil
 		}
 	}
