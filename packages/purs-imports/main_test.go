@@ -8,6 +8,9 @@ import (
 )
 
 func TestGraph(t *testing.T) {
+	input := psModule{}
+	if !reflect.DeepEqual(input, input) {
+	}
 }
 
 var parseImportDoesNotFail = []struct {
