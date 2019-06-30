@@ -12,6 +12,18 @@ type psModule struct {
 	imports []string
 }
 
+func findImports(scanner *bufio.Scanner) (imports []string) {
+	for scanner.Scan() {
+		parsedImport, parsedImportOk := parseImport(scanner.Text())
+		if parsedImportOk {
+			imports = append(imports, parsedImport)
+		}
+	}
+	sort.Strings(imports)
+
+	return
+}
+
 func findModule(scanner *bufio.Scanner) (module string, err error) {
 	var ok bool
 	for scanner.Scan() {
@@ -32,18 +44,6 @@ func parseImport(str string) (string, bool) {
 
 func parseModule(str string) (string, bool) {
 	return parseByPrefix("module", str)
-}
-
-func findImports(scanner *bufio.Scanner) (imports []string) {
-	for scanner.Scan() {
-		parsedImport, parsedImportOk := parseImport(scanner.Text())
-		if parsedImportOk {
-			imports = append(imports, parsedImport)
-		}
-	}
-	sort.Strings(imports)
-
-	return
 }
 
 func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
