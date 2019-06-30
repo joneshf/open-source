@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"sort"
@@ -87,8 +88,8 @@ func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 	return
 }
 
-func parsePSModuleNew(reader *bufio.Scanner) (result psModule, err error) {
-	scanner := reader
+func parsePSModuleNew(reader *io.Reader) (result psModule, err error) {
+	scanner := bufio.NewScanner(*reader)
 	module, err := findModule(scanner)
 	if err == nil {
 		result = psModule{
