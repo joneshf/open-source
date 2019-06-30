@@ -87,15 +87,3 @@ func parsePSModule(reader io.Reader) (result psModule, err error) {
 	}
 	return
 }
-
-func parsePSModuleNew(reader io.Reader) (result psModule, err error) {
-	scanner := bufio.NewScanner(reader)
-	module, err := findModule(scanner)
-	if err == nil {
-		result = psModule{
-			module:  module,
-			imports: findImports(scanner),
-		}
-	}
-	return
-}
