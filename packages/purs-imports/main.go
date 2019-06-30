@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	module, err := parsePSModuleNew(os.Stdin)
+	module, err := parsePSModule(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
 	}
