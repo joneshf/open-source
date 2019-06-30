@@ -3,14 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 )
-
-func main() {
-	bufio.NewScanner(os.Stdin)
-}
 
 type psModule struct {
 	module  string
