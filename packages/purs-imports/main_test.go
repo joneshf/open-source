@@ -172,3 +172,68 @@ func TestParsePSModuleFails(t *testing.T) {
 		})
 	}
 }
+
+var parsePSModuleNewDoesNotFail = []struct {
+	input    string
+	expected psModule
+}{
+	{input: "module X where", expected: psModule{module: "X"}},
+	{
+		input: `
+module X where
+
+import Y
+import Z
+`,
+		expected: psModule{module: "X", imports: []string{"Y", "Z"}},
+	},
+	{
+		input: `
+module Main (main) where
+
+import Prelude
+
+import Effect as Effect
+
+main :: Effect.Effect Unit
+main = pure unit
+`,
+		expected: psModule{module: "Main", imports: []string{"Effect", "Prelude"}},
+	},
+}
+
+func TestParsePSModuleNewDoesNotFail(t *testing.T) {
+	for _, test := range parsePSModuleNewDoesNotFail {
+		t.Run(test.input, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(test.input))
+			actual, err := parsePSModule(scanner)
+			if err != nil {
+				t.Errorf("Expected an error: %#v.", actual)
+			}
+			if !reflect.DeepEqual(test.expected, actual) {
+				t.Errorf("Expected: %#v. Actual: %#v.", test.expected, actual)
+			}
+		})
+	}
+}
+
+var parsePSModuleNewFails = []struct {
+	input string
+}{
+	{input: ""},
+	{input: "module"},
+	{input: "module' Foo = 12"},
+	{input: "import Foo"},
+}
+
+func TestParsePSModuleNewFails(t *testing.T) {
+	for _, test := range parsePSModuleNewFails {
+		t.Run(test.input, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(test.input))
+			actual, err := parsePSModule(scanner)
+			if err == nil {
+				t.Errorf("Expected an error: %s.", actual)
+			}
+		})
+	}
+}
