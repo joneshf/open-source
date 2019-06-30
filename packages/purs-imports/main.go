@@ -29,7 +29,7 @@ func parsePSImports(scanner *bufio.Scanner) (imports []string) {
 	}
 	sort.Strings(imports)
 
-	return imports
+	return
 }
 
 func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
