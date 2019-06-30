@@ -12,7 +12,16 @@ type psModule struct {
 	imports []string
 }
 
-func findModule(scanner *bufio.Scanner) {
+func findModule(scanner *bufio.Scanner) (string, bool) {
+	var module string
+	var ok bool
+	for scanner.Scan() {
+		module, ok = parseModule(scanner.Text())
+		if ok {
+			break
+		}
+	}
+	return module, ok
 }
 
 func parseImport(str string) (string, bool) {
