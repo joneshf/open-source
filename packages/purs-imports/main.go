@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+func main() {
+}
+
 type psModule struct {
 	module  string
 	imports []string
