@@ -32,11 +32,11 @@ func parsePSImports(scanner *bufio.Scanner) (imports []string) {
 	return imports
 }
 
-func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
+func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 	for scanner.Scan() {
 		module, ok := parseModule(scanner.Text())
 		if ok {
-			result := psModule{
+			result = psModule{
 				module:  module,
 				imports: parsePSImports(scanner),
 			}
