@@ -12,6 +12,9 @@ type psModule struct {
 	imports []string
 }
 
+func findModule(scanner *bufio.Scanner) {
+}
+
 func parseImport(str string) (string, bool) {
 	return parseByPrefix("import", str)
 }
