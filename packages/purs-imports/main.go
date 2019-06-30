@@ -38,6 +38,10 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 	return
 }
 
+func graph(module psModule) (result string) {
+	return
+}
+
 func parseByPrefix(prefix, str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 && tokens[0] == prefix {
