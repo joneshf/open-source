@@ -36,10 +36,11 @@ func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
 	for scanner.Scan() {
 		module, ok := parseModule(scanner.Text())
 		if ok {
-			return psModule{
+			result := psModule{
 				module:  module,
 				imports: parsePSImports(scanner),
-			}, nil
+			}
+			return result, nil
 		}
 	}
 	return psModule{}, fmt.Errorf("Could not parse module")
