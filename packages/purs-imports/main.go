@@ -32,7 +32,10 @@ func findModuleWithError(scanner *bufio.Scanner) (module string, err error) {
 			break
 		}
 	}
-	return module, fmt.Errorf("Could not parse module")
+	if !ok {
+		err = fmt.Errorf("Could not parse module")
+	}
+	return
 }
 
 func parseImport(str string) (string, bool) {
@@ -56,14 +59,12 @@ func parsePSImports(scanner *bufio.Scanner) (imports []string) {
 }
 
 func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
-	module, ok := findModule(scanner)
-	if ok {
+	module, err := findModuleWithError(scanner)
+	if err == nil {
 		result = psModule{
 			module:  module,
 			imports: parsePSImports(scanner),
 		}
-	} else {
-		err = fmt.Errorf("Could not parse module")
 	}
 	return
 }
