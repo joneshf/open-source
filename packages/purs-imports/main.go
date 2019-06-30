@@ -24,6 +24,18 @@ func findModule(scanner *bufio.Scanner) (string, bool) {
 	return module, ok
 }
 
+func findModuleWithError(scanner *bufio.Scanner) (string, bool) {
+	var module string
+	var ok bool
+	for scanner.Scan() {
+		module, ok = parseModule(scanner.Text())
+		if ok {
+			break
+		}
+	}
+	return module, ok
+}
+
 func parseImport(str string) (string, bool) {
 	return parseByPrefix("import", str)
 }
