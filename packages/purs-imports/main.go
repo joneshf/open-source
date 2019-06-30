@@ -40,7 +40,7 @@ func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 				module:  module,
 				imports: parsePSImports(scanner),
 			}
-			return result, nil
+			return
 		}
 	}
 	return psModule{}, fmt.Errorf("Could not parse module")
