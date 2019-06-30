@@ -76,7 +76,8 @@ func parseModule(str string) (string, bool) {
 	return parseByPrefix("module", str)
 }
 
-func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
+func parsePSModule(reader io.Reader) (result psModule, err error) {
+	scanner := bufio.NewScanner(reader)
 	module, err := findModule(scanner)
 	if err == nil {
 		result = psModule{
