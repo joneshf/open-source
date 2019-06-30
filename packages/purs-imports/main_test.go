@@ -107,7 +107,7 @@ func TestParseModuleFails(t *testing.T) {
 	}
 }
 
-var parsePSModuleNewDoesNotFail = []struct {
+var parsePSModuleDoesNotFail = []struct {
 	input    string
 	expected psModule
 }{
@@ -136,10 +136,10 @@ main = pure unit
 	},
 }
 
-func TestParsePSModuleNewDoesNotFail(t *testing.T) {
-	for _, test := range parsePSModuleNewDoesNotFail {
+func TestParsePSModuleDoesNotFail(t *testing.T) {
+	for _, test := range parsePSModuleDoesNotFail {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := parsePSModuleNew(strings.NewReader(test.input))
+			actual, err := parsePSModule(strings.NewReader(test.input))
 			if err != nil {
 				t.Errorf("Expected an error: %#v.", actual)
 			}
@@ -150,7 +150,7 @@ func TestParsePSModuleNewDoesNotFail(t *testing.T) {
 	}
 }
 
-var parsePSModuleNewFails = []struct {
+var parsePSModuleFails = []struct {
 	input string
 }{
 	{input: ""},
@@ -159,10 +159,10 @@ var parsePSModuleNewFails = []struct {
 	{input: "import Foo"},
 }
 
-func TestParsePSModuleNewFails(t *testing.T) {
-	for _, test := range parsePSModuleNewFails {
+func TestParsePSModuleFails(t *testing.T) {
+	for _, test := range parsePSModuleFails {
 		t.Run(test.input, func(t *testing.T) {
-			actual, err := parsePSModuleNew(strings.NewReader(test.input))
+			actual, err := parsePSModule(strings.NewReader(test.input))
 			if err == nil {
 				t.Errorf("Expected an error: %s.", actual)
 			}
