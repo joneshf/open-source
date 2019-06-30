@@ -229,8 +229,7 @@ var parsePSModuleNewFails = []struct {
 func TestParsePSModuleNewFails(t *testing.T) {
 	for _, test := range parsePSModuleNewFails {
 		t.Run(test.input, func(t *testing.T) {
-			scanner := bufio.NewScanner(strings.NewReader(test.input))
-			actual, err := parsePSModule(scanner)
+			actual, err := parsePSModuleNew(strings.NewReader(test.input))
 			if err == nil {
 				t.Errorf("Expected an error: %s.", actual)
 			}
