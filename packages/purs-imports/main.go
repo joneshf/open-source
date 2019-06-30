@@ -21,16 +21,16 @@ func parseModule(str string) (string, bool) {
 }
 
 func parsePSImports(scanner *bufio.Scanner) []string {
-	result := psModule{}
+	var result []string
 	for scanner.Scan() {
 		parsedImport, parsedImportOk := parseImport(scanner.Text())
 		if parsedImportOk {
-			result.imports = append(result.imports, parsedImport)
+			result = append(result, parsedImport)
 		}
 	}
-	sort.Strings(result.imports)
+	sort.Strings(result)
 
-	return result.imports
+	return result
 }
 
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
