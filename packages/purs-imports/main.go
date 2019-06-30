@@ -46,6 +46,14 @@ func parseModule(str string) (string, bool) {
 	return parseByPrefix("module", str)
 }
 
+func parseByPrefix(prefix, str string) (string, bool) {
+	tokens := strings.Fields(str)
+	if len(tokens) > 1 && tokens[0] == prefix {
+		return tokens[1], true
+	}
+	return "", false
+}
+
 func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 	module, err := findModule(scanner)
 	if err == nil {
@@ -55,12 +63,4 @@ func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
 		}
 	}
 	return
-}
-
-func parseByPrefix(prefix, str string) (string, bool) {
-	tokens := strings.Fields(str)
-	if len(tokens) > 1 && tokens[0] == prefix {
-		return tokens[1], true
-	}
-	return "", false
 }
