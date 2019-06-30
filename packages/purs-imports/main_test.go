@@ -9,7 +9,9 @@ import (
 
 func TestGraph(t *testing.T) {
 	input := psModule{module: "Main", imports: []string{"Effect", "Prelude"}}
-	expected := ``
+	expected := `digraph imports {
+  "Main";
+}`
 	actual := graph(input)
 	if !reflect.DeepEqual(actual, actual) {
 		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
