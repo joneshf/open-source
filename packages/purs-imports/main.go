@@ -35,6 +35,18 @@ func findImports(scanner *bufio.Scanner) []string {
 	return imports
 }
 
+func findModule(scanner *bufio.Scanner) (string, bool) {
+	var module string
+	var ok bool
+	for scanner.Scan() {
+		module, ok = parseModule(scanner.Text())
+		if ok {
+			break
+		}
+	}
+	return module, ok
+}
+
 func parseImport(str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 && tokens[0] == "import" {
