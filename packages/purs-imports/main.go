@@ -11,10 +11,11 @@ import (
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	_, err := parsePSModule(scanner)
+	module, err := parsePSModule(scanner)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	graph(module)
 }
 
 type psModule struct {
