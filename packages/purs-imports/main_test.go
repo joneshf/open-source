@@ -8,7 +8,7 @@ import (
 )
 
 func TestGraph(t *testing.T) {
-	input := psModule{}
+	input := psModule{module: "Main"}
 	if !reflect.DeepEqual(input, input) {
 	}
 }
