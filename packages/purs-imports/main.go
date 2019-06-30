@@ -38,8 +38,9 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 	return
 }
 
-func graph(module psModule) (result string) {
-	return
+func graph(module psModule) string {
+	var builder strings.Builder
+	return builder.String()
 }
 
 func parseByPrefix(prefix, str string) (string, bool) {
