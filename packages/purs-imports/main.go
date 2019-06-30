@@ -20,7 +20,7 @@ func parseModule(str string) (string, bool) {
 	return parseByPrefix("module", str)
 }
 
-func parsePSImports(scanner *bufio.Scanner, result *psModule) {
+func parsePSImports(scanner *bufio.Scanner, result *psModule) []string {
 	for scanner.Scan() {
 		parsedImport, parsedImportOk := parseImport(scanner.Text())
 		if parsedImportOk {
@@ -28,6 +28,7 @@ func parsePSImports(scanner *bufio.Scanner, result *psModule) {
 		}
 	}
 	sort.Strings(result.imports)
+	return result.imports
 }
 
 func parsePSModule(scanner *bufio.Scanner) (psModule, error) {
