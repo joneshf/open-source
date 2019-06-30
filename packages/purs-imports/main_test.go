@@ -11,6 +11,8 @@ func TestGraph(t *testing.T) {
 	input := psModule{module: "Main", imports: []string{"Effect", "Prelude"}}
 	expected := `digraph imports {
   "Main";
+  "Main" -> "Effect";
+  "Main" -> "Prelude";
 }`
 	actual := graph(input)
 	if !reflect.DeepEqual(actual, actual) {
