@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -12,6 +13,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	_, err := parsePSModule(scanner)
 	if err != nil {
+		log.Fatalln(err)
 	}
 }
 
