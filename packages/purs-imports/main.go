@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	graph(module)
+	os.Stdout.WriteString(graph(module))
 }
 
 type psModule struct {
