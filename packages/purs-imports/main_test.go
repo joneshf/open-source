@@ -7,6 +7,9 @@ import (
 	"testing"
 )
 
+func TestGraph(t *testing.T) {
+}
+
 var parseImportDoesNotFail = []struct {
 	input    string
 	expected string
