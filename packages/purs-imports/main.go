@@ -12,7 +12,7 @@ type psModule struct {
 	imports []string
 }
 
-func findModuleWithError(scanner *bufio.Scanner) (module string, err error) {
+func findModule(scanner *bufio.Scanner) (module string, err error) {
 	var ok bool
 	for scanner.Scan() {
 		module, ok = parseModule(scanner.Text())
@@ -47,7 +47,7 @@ func parsePSImports(scanner *bufio.Scanner) (imports []string) {
 }
 
 func parsePSModule(scanner *bufio.Scanner) (result psModule, err error) {
-	module, err := findModuleWithError(scanner)
+	module, err := findModule(scanner)
 	if err == nil {
 		result = psModule{
 			module:  module,
