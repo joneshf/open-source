@@ -22,6 +22,19 @@ import (
 	"testing"
 )
 
+func TestGraph(t *testing.T) {
+	input := psModule{module: "Main", imports: []string{"Effect", "Prelude"}}
+	expected := `digraph imports {
+  "Main";
+  "Main" -> "Effect";
+  "Main" -> "Prelude";
+}`
+	actual := graph(input)
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
+	}
+}
+
 var parseImportDoesNotFail = []struct {
 	input    string
 	expected string
