@@ -15,7 +15,7 @@ import (
 func main() {
 	var modules []psModule
 	args := flag.Args()
-	log.Printf("%#v\n", args)
+	log.Printf("args: %#v\n", args)
 	for _, glob := range args {
 		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
@@ -34,7 +34,7 @@ func main() {
 			modules = append(modules, module)
 		}
 	}
-	log.Printf("%#v\n", modules)
+	log.Printf("modules: %#v\n", modules)
 	fmt.Printf("%s\n", graph(modules))
 }
 
