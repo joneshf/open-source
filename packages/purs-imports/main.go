@@ -16,12 +16,12 @@ func main() {
 	var modules []psModule
 	args := flag.Args()
 	for _, glob := range args {
-		files, globErr := filepath.Glob(glob)
+		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
 			log.Fatalln(globErr)
 		}
-		for _, file := range files {
-			os.Open(file)
+		for _, filename := range filenames {
+			os.Open(filename)
 		}
 		module, err := parsePSModule(os.Stdin)
 		if err != nil {
