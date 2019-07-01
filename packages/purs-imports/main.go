@@ -49,20 +49,6 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 	return
 }
 
-func findModuleNew(scanner *bufio.Scanner) (module string, err error) {
-	var ok bool
-	for scanner.Scan() {
-		module, ok = parseModule(scanner.Text())
-		if ok {
-			break
-		}
-	}
-	if !ok {
-		err = fmt.Errorf("Could not parse module")
-	}
-	return
-}
-
 func graph(module psModule) string {
 	var builder strings.Builder
 	builder.WriteString("digraph imports {\n")
