@@ -30,13 +30,18 @@ import (
 
 func main() {
 	var modules []psModule
+	var verbose bool
+	flag.BoolVar(&verbose, "verbose", false, "Output debugging information")
 	flag.Parse()
 	args := flag.Args()
+	debug(verbose, fmt.Sprintf("args: %#v\n", args))
 	for _, glob := range args {
+		debug(verbose, fmt.Sprintf("glob: %#v\n", glob))
 		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
 			log.Fatalln(globErr)
 		}
+		debug(verbose, fmt.Sprintf("filenames: %#v\n", filenames))
 		for _, filename := range filenames {
 			file, openErr := os.Open(filename)
 			if openErr != nil {
@@ -47,15 +52,23 @@ func main() {
 			if parseErr != nil {
 				log.Fatalln(parseErr)
 			}
+			debug(verbose, fmt.Sprintf("module: %#v\n", module))
 			modules = append(modules, module)
 		}
 	}
+	debug(verbose, fmt.Sprintf("modules: %#v\n", modules))
 	fmt.Printf("%s\n", graph(modules))
 }
 
 type psModule struct {
 	module  string
 	imports []string
+}
+
+func debug(verbose bool, message string) {
+	if verbose {
+		log.Print(message)
+	}
 }
 
 func findImports(scanner *bufio.Scanner) []string {
