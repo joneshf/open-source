@@ -60,6 +60,17 @@ func graph(module psModule) string {
 	return builder.String()
 }
 
+func graphNew(module psModule) string {
+	var builder strings.Builder
+	builder.WriteString("digraph imports {\n")
+	fmt.Fprintf(&builder, "  %#v;\n", module.module)
+	for _, psImport := range module.imports {
+		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+
 func parseByPrefix(prefix, str string) (string, bool) {
 	tokens := strings.Fields(str)
 	if len(tokens) > 1 && tokens[0] == prefix {
