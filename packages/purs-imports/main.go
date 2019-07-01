@@ -43,8 +43,6 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 			return module, nil
 		}
 	}
-	if !ok {
-	}
 	return "", fmt.Errorf("Could not parse module")
 }
 
