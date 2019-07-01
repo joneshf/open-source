@@ -20,7 +20,8 @@ func main() {
 		if globErr != nil {
 			log.Fatalln(globErr)
 		}
-		for range files {
+		for _, file := range files {
+			os.Open(file)
 		}
 		module, err := parsePSModule(os.Stdin)
 		if err != nil {
