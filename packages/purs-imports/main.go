@@ -40,7 +40,7 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 	for scanner.Scan() {
 		module, ok = parseModule(scanner.Text())
 		if ok {
-			break
+			return module, nil
 		}
 	}
 	if !ok {
