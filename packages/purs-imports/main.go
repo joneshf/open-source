@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -14,7 +15,8 @@ import (
 func main() {
 	var modules []psModule
 	args := flag.Args()
-	for range args {
+	for _, glob := range args {
+		filepath.Glob(glob)
 		module, err := parsePSModule(os.Stdin)
 		if err != nil {
 			log.Fatalln(err)
