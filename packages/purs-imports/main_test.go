@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGraphNew(t *testing.T) {
+func TestGraph(t *testing.T) {
 	input := []psModule{
 		psModule{module: "Main", imports: []string{"Effect", "Prelude"}},
 		psModule{module: "Test.Main", imports: []string{"Effect", "Prelude", "Test.Unit"}},
@@ -20,7 +20,7 @@ func TestGraphNew(t *testing.T) {
   "Test.Main" -> "Prelude";
   "Test.Main" -> "Test.Unit";
 }`
-	actual := graphNew(input)
+	actual := graph(input)
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
 	}
