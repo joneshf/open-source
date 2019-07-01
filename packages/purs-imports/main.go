@@ -82,10 +82,10 @@ func parsePSModule(reader io.Reader) (result psModule, err error) {
 	scanner := bufio.NewScanner(reader)
 	module, err := findModule(scanner)
 	if err == nil {
-		result = psModule{
+		return psModule{
 			module:  module,
 			imports: findImports(scanner),
-		}
+		}, nil
 	}
 	return
 }
