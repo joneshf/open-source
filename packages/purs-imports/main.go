@@ -50,10 +50,6 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 }
 
 func graph(modules []psModule) string {
-	return graphNew(modules)
-}
-
-func graphNew(modules []psModule) string {
 	var builder strings.Builder
 	builder.WriteString("digraph imports {\n")
 	for _, module := range modules {
