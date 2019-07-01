@@ -18,20 +18,14 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Output debugging information")
 	flag.Parse()
 	args := flag.Args()
-	if verbose {
-		log.Printf("args: %#v\n", args)
-	}
+	debug(verbose, fmt.Sprintf("args: %#v\n", args))
 	for _, glob := range args {
-		if verbose {
-			log.Printf("glob: %#v\n", glob)
-		}
+		debug(verbose, fmt.Sprintf("glob: %#v\n", glob))
 		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
 			log.Fatalln(globErr)
 		}
-		if verbose {
-			log.Printf("filenames: %#v\n", filenames)
-		}
+		debug(verbose, fmt.Sprintf("filenames: %#v\n", filenames))
 		for _, filename := range filenames {
 			file, openErr := os.Open(filename)
 			if openErr != nil {
@@ -42,15 +36,11 @@ func main() {
 			if parseErr != nil {
 				log.Fatalln(parseErr)
 			}
-			if verbose {
-				log.Printf("module: %#v\n", module)
-			}
+			debug(verbose, fmt.Sprintf("module: %#v\n", module))
 			modules = append(modules, module)
 		}
 	}
-	if verbose {
-		log.Printf("modules: %#v\n", modules)
-	}
+	debug(verbose, fmt.Sprintf("modules: %#v\n", modules))
 	fmt.Printf("%s\n", graph(modules))
 }
 
