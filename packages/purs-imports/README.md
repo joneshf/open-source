@@ -20,7 +20,7 @@ main = pure unit
 If we run `purs-imports` on `Main.purs`:
 
 ```sh
-$ cat Main.purs | purs-imports
+$ purs-imports Main.purs
 ```
 
 We should get a graph like:
