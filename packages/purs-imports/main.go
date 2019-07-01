@@ -21,7 +21,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	modules = append(modules, module)
-	fmt.Printf("%s\n", graph([]psModule{module}))
+	fmt.Printf("%s\n", graph(modules))
 }
 
 type psModule struct {
