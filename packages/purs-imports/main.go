@@ -33,7 +33,7 @@ func main() {
 			modules = append(modules, module)
 		}
 	}
-	log.Printf("\n")
+	log.Printf("%#v\n", modules)
 	fmt.Printf("%s\n", graph(modules))
 }
 
