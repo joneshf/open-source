@@ -18,7 +18,9 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Output debugging information")
 	flag.Parse()
 	args := flag.Args()
-	log.Printf("args: %#v\n", args)
+	if verbose {
+		log.Printf("args: %#v\n", args)
+	}
 	for _, glob := range args {
 		log.Printf("glob: %#v\n", glob)
 		filenames, globErr := filepath.Glob(glob)
