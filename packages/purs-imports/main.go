@@ -14,6 +14,7 @@ import (
 
 func main() {
 	var modules []psModule
+	flag.Parse()
 	args := flag.Args()
 	log.Printf("args: %#v\n", args)
 	for _, glob := range args {
