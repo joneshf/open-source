@@ -32,7 +32,7 @@ func findImports(scanner *bufio.Scanner) (imports []string) {
 	}
 	sort.Strings(imports)
 
-	return
+	return imports
 }
 
 func findModule(scanner *bufio.Scanner) (string, error) {
