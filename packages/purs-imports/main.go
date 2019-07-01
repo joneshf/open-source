@@ -35,7 +35,7 @@ func findImports(scanner *bufio.Scanner) (imports []string) {
 	return
 }
 
-func findModule(scanner *bufio.Scanner) (module string, err error) {
+func findModule(scanner *bufio.Scanner) (string, error) {
 	for scanner.Scan() {
 		module, ok := parseModule(scanner.Text())
 		if ok {
