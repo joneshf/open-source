@@ -14,7 +14,8 @@ import (
 
 func main() {
 	var modules []psModule
-	flag.Bool("verbose", false, "Output debugging information")
+	var verbose bool
+	flag.BoolVar(&verbose, "verbose", false, "Output debugging information")
 	flag.Parse()
 	args := flag.Args()
 	log.Printf("args: %#v\n", args)
