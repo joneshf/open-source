@@ -36,9 +36,8 @@ func findImports(scanner *bufio.Scanner) (imports []string) {
 }
 
 func findModule(scanner *bufio.Scanner) (module string, err error) {
-	var ok bool
 	for scanner.Scan() {
-		module, ok = parseModule(scanner.Text())
+		module, ok := parseModule(scanner.Text())
 		if ok {
 			return module, nil
 		}
