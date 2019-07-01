@@ -22,11 +22,16 @@ func TestGraph(t *testing.T) {
 func TestGraphNew(t *testing.T) {
 	input := []psModule{
 		psModule{module: "Main", imports: []string{"Effect", "Prelude"}},
+		psModule{module: "Test.Main", imports: []string{"Effect", "Prelude", "Test.Unit"}},
 	}
 	expected := `digraph imports {
   "Main";
   "Main" -> "Effect";
   "Main" -> "Prelude";
+  "Test.Main";
+  "Test.Main" -> "Effect";
+  "Test.Main" -> "Prelude";
+  "Test.Main" -> "Test.Unit";
 }`
 	actual := graphNew(input)
 	if !reflect.DeepEqual(expected, actual) {
