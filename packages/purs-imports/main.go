@@ -26,9 +26,9 @@ func main() {
 				log.Fatalln(openErr)
 			}
 
-			module, err := parsePSModule(file)
-			if err != nil {
-				log.Fatalln(err)
+			module, parseErr := parsePSModule(file)
+			if parseErr != nil {
+				log.Fatalln(parseErr)
 			}
 			modules = append(modules, module)
 		}
