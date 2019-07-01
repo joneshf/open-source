@@ -16,7 +16,10 @@ func main() {
 	var modules []psModule
 	args := flag.Args()
 	for _, glob := range args {
-		filepath.Glob(glob)
+		_, globErr := filepath.Glob(glob)
+		if globErr != nil {
+			log.Fatalln(globErr)
+		}
 		module, err := parsePSModule(os.Stdin)
 		if err != nil {
 			log.Fatalln(err)
