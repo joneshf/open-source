@@ -49,8 +49,8 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 	return
 }
 
-func graph(module psModule) string {
-	return graphNew([]psModule{module})
+func graph(modules []psModule) string {
+	return graphNew(modules)
 }
 
 func graphNew(modules []psModule) string {
