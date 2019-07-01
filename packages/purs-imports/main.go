@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	flag.Args()
 	module, err := parsePSModule(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
