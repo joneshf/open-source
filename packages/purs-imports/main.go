@@ -23,7 +23,8 @@ type psModule struct {
 	imports []string
 }
 
-func findImports(scanner *bufio.Scanner) (imports []string) {
+func findImports(scanner *bufio.Scanner) []string {
+	var imports []string
 	for scanner.Scan() {
 		parsedImport, parsedImportOk := parseImport(scanner.Text())
 		if parsedImportOk {
