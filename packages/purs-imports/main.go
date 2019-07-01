@@ -27,11 +27,13 @@ import (
 )
 
 func main() {
+	var modules []psModule
 	module, err := parsePSModule(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("%s\n", graph(module))
+	modules = append(modules, module)
+	fmt.Printf("%s\n", graph(modules))
 }
 
 type psModule struct {
@@ -64,12 +66,14 @@ func findModule(scanner *bufio.Scanner) (string, bool) {
 	return module, ok
 }
 
-func graph(module psModule) string {
+func graph(modules []psModule) string {
 	var builder strings.Builder
 	builder.WriteString("digraph imports {\n")
-	fmt.Fprintf(&builder, "  %#v;\n", module.module)
-	for _, psImport := range module.imports {
-		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+	for _, module := range modules {
+		fmt.Fprintf(&builder, "  %#v;\n", module.module)
+		for _, psImport := range module.imports {
+			fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+		}
 	}
 	builder.WriteString("}")
 	return builder.String()
