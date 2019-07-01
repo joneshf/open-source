@@ -87,5 +87,5 @@ func parsePSModule(reader io.Reader) (result psModule, err error) {
 			imports: findImports(scanner),
 		}, nil
 	}
-	return
+	return psModule{}, err
 }
