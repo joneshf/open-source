@@ -59,7 +59,11 @@ type psModule struct {
 	imports []string
 }
 
-func debug(verbose bool, message string) {}
+func debug(verbose bool, message string) {
+	if verbose {
+		log.Print(message)
+	}
+}
 
 func findImports(scanner *bufio.Scanner) []string {
 	var imports []string
