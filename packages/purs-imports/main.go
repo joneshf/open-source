@@ -25,12 +25,13 @@ func main() {
 			if openErr != nil {
 				log.Fatalln(openErr)
 			}
+
+			module, err := parsePSModule(os.Stdin)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			modules = append(modules, module)
 		}
-		module, err := parsePSModule(os.Stdin)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		modules = append(modules, module)
 	}
 	fmt.Printf("%s\n", graph(modules))
 }
