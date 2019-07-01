@@ -57,7 +57,7 @@ func graph(module psModule) string {
 		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
 	}
 	builder.WriteString("}")
-	return builder.String()
+	return graphNew([]psModule{module})
 }
 
 func graphNew(modules []psModule) string {
