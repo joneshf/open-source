@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	var modules []psModule
 	args := flag.Args()
 	for range args {
 	}
@@ -19,6 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	modules = append(modules, module)
 	fmt.Printf("%s\n", graph([]psModule{module}))
 }
 
