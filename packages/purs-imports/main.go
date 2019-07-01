@@ -44,9 +44,8 @@ func findModule(scanner *bufio.Scanner) (module string, err error) {
 		}
 	}
 	if !ok {
-		err = fmt.Errorf("Could not parse module")
 	}
-	return "", err
+	return "", fmt.Errorf("Could not parse module")
 }
 
 func graph(modules []psModule) string {
