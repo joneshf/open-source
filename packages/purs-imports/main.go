@@ -12,7 +12,9 @@ import (
 )
 
 func main() {
-	flag.Args()
+	args := flag.Args()
+	for range args {
+	}
 	module, err := parsePSModule(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
