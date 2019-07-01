@@ -18,10 +18,12 @@ func main() {
 	args := flag.Args()
 	log.Printf("args: %#v\n", args)
 	for _, glob := range args {
+		log.Printf("glob: %#v\n", glob)
 		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
 			log.Fatalln(globErr)
 		}
+		log.Printf("filenames: %#v\n", filenames)
 		for _, filename := range filenames {
 			file, openErr := os.Open(filename)
 			if openErr != nil {
@@ -32,6 +34,7 @@ func main() {
 			if parseErr != nil {
 				log.Fatalln(parseErr)
 			}
+			log.Printf("module: %#v\n", module)
 			modules = append(modules, module)
 		}
 	}
