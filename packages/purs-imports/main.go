@@ -18,21 +18,38 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
 func main() {
 	var modules []psModule
-	module, err := parsePSModule(os.Stdin)
-	if err != nil {
-		log.Fatalln(err)
+	flag.Parse()
+	args := flag.Args()
+	for _, glob := range args {
+		filenames, globErr := filepath.Glob(glob)
+		if globErr != nil {
+			log.Fatalln(globErr)
+		}
+		for _, filename := range filenames {
+			file, openErr := os.Open(filename)
+			if openErr != nil {
+				log.Fatalln(openErr)
+			}
+
+			module, parseErr := parsePSModule(file)
+			if parseErr != nil {
+				log.Fatalln(parseErr)
+			}
+			modules = append(modules, module)
+		}
 	}
-	modules = append(modules, module)
 	fmt.Printf("%s\n", graph(modules))
 }
 
