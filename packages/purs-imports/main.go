@@ -15,6 +15,7 @@ import (
 func main() {
 	var modules []psModule
 	args := flag.Args()
+	log.Printf("%#v\n", args)
 	for _, glob := range args {
 		filenames, globErr := filepath.Glob(glob)
 		if globErr != nil {
