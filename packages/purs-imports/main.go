@@ -21,12 +21,12 @@ func main() {
 			log.Fatalln(globErr)
 		}
 		for _, filename := range filenames {
-			_, openErr := os.Open(filename)
+			file, openErr := os.Open(filename)
 			if openErr != nil {
 				log.Fatalln(openErr)
 			}
 
-			module, err := parsePSModule(os.Stdin)
+			module, err := parsePSModule(file)
 			if err != nil {
 				log.Fatalln(err)
 			}
