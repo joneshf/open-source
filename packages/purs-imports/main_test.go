@@ -20,13 +20,15 @@ func TestGraph(t *testing.T) {
 }
 
 func TestGraphNew(t *testing.T) {
-	input := psModule{module: "Main", imports: []string{"Effect", "Prelude"}}
+	input := []psModule{
+		psModule{module: "Main", imports: []string{"Effect", "Prelude"}},
+	}
 	expected := `digraph imports {
   "Main";
   "Main" -> "Effect";
   "Main" -> "Prelude";
 }`
-	actual := graph(input)
+	actual := graphNew(input)
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Expected: %#v. Actual: %#v.", expected, actual)
 	}
