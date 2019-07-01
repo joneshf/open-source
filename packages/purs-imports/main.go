@@ -60,14 +60,16 @@ func graph(module psModule) string {
 	return builder.String()
 }
 
-func graphNew(module psModule) string {
+func graphNew(modules []psModule) string {
 	var builder strings.Builder
-	builder.WriteString("digraph imports {\n")
-	fmt.Fprintf(&builder, "  %#v;\n", module.module)
-	for _, psImport := range module.imports {
-		fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+	for _, module := range modules {
+		builder.WriteString("digraph imports {\n")
+		fmt.Fprintf(&builder, "  %#v;\n", module.module)
+		for _, psImport := range module.imports {
+			fmt.Fprintf(&builder, "  %#v -> %#v;\n", module.module, psImport)
+		}
+		builder.WriteString("}")
 	}
-	builder.WriteString("}")
 	return builder.String()
 }
 
