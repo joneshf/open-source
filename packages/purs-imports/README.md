@@ -27,8 +27,8 @@ We should get a graph like:
 
 ```Graphviz
 digraph imports {
-  Main -> Effect;
-  Main -> Prelude;
+  "Main" -> "Effect";
+  "Main" -> "Prelude";
 }
 ```
 
