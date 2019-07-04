@@ -8,6 +8,7 @@
 module Shake.Package
   ( Package(..)
   , haskell
+  , go
   , inputs
   , javaScript
   , packageType
@@ -38,11 +39,13 @@ import "dhall" Dhall.TypeCheck            (X)
 import "base" GHC.Exts                    (fromList)
 import "base" GHC.Records                 (HasField(getField))
 
+import qualified "this" Shake.Package.Go
 import qualified "this" Shake.Package.Haskell
 import qualified "this" Shake.Package.JavaScript
 
 data Package
-  = Haskell Shake.Package.Haskell.Package
+  = Go Shake.Package.Go.Package
+  | Haskell Shake.Package.Haskell.Package
   | JavaScript Shake.Package.JavaScript.Package
 
 binaries ::
@@ -52,6 +55,7 @@ binaries ::
   Package ->
   ReaderT e f [FilePath]
 binaries = \case
+  Go package -> Shake.Package.Go.binaries package
   Haskell package -> Shake.Package.Haskell.binaries package
   JavaScript package -> Shake.Package.JavaScript.binaries package
 
@@ -63,6 +67,7 @@ build ::
   Package ->
   ReaderT e f FilePath
 build = \case
+  Go package -> Shake.Package.Go.build package
   Haskell package -> Shake.Package.Haskell.build package
   JavaScript package -> Shake.Package.JavaScript.build package
 
@@ -74,11 +79,19 @@ executable ::
   Package ->
   ReaderT e f [FilePath]
 executable = \case
+  Go _ -> pure mempty
   Haskell package -> Shake.Package.Haskell.executable package
   JavaScript _ -> pure mempty
 
+go :: (Alternative f) => Package -> f Shake.Package.Go.Package
+go = \case
+  Go package -> pure package
+  Haskell _ -> empty
+  JavaScript _ -> empty
+
 haskell :: (Alternative f) => Package -> f Shake.Package.Haskell.Package
 haskell = \case
+  Go _ -> empty
   Haskell package -> pure package
   JavaScript _ -> empty
 
@@ -89,18 +102,21 @@ inputs ::
   Package ->
   ReaderT e f [FilePattern]
 inputs = \case
+  Go package -> Shake.Package.Go.inputs package
   Haskell package -> Shake.Package.Haskell.inputs package
   JavaScript package -> Shake.Package.JavaScript.inputs package
 
 javaScript :: (Alternative f) => Package -> f Shake.Package.JavaScript.Package
 javaScript = \case
+  Go _ -> empty
   Haskell _ -> empty
   JavaScript package -> pure package
 
 packageType :: Type Package
 packageType =
   union
-    [ (pack "Haskell", fmap Haskell Shake.Package.Haskell.packageType)
+    [ (pack "Go", fmap Go Shake.Package.Go.packageType)
+    , (pack "Haskell", fmap Haskell Shake.Package.Haskell.packageType)
     , (pack "JavaScript", fmap JavaScript Shake.Package.JavaScript.packageType)
     ]
 
@@ -162,6 +178,7 @@ sdist ::
   Package ->
   ReaderT e f (Maybe FilePath)
 sdist = \case
+  Go _ -> pure mempty
   Haskell package -> fmap pure (Shake.Package.Haskell.sdist package)
   JavaScript _ -> pure mempty
 
@@ -173,6 +190,7 @@ test ::
   Package ->
   ReaderT e f [FilePath]
 test = \case
+  Go package -> Shake.Package.Go.test package
   Haskell package -> Shake.Package.Haskell.test package
   JavaScript _ -> pure mempty
 
@@ -197,11 +215,13 @@ uploadToHackage ::
   Package ->
   ReaderT e f (Maybe FilePath)
 uploadToHackage = \case
+  Go _ -> pure mempty
   Haskell package -> fmap pure (Shake.Package.Haskell.uploadToHackage package)
   JavaScript _ -> pure mempty
 
 writeDhall :: IO ()
 writeDhall = do
+  Shake.Package.Go.writeDhall
   Shake.Package.Haskell.writeDhall
   Shake.Package.JavaScript.writeDhall
   writeFileChanged "Package.dhall" (unpack $ pretty $ expected packageType)

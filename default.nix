@@ -145,6 +145,7 @@ let
   # These are tools necessary to build packages and programs.
   # These are for one-off builds (like in CI).
   tools-building = [
+    nixpkgs.go
     nixpkgs.haskellPackages.cabal-install
     nixpkgs.haskellPackages.hpack
     nixpkgs.yarn
@@ -165,6 +166,7 @@ let
 
   # These are tools that analyze source code in some way.
   tools-static-analyzing = [
+    nixpkgs.golint
     nixpkgs.haskellPackages.hlint
     nixpkgs.nodePackages.eslint
     nixpkgs.pythonPackages.yamllint
