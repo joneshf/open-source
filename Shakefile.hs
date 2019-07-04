@@ -29,6 +29,7 @@ import "typed-process" System.Process.Typed         (runProcess_, shell)
 
 import qualified "this" Shake.Cabal
 import qualified "this" Shake.Dhall
+import qualified "this" Shake.Go
 import qualified "this" Shake.Haskell
 import qualified "this" Shake.JavaScript
 import qualified "this" Shake.Package
@@ -75,6 +76,8 @@ main = do
     Shake.Cabal.rules
 
     Shake.Dhall.rules
+
+    withReaderT ((fmap . mapMaybe) Shake.Package.go) Shake.Go.rules
 
     withReaderT ((fmap . mapMaybe) Shake.Package.haskell) Shake.Haskell.rules
 
