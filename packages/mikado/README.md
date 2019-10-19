@@ -68,6 +68,8 @@ If something is in the graph, it always has a path from the goal.
 
 1. Rejoice in your easy to maintain [Mikado graph][].
 
+    ![Mikado graph of "Mow the lawn"](./example/mow-the-lawn.png)
+
 
 See a more complete example in the example directory.
 

@@ -140,6 +140,7 @@ let
     tools-building ++
     tools-developing ++
     tools-formatting ++
+    tools-infrastructure ++
     tools-static-analyzing;
 
   # These are tools necessary to build packages and programs.
@@ -162,6 +163,11 @@ let
   tools-formatting = [
     nixpkgs.haskellPackages.stylish-haskell
     nixpkgs.nodePackages.prettier
+  ];
+
+  # These are tools necessary for the basic infrastructure.
+  tools-infrastructure = [
+    nixpkgs.git-lfs
   ];
 
   # These are tools that analyze source code in some way.
