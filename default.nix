@@ -49,12 +49,23 @@ let
   };
 
   haskell-packages = nixpkgs.haskellPackages.ghcWithHoogle (p:
+    haskell-packages-build p ++
     haskell-packages-dhall-javascript p ++
     haskell-packages-katip-rollbar p ++
     haskell-packages-rollbar-hs p ++
     haskell-packages-shake p ++
     haskell-packages-wai-middleware-rollbar p
   );
+
+  haskell-packages-build = p: [
+    p.base
+    p.dhall_1_21_0
+    p.directory
+    p.mtl
+    p.shake
+    p.text
+    p.unordered-containers
+  ];
 
   haskell-packages-dhall-javascript = p: [
     p.ansi-wl-pprint
